@@ -17,6 +17,7 @@
 void Grid3D::set_dt_Gravity(){
   
   Real dt_hydro = H.dt;
+  dt_hydro = 0;
   
   #ifdef PARTICLES
   Real dt_particles, dt_min;
