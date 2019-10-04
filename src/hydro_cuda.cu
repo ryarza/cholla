@@ -257,44 +257,44 @@ __global__ void Update_Conserved_Variables_3D(Real *dev_conserved,
     vy =  dev_conserved[2*n_cells + id] * d_inv;
     vz =  dev_conserved[3*n_cells + id] * d_inv;
     #endif
-    // 
-    // // update the conserved variable array
-    // dev_conserved[            id] += dtodx * (dev_F_x[            imo] - dev_F_x[            id])
-    //                               +  dtody * (dev_F_y[            jmo] - dev_F_y[            id])
-    //                               +  dtodz * (dev_F_z[            kmo] - dev_F_z[            id]);
-    // dev_conserved[  n_cells + id] += dtodx * (dev_F_x[  n_cells + imo] - dev_F_x[  n_cells + id])
-    //                               +  dtody * (dev_F_y[  n_cells + jmo] - dev_F_y[  n_cells + id])
-    //                               +  dtodz * (dev_F_z[  n_cells + kmo] - dev_F_z[  n_cells + id]);
-    // dev_conserved[2*n_cells + id] += dtodx * (dev_F_x[2*n_cells + imo] - dev_F_x[2*n_cells + id])
-    //                               +  dtody * (dev_F_y[2*n_cells + jmo] - dev_F_y[2*n_cells + id])
-    //                               +  dtodz * (dev_F_z[2*n_cells + kmo] - dev_F_z[2*n_cells + id]);
-    // dev_conserved[3*n_cells + id] += dtodx * (dev_F_x[3*n_cells + imo] - dev_F_x[3*n_cells + id])
-    //                               +  dtody * (dev_F_y[3*n_cells + jmo] - dev_F_y[3*n_cells + id])
-    //                               +  dtodz * (dev_F_z[3*n_cells + kmo] - dev_F_z[3*n_cells + id]);
-    // dev_conserved[4*n_cells + id] += dtodx * (dev_F_x[4*n_cells + imo] - dev_F_x[4*n_cells + id])
-    //                               +  dtody * (dev_F_y[4*n_cells + jmo] - dev_F_y[4*n_cells + id])
-    //                               +  dtodz * (dev_F_z[4*n_cells + kmo] - dev_F_z[4*n_cells + id]);
-    // #ifdef SCALAR
-    // for (int i=0; i<NSCALARS; i++) {
-    //   dev_conserved[(5+i)*n_cells + id] += dtodx * (dev_F_x[(5+i)*n_cells + imo] - dev_F_x[(5+i)*n_cells + id])
-    //                                 +  dtody * (dev_F_y[(5+i)*n_cells + jmo] - dev_F_y[(5+i)*n_cells + id])
-    //                                 +  dtodz * (dev_F_z[(5+i)*n_cells + kmo] - dev_F_z[(5+i)*n_cells + id]);
-    //   #ifdef COOLING_GRACKLE
-    //   // If the updated value is negative, then revert to the value before the update
-    //   if ( dev_conserved[(5+i)*n_cells + id] < 0 ){
-    //     dev_conserved[(5+i)*n_cells + id] -= dtodx * (dev_F_x[(5+i)*n_cells + imo] - dev_F_x[(5+i)*n_cells + id])
-    //                                   +  dtody * (dev_F_y[(5+i)*n_cells + jmo] - dev_F_y[(5+i)*n_cells + id])
-    //                                   +  dtodz * (dev_F_z[(5+i)*n_cells + kmo] - dev_F_z[(5+i)*n_cells + id]);
-    //   } 
-    //   #endif
-    // }                              
-    // #endif
-    // #ifdef DE
-    // dev_conserved[(n_fields-1)*n_cells + id] += dtodx * (dev_F_x[(n_fields-1)*n_cells + imo] - dev_F_x[(n_fields-1)*n_cells + id])
-    //                               +  dtody * (dev_F_y[(n_fields-1)*n_cells + jmo] - dev_F_y[(n_fields-1)*n_cells + id])
-    //                               +  dtodz * (dev_F_z[(n_fields-1)*n_cells + kmo] - dev_F_z[(n_fields-1)*n_cells + id]);                              
-    // #endif
-    // 
+    
+    // update the conserved variable array
+    dev_conserved[            id] += dtodx * (dev_F_x[            imo] - dev_F_x[            id])
+                                  +  dtody * (dev_F_y[            jmo] - dev_F_y[            id])
+                                  +  dtodz * (dev_F_z[            kmo] - dev_F_z[            id]);
+    dev_conserved[  n_cells + id] += dtodx * (dev_F_x[  n_cells + imo] - dev_F_x[  n_cells + id])
+                                  +  dtody * (dev_F_y[  n_cells + jmo] - dev_F_y[  n_cells + id])
+                                  +  dtodz * (dev_F_z[  n_cells + kmo] - dev_F_z[  n_cells + id]);
+    dev_conserved[2*n_cells + id] += dtodx * (dev_F_x[2*n_cells + imo] - dev_F_x[2*n_cells + id])
+                                  +  dtody * (dev_F_y[2*n_cells + jmo] - dev_F_y[2*n_cells + id])
+                                  +  dtodz * (dev_F_z[2*n_cells + kmo] - dev_F_z[2*n_cells + id]);
+    dev_conserved[3*n_cells + id] += dtodx * (dev_F_x[3*n_cells + imo] - dev_F_x[3*n_cells + id])
+                                  +  dtody * (dev_F_y[3*n_cells + jmo] - dev_F_y[3*n_cells + id])
+                                  +  dtodz * (dev_F_z[3*n_cells + kmo] - dev_F_z[3*n_cells + id]);
+    dev_conserved[4*n_cells + id] += dtodx * (dev_F_x[4*n_cells + imo] - dev_F_x[4*n_cells + id])
+                                  +  dtody * (dev_F_y[4*n_cells + jmo] - dev_F_y[4*n_cells + id])
+                                  +  dtodz * (dev_F_z[4*n_cells + kmo] - dev_F_z[4*n_cells + id]);
+    #ifdef SCALAR
+    for (int i=0; i<NSCALARS; i++) {
+      dev_conserved[(5+i)*n_cells + id] += dtodx * (dev_F_x[(5+i)*n_cells + imo] - dev_F_x[(5+i)*n_cells + id])
+                                    +  dtody * (dev_F_y[(5+i)*n_cells + jmo] - dev_F_y[(5+i)*n_cells + id])
+                                    +  dtodz * (dev_F_z[(5+i)*n_cells + kmo] - dev_F_z[(5+i)*n_cells + id]);
+      #ifdef COOLING_GRACKLE
+      // If the updated value is negative, then revert to the value before the update
+      if ( dev_conserved[(5+i)*n_cells + id] < 0 ){
+        dev_conserved[(5+i)*n_cells + id] -= dtodx * (dev_F_x[(5+i)*n_cells + imo] - dev_F_x[(5+i)*n_cells + id])
+                                      +  dtody * (dev_F_y[(5+i)*n_cells + jmo] - dev_F_y[(5+i)*n_cells + id])
+                                      +  dtodz * (dev_F_z[(5+i)*n_cells + kmo] - dev_F_z[(5+i)*n_cells + id]);
+      } 
+      #endif
+    }                              
+    #endif
+    #ifdef DE
+    dev_conserved[(n_fields-1)*n_cells + id] += dtodx * (dev_F_x[(n_fields-1)*n_cells + imo] - dev_F_x[(n_fields-1)*n_cells + id])
+                                  +  dtody * (dev_F_y[(n_fields-1)*n_cells + jmo] - dev_F_y[(n_fields-1)*n_cells + id])
+                                  +  dtodz * (dev_F_z[(n_fields-1)*n_cells + kmo] - dev_F_z[(n_fields-1)*n_cells + id]);                              
+    #endif
+    
     #ifdef DENSITY_FLOOR
     if ( dev_conserved[            id] < density_floor ){
       if (dev_conserved[            id] > 0){  

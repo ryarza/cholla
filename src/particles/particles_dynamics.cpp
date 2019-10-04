@@ -489,26 +489,26 @@ void Grid3D::Advance_Particles_KDK_Cosmo_Step1_function( part_int_t p_start, par
     grav_y = Particles.grav_y[pIndx];
     grav_z = Particles.grav_z[pIndx];
 
-    // 
-    // #ifdef PARTICLES_PECULIAR_VELOCITIES
-    // 
+    
+    #ifdef PARTICLES_PECULIAR_VELOCITIES
+    
     // vel_x = ( a*vel_x + 0.5*dt*grav_x ) / a_half;
     // vel_y = ( a*vel_y + 0.5*dt*grav_y ) / a_half;
     // vel_z = ( a*vel_z + 0.5*dt*grav_z ) / a_half;
-    // pos_x += dt_half * vel_x;
-    // pos_y += dt_half * vel_y;
-    // pos_z += dt_half * vel_z;    
-    // 
-    // #else
-    // 
-    // vel_x += 0.5 * dt * grav_x;
-    // vel_y += 0.5 * dt * grav_y;
-    // vel_z += 0.5 * dt * grav_z;
-    // pos_x += dt_half * vel_x;
-    // pos_y += dt_half * vel_y;
-    // pos_z += dt_half * vel_z;
-    // 
-    // #endif
+    pos_x += dt_half * vel_x;
+    pos_y += dt_half * vel_y;
+    pos_z += dt_half * vel_z;    
+    
+    #else
+    
+    vel_x += 0.5 * dt * grav_x;
+    vel_y += 0.5 * dt * grav_y;
+    vel_z += 0.5 * dt * grav_z;
+    pos_x += dt_half * vel_x;
+    pos_y += dt_half * vel_y;
+    pos_z += dt_half * vel_z;
+    
+    #endif
 
     Particles.pos_x[pIndx] = pos_x;
     Particles.pos_y[pIndx] = pos_y;
