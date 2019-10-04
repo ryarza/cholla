@@ -489,26 +489,26 @@ void Grid3D::Advance_Particles_KDK_Cosmo_Step1_function( part_int_t p_start, par
     grav_y = Particles.grav_y[pIndx];
     grav_z = Particles.grav_z[pIndx];
 
-    
-    #ifdef PARTICLES_PECULIAR_VELOCITIES
-    
-    vel_x = ( a*vel_x + 0.5*dt*grav_x ) / a_half;
-    vel_y = ( a*vel_y + 0.5*dt*grav_y ) / a_half;
-    vel_z = ( a*vel_z + 0.5*dt*grav_z ) / a_half;
-    pos_x += dt_half * vel_x;
-    pos_y += dt_half * vel_y;
-    pos_z += dt_half * vel_z;    
-    
-    #else
-    
-    vel_x += 0.5 * dt * grav_x;
-    vel_y += 0.5 * dt * grav_y;
-    vel_z += 0.5 * dt * grav_z;
-    pos_x += dt_half * vel_x;
-    pos_y += dt_half * vel_y;
-    pos_z += dt_half * vel_z;
-    
-    #endif
+    // 
+    // #ifdef PARTICLES_PECULIAR_VELOCITIES
+    // 
+    // vel_x = ( a*vel_x + 0.5*dt*grav_x ) / a_half;
+    // vel_y = ( a*vel_y + 0.5*dt*grav_y ) / a_half;
+    // vel_z = ( a*vel_z + 0.5*dt*grav_z ) / a_half;
+    // pos_x += dt_half * vel_x;
+    // pos_y += dt_half * vel_y;
+    // pos_z += dt_half * vel_z;    
+    // 
+    // #else
+    // 
+    // vel_x += 0.5 * dt * grav_x;
+    // vel_y += 0.5 * dt * grav_y;
+    // vel_z += 0.5 * dt * grav_z;
+    // pos_x += dt_half * vel_x;
+    // pos_y += dt_half * vel_y;
+    // pos_z += dt_half * vel_z;
+    // 
+    // #endif
 
     Particles.pos_x[pIndx] = pos_x;
     Particles.pos_y[pIndx] = pos_y;
@@ -543,18 +543,18 @@ void Grid3D::Advance_Particles_KDK_Cosmo_Step2_function( part_int_t p_start, par
     grav_z = Particles.grav_z[pIndx];
     
     
-    #ifdef PARTICLES_PECULIAR_VELOCITIES
-    vel_x = Particles.vel_x[pIndx];
-    vel_y = Particles.vel_y[pIndx];
-    vel_z = Particles.vel_z[pIndx];
-    Particles.vel_x[pIndx] = ( a_half*vel_x + 0.5*dt*grav_x ) / a;
-    Particles.vel_y[pIndx] = ( a_half*vel_y + 0.5*dt*grav_y ) / a;
-    Particles.vel_z[pIndx] = ( a_half*vel_z + 0.5*dt*grav_z ) / a;
-    #else    
-    Particles.vel_x[pIndx] += 0.5 * dt * grav_x;
-    Particles.vel_y[pIndx] += 0.5 * dt * grav_y;
-    Particles.vel_z[pIndx] += 0.5 * dt * grav_z;
-    #endif
+    // #ifdef PARTICLES_PECULIAR_VELOCITIES
+    // vel_x = Particles.vel_x[pIndx];
+    // vel_y = Particles.vel_y[pIndx];
+    // vel_z = Particles.vel_z[pIndx];
+    // Particles.vel_x[pIndx] = ( a_half*vel_x + 0.5*dt*grav_x ) / a;
+    // Particles.vel_y[pIndx] = ( a_half*vel_y + 0.5*dt*grav_y ) / a;
+    // Particles.vel_z[pIndx] = ( a_half*vel_z + 0.5*dt*grav_z ) / a;
+    // #else    
+    // Particles.vel_x[pIndx] += 0.5 * dt * grav_x;
+    // Particles.vel_y[pIndx] += 0.5 * dt * grav_y;
+    // Particles.vel_z[pIndx] += 0.5 * dt * grav_z;
+    // #endif
   }
 }
 
