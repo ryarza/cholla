@@ -5,6 +5,47 @@
 #include<iostream>
 #include "../io.h"
 
+
+Domain_PFFT_3D::Domain_PFFT_3D(void){}
+
+void Domain_PFFT_3D::Initialize( struct parameters *P){
+  
+  nproc_pfft = nproc;
+  chprintf(" Initializing PFFT:  %d processes\n", nproc_pfft );
+  pfft_init();
+  
+  nprocs_grid_pfft[0] = nproc_z;
+  nprocs_grid_pfft[1] = nproc_y;
+  nprocs_grid_pfft[2] = nproc_x;
+  
+  n_pfft[0] = P->nz;
+  n_pfft[1] = P->ny;
+  n_pfft[2] = P->nx;
+  
+  
+  // /* Create 3-dimensional process grid of size np_pfft[0] x np_pfft[1] x np_pfft[2] */
+  pfft_create_procmesh(3, MPI_COMM_WORLD, nprocs_grid_pfft, &comm_pfft);
+  // MPI_Comm_rank( comm_pfft, &procID_pfft );
+  // MPI_Cart_coords( comm_pfft, procID_pfft, 3, pcoords_pfft);
+  // 
+  // /* Get parameters of data distribution */
+  // alloc_local_fwd = pfft_local_size_dft_r2c_3d(
+  //     n_pfft, comm_pfft, PFFT_TRANSPOSED_OUT ,
+  //     local_n_in_pfft, local_in_start_pfft, local_n_transform_fwd_pfft, local_transform_fwd_start_pfft);
+  // 
+  // alloc_local_bwd = pfft_local_size_dft_c2r_3d(
+  //     n_pfft, comm_pfft, PFFT_TRANSPOSED_IN ,
+  //     local_n_transform_bwd_pfft, local_transform_bwd_start_pfft, local_n_out_pfft, local_out_start_pfft);
+  // 
+  chprintf("  PFFT process: nx:%d ny:%d nz:%d \n", nprocs_grid_pfft[2], nprocs_grid_pfft[1], nprocs_grid_pfft[0]);
+  chprintf("  PFFT cells:   nx:%d ny:%d nz:%d \n", n_pfft[2], n_pfft[1], n_pfft[0]);
+  chprintf("  PFFT local:   nx:%d ny:%d nz:%d \n", local_n_in_pfft[2], local_n_in_pfft[1], local_n_in_pfft[0] );
+  
+  INITIALIZED = true;
+  
+  
+}
+
 Potential_PFFT_3D::Potential_PFFT_3D( void ){}
 
 void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y_min, Real z_min, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real){

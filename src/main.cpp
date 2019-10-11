@@ -14,6 +14,10 @@
 #include "io.h"
 #include "error_handling.h"
 
+#if defined(MPI_CHOLLA) && defined(GRAVITY) && defined(PFFT)
+#include "gravity/potential_PFFT_3D.h"
+#endif
+
 #define OUTPUT
 //#define CPU_TIME
 
@@ -31,7 +35,7 @@ int main(int argc, char *argv[])
 
   // start the total time
   start_total = get_time();
-
+  
   /* Initialize MPI communication */
   #ifdef MPI_CHOLLA
   InitializeChollaMPI(&argc, &argv);
@@ -65,6 +69,13 @@ int main(int argc, char *argv[])
     P.nx, P.ny, P.nz, P.tout, P.init, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd);
   chprintf ("Input directory:  %s\n", P.indir);
   chprintf ("Output directory:  %s\n", P.outdir);
+  
+  #if defined(MPI_CHOLLA) && defined(GRAVITY) && defined(PFFT)
+  Domain_PFFT_3D PFFT_Domain;
+  PFFT_Domain.INITIALIZED = false;
+  PFFT_Domain.Initialize( &P);
+  exit(-1);
+  #endif
   
   //Create a Log file to output run-time messages
   Create_Log_File(P);

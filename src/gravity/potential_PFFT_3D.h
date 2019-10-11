@@ -11,7 +11,47 @@
 
 #include <pfft.h>
 
+class Domain_PFFT_3D{
+  
+  public:
+  int nx_total;
+  int ny_total;
+  int nz_total;
+  
+  int nx_local;
+  int ny_local;
+  int nz_local;
 
+  Real Lbox_x;
+  Real Lbox_y;
+  Real Lbox_z;
+  
+  Real dx;
+  Real dy;
+  Real dz;
+  
+  bool INITIALIZED;
+  
+  int procID_pfft;
+  int nproc_pfft;
+  MPI_Comm comm_pfft;
+  
+  ptrdiff_t alloc_local_fwd;
+  ptrdiff_t alloc_local_bwd;
+  int nprocs_grid_pfft[3];
+  int pcoords_pfft[3];
+  int poffset_pfft[3];
+  ptrdiff_t n_pfft[3];
+  ptrdiff_t local_n_in_pfft[3], local_in_start_pfft[3];
+  ptrdiff_t local_n_out_pfft[3], local_out_start_pfft[3];
+  ptrdiff_t local_n_transform_fwd_pfft[3], local_transform_fwd_start_pfft[3];
+  ptrdiff_t local_n_transform_bwd_pfft[3], local_transform_bwd_start_pfft[3];
+  
+
+  Domain_PFFT_3D( void );
+  void Initialize( struct parameters *P );
+  
+};
 
 class Potential_PFFT_3D{
   
