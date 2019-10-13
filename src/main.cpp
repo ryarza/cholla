@@ -14,10 +14,6 @@
 #include "io.h"
 #include "error_handling.h"
 
-#if defined(MPI_CHOLLA) && defined(GRAVITY) && defined(PFFT)
-#include "gravity/potential_PFFT_3D.h"
-#endif
-
 #define OUTPUT
 //#define CPU_TIME
 
@@ -70,12 +66,6 @@ int main(int argc, char *argv[])
   chprintf ("Input directory:  %s\n", P.indir);
   chprintf ("Output directory:  %s\n", P.outdir);
   
-  #if defined(MPI_CHOLLA) && defined(GRAVITY) && defined(PFFT)
-  Domain_PFFT_3D PFFT_Domain;
-  PFFT_Domain.INITIALIZED = false;
-  PFFT_Domain.Initialize( &P);
-  exit(-1);
-  #endif
   
   //Create a Log file to output run-time messages
   Create_Log_File(P);
@@ -84,6 +74,7 @@ int main(int argc, char *argv[])
   G.Initialize(&P);
   chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
 
+  exit(-1);
 
   // Set initial conditions and calculate first dt
   chprintf("Setting initial conditions...\n");
