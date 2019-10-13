@@ -17,6 +17,9 @@
 
 #ifdef GRAVITY
 #include"gravity/grav3D.h"
+#if defined(MPI_CHOLLA) && defined(PFFT)
+#include "gravity/potential_PFFT_3D.h"
+#endif
 #endif
 
 #ifdef PARTICLES
@@ -235,7 +238,11 @@ struct Header
   *  \brief Flag set to true when data has to be written to file */
   bool Output_Now;
   bool Output_Initial;
-
+  
+  #ifdef CUSTOM_DOMAIN_PFFT 
+  Domain_PFFT_3D PFFT_Domain;
+  #endif
+  
 };
 
 /*! \class Grid3D
@@ -271,7 +278,7 @@ class Grid3D
     #ifdef GRAVITY
     // Object that contains data for gravity
     Grav3D Grav;
-    #endif
+    #endif //GRAVITY
     
     #ifdef PARTICLES
     // Object that contains data for particles
