@@ -2538,6 +2538,8 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     #ifdef CUSTOM_DOMAIN_PFFT
     int nx_0, ny_0, nz_0;
     int nx_pfft, ny_pfft, nz_pfft;
+    int nx_local_start_0, ny_local_start_0, nz_local_start_0;
+    int nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft;
     
     nx_0 = H.PFFT_Domain.nx_local_cholla;
     ny_0 = H.PFFT_Domain.ny_local_cholla;
@@ -2547,15 +2549,35 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     ny_pfft = H.PFFT_Domain.ny_local;
     nz_pfft = H.PFFT_Domain.nz_local;
     
+    nx_local_start_0 = H.PFFT_Domain.nx_local_start_cholla;
+    ny_local_start_0 = H.PFFT_Domain.ny_local_start_cholla;
+    nz_local_start_0 = H.PFFT_Domain.nz_local_start_cholla;
+    
+    nx_local_start_pfft = H.PFFT_Domain.nx_local_start;
+    ny_local_start_pfft = H.PFFT_Domain.ny_local_start;
+    nz_local_start_pfft = H.PFFT_Domain.nz_local_start;
+    
     if ( ( nx_0 != nx_pfft ) || ( ny_0 != ny_pfft ) || ( nz_0 != nz_pfft ) ){
       
       fflush(stdout);
       MPI_Barrier(world);
+      chprintf( "Local Size:\n");
       for(int n=0; n<nproc; n++)
       {
         if(n==procID)
         {
           printf("procID %d [ %d %d %d ] -> [ %d %d %d ] \n", procID, nx_0, ny_0, nz_0, nx_pfft, ny_pfft, nz_pfft);
+        } 
+        fflush(stdout);
+        MPI_Barrier(world);
+      }
+      
+      chprintf( "Start Index:\n");
+      for(int n=0; n<nproc; n++)
+      {
+        if(n==procID)
+        {
+          printf("procID %d [ %d %d %d ] -> [ %d %d %d ] \n", procID, nx_local_start_0, ny_local_start_0, nz_local_start_0, nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft);
         } 
         fflush(stdout);
         MPI_Barrier(world);
