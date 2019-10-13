@@ -2585,7 +2585,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       
     }
     // #endif
-    #else
+    #else //CUSTOM_DOMAIN_PFFT
     
     // need a dataset buffer to remap fastest index
     dataset_buffer = (Real *) malloc(H.nz_real*H.ny_real*H.nx_real*sizeof(Real));
@@ -2996,11 +2996,13 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     }
     #endif//COOLING_GRACKLE
     #endif//SCALAR
+    
+    
+    #endif //CUSTOM_DOMAIN_PFFT
   }
   free(dataset_buffer);
   
   
-  #endif //CUSTOM_DOMAIN_PFFT
 
 }
 #endif
