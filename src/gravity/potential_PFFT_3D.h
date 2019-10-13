@@ -21,6 +21,29 @@ class Domain_PFFT_3D{
   int nx_local;
   int ny_local;
   int nz_local;
+  
+  int nx_local_start;
+  int ny_local_start;
+  int nz_local_start;
+
+  int nx_local_cholla;
+  int ny_local_cholla;
+  int nz_local_cholla;
+
+  int nx_local_start_cholla;
+  int ny_local_start_cholla;
+  int nz_local_start_cholla;
+  
+  Real domlen_x_cholla;
+  Real domlen_y_cholla;
+  Real domlen_z_cholla;
+  
+  Real xblocal_cholla;
+  Real yblocal_cholla;
+  Real zblocal_cholla;
+  
+
+
 
   Real Lbox_x;
   Real Lbox_y;
