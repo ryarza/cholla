@@ -2547,7 +2547,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     ny_pfft = H.PFFT_Domain.ny_local;
     nz_pfft = H.PFFT_Domain.nz_local;
     
-    if ( ( nx_0 != nx_pfft ) || ( nx_0 != nx_pfft ) || ( nx_0 != nx_pfft ) ){
+    if ( ( nx_0 != nx_pfft ) || ( ny_0 != ny_pfft ) || ( nz_0 != nz_pfft ) ){
       
       fflush(stdout);
       MPI_Barrier(world);
