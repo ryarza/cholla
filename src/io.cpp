@@ -2555,7 +2555,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       {
         if(n==procID)
         {
-          printf("procID %d [ %ld %ld %ld ] -> [ %ld %ld %ld ] \n", procID, nx_0, ny_0, nz_0, nx_pfft, ny_pfft, nz_pfft);
+          printf("procID %d [ %d %d %d ] -> [ %d %d %d ] \n", procID, nx_0, ny_0, nz_0, nx_pfft, ny_pfft, nz_pfft);
         } 
         fflush(stdout);
         MPI_Barrier(world);
