@@ -222,6 +222,18 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   
   #endif
   
+  chprintf( "Domain:\n");
+  for(int n=0; n<nproc; n++)
+  {
+    if(n==procID)
+    {
+      printf("procID %d [ %f %f ] \n", procID, G.xMin, G.xMax );
+    } 
+    fflush(stdout);
+    MPI_Barrier(world);
+  }
+  
+  
   
   // 
   // 
