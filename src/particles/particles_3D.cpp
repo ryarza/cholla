@@ -20,7 +20,7 @@ void Grid3D::Initialize_Particles( struct parameters *P ){
   
   chprintf( "\nInitializing Particles...\n");
   
-  Particles.Initialize( P, Grav, H.xbound, H.ybound, H.zbound, H.xdglobal, H.ydglobal, H.zdglobal );
+  Particles.Initialize( P, Grav, H.xbound, H.ybound, H.zbound, H.xdglobal, H.ydglobal, H.zdglobal, H );
   
   if (strcmp(P->init, "Uniform")==0)  Initialize_Uniform_Particles();  
   
@@ -32,7 +32,7 @@ void Grid3D::Initialize_Particles( struct parameters *P ){
   
 } 
 
-void Particles_3D::Initialize( struct parameters *P, Grav3D &Grav,  Real xbound, Real ybound, Real zbound, Real xdglobal, Real ydglobal, Real zdglobal){
+void Particles_3D::Initialize( struct parameters *P, Grav3D &Grav,  Real xbound, Real ybound, Real zbound, Real xdglobal, Real ydglobal, Real zdglobal, struct Header &H){
 
   n_local = 0;
   n_total = 0;
@@ -121,7 +121,7 @@ void Particles_3D::Initialize( struct parameters *P, Grav3D &Grav,  Real xbound,
   
   if (strcmp(P->init, "Zeldovich_Pancake")==0) Initialize_Zeldovich_Pancake( P );
   
-  if (strcmp(P->init, "Read_Grid")==0)  Load_Particles_Data(  P );
+  if (strcmp(P->init, "Read_Grid")==0)  Load_Particles_Data(  P, H );
   
   #ifdef MPI_CHOLLA
   n_total_initial = ReducePartIntSum(n_local);

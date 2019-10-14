@@ -127,7 +127,7 @@ class Particles_3D
   
   Particles_3D(void);
 
-  void Initialize( struct parameters *P, Grav3D &Grav,  Real xbound, Real ybound, Real zbound, Real xdglobal, Real ydglobal, Real zdglobal  );
+  void Initialize( struct parameters *P, Grav3D &Grav,  Real xbound, Real ybound, Real zbound, Real xdglobal, Real ydglobal, Real zdglobal, struct Header &H  );
   
   void Allocate_Memory();
   
@@ -137,7 +137,7 @@ class Particles_3D
   
   void Initialize_Zeldovich_Pancake( struct parameters *P );
   
-  void Load_Particles_Data( struct parameters *P );
+  void Load_Particles_Data( struct parameters *P, struct Header &H );
   
   void Free_Memory();
   
@@ -148,7 +148,7 @@ class Particles_3D
   void Get_Density_CIC_Serial( );
   
   #ifdef HDF5
-  void Load_Particles_Data_HDF5( hid_t file_id, int nfile, struct parameters *P );
+  void Load_Particles_Data_HDF5( hid_t file_id, int nfile, struct parameters *P, struct Header &H );
   #endif
   
   #ifdef PARALLEL_OMP

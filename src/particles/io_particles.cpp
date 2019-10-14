@@ -19,7 +19,7 @@
 
 
 
-void Particles_3D::Load_Particles_Data( struct parameters *P){
+void Particles_3D::Load_Particles_Data( struct parameters *P, struct Header &H){
   char filename[100];
   char timestep[20];
   int nfile = P->nfile; //output step you want to read from
@@ -57,7 +57,7 @@ void Particles_3D::Load_Particles_Data( struct parameters *P){
     exit(0);
   }
 
-  Load_Particles_Data_HDF5(file_id, nfile, P );
+  Load_Particles_Data_HDF5(file_id, nfile, P, H );
 
   #endif
 }
@@ -72,7 +72,7 @@ void Grid3D::WriteData_Particles( struct parameters P, int nfile)
 
 #ifdef HDF5
 
-void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct parameters *P  )
+void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct parameters *P, struct Header &H  )
 {
   int i, j, k, id, buf_id;
   hid_t     attribute_id, dataset_id;
@@ -220,6 +220,14 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     printf("   Tile Length:  %f \n", tile_length );
   }
   
+  #ifdef CUSTOM_DOMAIN_PFFT
+  Real xblocal_cholla, yblocal_cholla, zblocal_cholla;
+  xblocal_cholla = H.PFFT_Domain.xblocal_cholla;
+  yblocal_cholla = H.PFFT_Domain.yblocal_cholla;
+  zblocal_cholla = H.PFFT_Domain.zblocal_cholla;
+  
+  #endif
+  
   #endif
   
   chprintf( "Domain:\n");
@@ -256,22 +264,28 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     #ifdef TILED_INITIAL_CONDITIONS
     // Rescale the particles position to the global domain
     // Move the particles to their position in Local Domain
+    #ifdef CUSTOM_DOMAIN_PFFT
+    pPos_x += xblocal_cholla;
+    pPos_y += yblocal_cholla;
+    pPos_z += zblocal_cholla;    
+    #else    
     pPos_x += G.xMin;
     pPos_y += G.yMin;
     pPos_z += G.zMin;
     #endif
+    #endif
   
     in_local = true;
     if ( pPos_x < G.domainMin_x || pPos_x > G.domainMax_x ){
-      // std::cout << " Particle outside global domain " << std::endl;
+      std::cout << " Particle outside global domain " << std::endl;
       // continue;
     }
     if ( pPos_y < G.domainMin_y || pPos_y > G.domainMax_y ){
-      // std::cout << " Particle outside global domain " << std::endl;
+      std::cout << " Particle outside global domain " << std::endl;
       // continue;
     }
     if ( pPos_z < G.domainMin_z || pPos_z > G.domainMax_z ){
-      // std::cout << " Particle outside global domain " << std::endl;
+      std::cout << " Particle outside global domain " << std::endl;
       // continue;
     }
     if ( pPos_x < G.xMin || pPos_x >= G.xMax ) in_local = false;
