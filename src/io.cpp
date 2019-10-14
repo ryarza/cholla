@@ -2557,6 +2557,13 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     ny_local_start_pfft = H.PFFT_Domain.ny_local_start;
     nz_local_start_pfft = H.PFFT_Domain.nz_local_start;
     
+    int k_0, j_0, i_0;
+    int k_offset, j_offset, i_offset;
+    
+    k_offset = nz_local_start_pfft - nz_local_start_0;
+    j_offset = ny_local_start_pfft - ny_local_start_0;
+    i_offset = nx_local_start_pfft - nx_local_start_0;
+    
     if ( ( nx_0 != nx_pfft ) || ( ny_0 != ny_pfft ) || ( nz_0 != nz_pfft ) ){
       
       fflush(stdout);
@@ -2584,7 +2591,59 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       }
       
     }
+    
+    
+    // need a dataset buffer to remap fastest index
+    dataset_buffer = (Real *) malloc(nz_0*ny_0*nx_0*sizeof(Real));
+    // 
+    // 
+    // // Open the density dataset
+    // dataset_id = H5Dopen(file_id, "/density", H5P_DEFAULT);
+    // // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    // status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // // Free the dataset id
+    // status = H5Dclose(dataset_id);
+    // 
+    // 
+    // mean_l = 0;
+    // min_l = 1e65;
+    // max_l = -1;
+    // 
+    // // Copy the density array to the grid 
+    // for (k=0; k<nz_pfft; k++) {
+    //   for (j=0; j<ny_pfft; j++) {
+    //     for (i=0; i<nx_pfft; i++) {
+    // 
+    //       k_0 = 
+    //       j_0 = 
+    //       i_0 =
+    // 
+    //       id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+    //       buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+    //       C.density[id] = dataset_buffer[buf_id];
+    //       mean_l += C.density[id];
+    //       if ( C.density[id] > max_l ) max_l = C.density[id];
+    //       if ( C.density[id] < min_l ) min_l = C.density[id];
+    //     }
+    //   }
+    // }
+    // mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    // 
+    // #if MPI_CHOLLA
+    // mean_g = ReduceRealAvg( mean_l );
+    // max_g = ReduceRealMax( max_l );
+    // min_g = ReduceRealMin( min_l );
+    // mean_l = mean_g;
+    // max_l = max_g;
+    // min_l = min_g;
     // #endif
+    // 
+    // #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    // chprintf( " Density  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3] \n", mean_l, min_l, max_l );
+    // #endif
+    // 
+    // 
+    // 
     #else //CUSTOM_DOMAIN_PFFT
     
     // need a dataset buffer to remap fastest index
