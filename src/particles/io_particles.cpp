@@ -223,92 +223,92 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   #endif
   
   
-  
-
-
-  for( pIndx=0; pIndx<n_to_load; pIndx++ ){
-    pPos_x = dataset_buffer_px[pIndx];
-    pPos_y = dataset_buffer_py[pIndx];
-    pPos_z = dataset_buffer_pz[pIndx];
-    pVel_x = dataset_buffer_vx[pIndx];
-    pVel_y = dataset_buffer_vy[pIndx];
-    pVel_z = dataset_buffer_vz[pIndx];
-    #ifndef SINGLE_PARTICLE_MASS
-    pMass = dataset_buffer_m[pIndx];
-    #endif
-    #ifdef PARTICLE_IDS
-    pID = dataset_buffer_IDs[pIndx];
-    #endif
-    
-    #ifdef TILED_INITIAL_CONDITIONS
-    // Rescale the particles position to the global domain
-    // Move the particles to their position in Local Domain
-    pPos_x += G.xMin;
-    pPos_y += G.yMin;
-    pPos_z += G.zMin;
-    #endif
-    
-    in_local = true;
-    if ( pPos_x < G.domainMin_x || pPos_x > G.domainMax_x ){
-      std::cout << " Particle outside global domain " << std::endl;
-    }
-    if ( pPos_y < G.domainMin_y || pPos_y > G.domainMax_y ){
-      std::cout << " Particle outside global domain " << std::endl;
-    }
-    if ( pPos_z < G.domainMin_z || pPos_z > G.domainMax_z ){
-      std::cout << " Particle outside global domain " << std::endl;
-    }
-    if ( pPos_x < G.xMin || pPos_x >= G.xMax ) in_local = false;
-    if ( pPos_y < G.yMin || pPos_y >= G.yMax ) in_local = false;
-    if ( pPos_z < G.zMin || pPos_z >= G.zMax ) in_local = false;
-    // if ( ! in_local  ) {
-      // #ifdef PARTICLE_IDS
-      // std::cout << " Particle outside Loacal  domain    pID: " << pID << std::endl;
-      // #else
-      // std::cout << " Particle outside Loacal  domain " << std::endl;
-      // #endif
-      // std::cout << "  Domain X: " << G.xMin <<  "  " << G.xMax << std::endl;
-      // std::cout << "  Domain Y: " << G.yMin <<  "  " << G.yMax << std::endl;
-      // std::cout << "  Domain Z: " << G.zMin <<  "  " << G.zMax << std::endl;
-      // std::cout << "  Particle X: " << pPos_x << std::endl;
-      // std::cout << "  Particle Y: " << pPos_y << std::endl;
-      // std::cout << "  Particle Z: " << pPos_z << std::endl;
-      // continue;
-    // }
-    
-    if  ( pPos_x > px_max ) px_max = pPos_x;
-    if  ( pPos_y > py_max ) py_max = pPos_y;
-    if  ( pPos_z > pz_max ) pz_max = pPos_z;
-  
-    if  ( pPos_x < px_min ) px_min = pPos_x;
-    if  ( pPos_y < py_min ) py_min = pPos_y;
-    if  ( pPos_z < pz_min ) pz_min = pPos_z;
-  
-    if  ( pVel_x > vx_max ) vx_max = pVel_x;
-    if  ( pVel_y > vy_max ) vy_max = pVel_y;
-    if  ( pVel_z > vz_max ) vz_max = pVel_z;
-  
-    if  ( pVel_x < vx_min ) vx_min = pVel_x;
-    if  ( pVel_y < vy_min ) vy_min = pVel_y;
-    if  ( pVel_z < vz_min ) vz_min = pVel_z;
-  
-    pos_x.push_back( pPos_x );
-    pos_y.push_back( pPos_y );
-    pos_z.push_back( pPos_z );
-    vel_x.push_back( pVel_x );
-    vel_y.push_back( pVel_y );
-    vel_z.push_back( pVel_z );
-    grav_x.push_back( 0.0 );
-    grav_y.push_back( 0.0 );
-    grav_z.push_back( 0.0 );
-    #ifndef SINGLE_PARTICLE_MASS
-    mass.push_back( pMass );
-    #endif
-    #ifdef PARTICLE_IDS
-    partIDs.push_back(pID);
-    #endif
-    n_local += 1;
-  }
+  // 
+  // 
+  // 
+  // for( pIndx=0; pIndx<n_to_load; pIndx++ ){
+  //   pPos_x = dataset_buffer_px[pIndx];
+  //   pPos_y = dataset_buffer_py[pIndx];
+  //   pPos_z = dataset_buffer_pz[pIndx];
+  //   pVel_x = dataset_buffer_vx[pIndx];
+  //   pVel_y = dataset_buffer_vy[pIndx];
+  //   pVel_z = dataset_buffer_vz[pIndx];
+  //   #ifndef SINGLE_PARTICLE_MASS
+  //   pMass = dataset_buffer_m[pIndx];
+  //   #endif
+  //   #ifdef PARTICLE_IDS
+  //   pID = dataset_buffer_IDs[pIndx];
+  //   #endif
+  // 
+  //   #ifdef TILED_INITIAL_CONDITIONS
+  //   // Rescale the particles position to the global domain
+  //   // Move the particles to their position in Local Domain
+  //   pPos_x += G.xMin;
+  //   pPos_y += G.yMin;
+  //   pPos_z += G.zMin;
+  //   #endif
+  // 
+  //   in_local = true;
+  //   if ( pPos_x < G.domainMin_x || pPos_x > G.domainMax_x ){
+  //     std::cout << " Particle outside global domain " << std::endl;
+  //   }
+  //   if ( pPos_y < G.domainMin_y || pPos_y > G.domainMax_y ){
+  //     std::cout << " Particle outside global domain " << std::endl;
+  //   }
+  //   if ( pPos_z < G.domainMin_z || pPos_z > G.domainMax_z ){
+  //     std::cout << " Particle outside global domain " << std::endl;
+  //   }
+  //   if ( pPos_x < G.xMin || pPos_x >= G.xMax ) in_local = false;
+  //   if ( pPos_y < G.yMin || pPos_y >= G.yMax ) in_local = false;
+  //   if ( pPos_z < G.zMin || pPos_z >= G.zMax ) in_local = false;
+  //   // if ( ! in_local  ) {
+  //     // #ifdef PARTICLE_IDS
+  //     // std::cout << " Particle outside Loacal  domain    pID: " << pID << std::endl;
+  //     // #else
+  //     // std::cout << " Particle outside Loacal  domain " << std::endl;
+  //     // #endif
+  //     // std::cout << "  Domain X: " << G.xMin <<  "  " << G.xMax << std::endl;
+  //     // std::cout << "  Domain Y: " << G.yMin <<  "  " << G.yMax << std::endl;
+  //     // std::cout << "  Domain Z: " << G.zMin <<  "  " << G.zMax << std::endl;
+  //     // std::cout << "  Particle X: " << pPos_x << std::endl;
+  //     // std::cout << "  Particle Y: " << pPos_y << std::endl;
+  //     // std::cout << "  Particle Z: " << pPos_z << std::endl;
+  //     // continue;
+  //   // }
+  // 
+  //   if  ( pPos_x > px_max ) px_max = pPos_x;
+  //   if  ( pPos_y > py_max ) py_max = pPos_y;
+  //   if  ( pPos_z > pz_max ) pz_max = pPos_z;
+  // 
+  //   if  ( pPos_x < px_min ) px_min = pPos_x;
+  //   if  ( pPos_y < py_min ) py_min = pPos_y;
+  //   if  ( pPos_z < pz_min ) pz_min = pPos_z;
+  // 
+  //   if  ( pVel_x > vx_max ) vx_max = pVel_x;
+  //   if  ( pVel_y > vy_max ) vy_max = pVel_y;
+  //   if  ( pVel_z > vz_max ) vz_max = pVel_z;
+  // 
+  //   if  ( pVel_x < vx_min ) vx_min = pVel_x;
+  //   if  ( pVel_y < vy_min ) vy_min = pVel_y;
+  //   if  ( pVel_z < vz_min ) vz_min = pVel_z;
+  // 
+  //   pos_x.push_back( pPos_x );
+  //   pos_y.push_back( pPos_y );
+  //   pos_z.push_back( pPos_z );
+  //   vel_x.push_back( pVel_x );
+  //   vel_y.push_back( pVel_y );
+  //   vel_z.push_back( pVel_z );
+  //   grav_x.push_back( 0.0 );
+  //   grav_y.push_back( 0.0 );
+  //   grav_z.push_back( 0.0 );
+  //   #ifndef SINGLE_PARTICLE_MASS
+  //   mass.push_back( pMass );
+  //   #endif
+  //   #ifdef PARTICLE_IDS
+  //   partIDs.push_back(pID);
+  //   #endif
+  //   n_local += 1;
+  // }
   #ifndef MPI_CHOLLA
   chprintf( " Loaded  %ld  particles\n", n_local );
   #else
