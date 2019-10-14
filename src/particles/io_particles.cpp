@@ -292,9 +292,9 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
       // continue;
     // }
     
-    if ( pPos_x - Lx_local < G.xMin || pPos_x + Lx_local >= G.xMax ) double_include = true;
-    if ( pPos_y - Ly_local < G.yMin || pPos_y + Ly_local >= G.yMax ) double_include = true;
-    if ( pPos_z - Lz_local < G.zMin || pPos_z + Lz_local >= G.zMax ) double_include = true;
+    if ( pPos_x - Lx_local >= G.xMin || pPos_x + Lx_local < G.xMax ) double_include = true;
+    if ( pPos_y - Ly_local >= G.yMin || pPos_y + Ly_local < G.yMax ) double_include = true;
+    if ( pPos_z - Lz_local >= G.zMin || pPos_z + Lz_local < G.zMax ) double_include = true;
   
     if  ( pPos_x > px_max ) px_max = pPos_x;
     if  ( pPos_y > py_max ) py_max = pPos_y;
