@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
   
   // Set initial conditions and calculate first dt
   chprintf("Setting initial conditions...\n");
-  // G.Set_Initial_Conditions(P);
+  G.Set_Initial_Conditions(P);
   chprintf("Initial conditions set.\n");
   
   // set main variables for Read_Grid inital conditions
