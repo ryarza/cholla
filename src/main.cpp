@@ -99,13 +99,13 @@ int main(int argc, char *argv[])
   #endif
   
   #ifdef GRAVITY
-  G.Initialize_Gravity(&P);
+  G.Initialize_Gravity(&P, G.H);
   #endif
-  
+  exit(-1);
   #ifdef PARTICLES
   G.Initialize_Particles(&P);
   #endif
-  exit(-1);
+  
   #ifdef COSMOLOGY
   G.Initialize_Cosmology(&P);
   #endif

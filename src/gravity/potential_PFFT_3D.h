@@ -137,7 +137,7 @@ class Potential_PFFT_3D{
 
   Potential_PFFT_3D( void );
 
-  void Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y_min, Real z_min, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx, Real dy, Real dz );
+  void Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y_min, Real z_min, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx, Real dy, Real dz, struct Header &H );
   
   void AllocateMemory_CPU( void );
   void Reset( void );

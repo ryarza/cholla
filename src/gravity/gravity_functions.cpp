@@ -168,9 +168,9 @@ Real Grav3D::Get_Average_Density_function( int g_start, int g_end){
 
 
 
-void Grid3D::Initialize_Gravity( struct parameters *P ){
+void Grid3D::Initialize_Gravity( struct parameters *P, struct Header &H ){
   chprintf( "\nInitializing Gravity... \n");
-  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.dx, H.dy, H.dz, H.n_ghost_potential_offset  );
+  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.dx, H.dy, H.dz, H.n_ghost_potential_offset, H  );
   chprintf( "Gravity Successfully Initialized. \n\n");
   
   // #ifdef ONLY_PARTICLES

@@ -620,7 +620,7 @@ class Grid3D
 #endif /*MPI_CHOLLA*/
 
   #ifdef GRAVITY
-  void Initialize_Gravity( struct parameters *P );
+  void Initialize_Gravity( struct parameters *P, struct Header &H );
   void Compute_Gravitational_Potential( struct parameters *P );
   void Copy_Hydro_Density_to_Gravity_Function( int g_start, int g_end);
   void Copy_Hydro_Density_to_Gravity();
