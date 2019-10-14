@@ -214,11 +214,11 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   if ( fabs( Ly_local - tile_length ) / Ly_local > 1e-5  ) tile_length_difference = true;
   if ( fabs( Lz_local - tile_length ) / Lz_local > 1e-5  ) tile_length_difference = true;
   
-  if ( tile_length_difference ){
-    std::cout << "  WARNING: Local Domain Length Different to Tile Length " << std::endl;
-    printf("   Domain Length:  [ %f  %f  %f  ]\n", Lz_local, Ly_local, Lx_local );
-    printf("   Tile Length:  %f \n", tile_length );
-  }
+  // if ( tile_length_difference ){
+  //   std::cout << "  WARNING: Local Domain Length Different to Tile Length " << std::endl;
+  //   printf("   Domain Length:  [ %f  %f  %f  ]\n", Lz_local, Ly_local, Lx_local );
+  //   printf("   Tile Length:  %f \n", tile_length );
+  // }
   
   #ifdef CUSTOM_DOMAIN_PFFT
   Real xblocal_cholla, yblocal_cholla, zblocal_cholla;
@@ -226,7 +226,6 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   yblocal_cholla = H.PFFT_Domain.yblocal_cholla;
   zblocal_cholla = H.PFFT_Domain.zblocal_cholla;
   
-  #endif
   
   
   chprintf( "Domain:\n");
@@ -251,6 +250,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     MPI_Barrier(world);
   }
   
+  #endif
   #endif
   
   bool double_include;
