@@ -210,9 +210,9 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   chprintf("  N_Procs  Z: %d    Y: %d    X: %d  \n", nproc_z, nproc_y, nproc_x );
   
   bool tile_length_difference = false; 
-  if ( fabs( Lx_local - tile_length ) / Lx_local > 1e-2  ) tile_length_difference = true;
-  if ( fabs( Ly_local - tile_length ) / Ly_local > 1e-2  ) tile_length_difference = true;
-  if ( fabs( Lz_local - tile_length ) / Lz_local > 1e-2  ) tile_length_difference = true;
+  if ( fabs( Lx_local - tile_length ) / Lx_local > 1e-5  ) tile_length_difference = true;
+  if ( fabs( Ly_local - tile_length ) / Ly_local > 1e-5  ) tile_length_difference = true;
+  if ( fabs( Lz_local - tile_length ) / Lz_local > 1e-5  ) tile_length_difference = true;
   
   if ( tile_length_difference ){
     std::cout << "  WARNING: Local Domain Length Different to Tile Length " << std::endl;
