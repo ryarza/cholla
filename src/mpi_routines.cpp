@@ -909,12 +909,12 @@ void Set_Parallel_Domain(Real xmin_global, Real ymin_global, Real zmin_global, R
   }
   
   #if defined(GRAVITY) && defined(PFFT) && defined(CUSTOM_DOMAIN_PFFT)
-  H->PFFT_Domain.domlen_x_cholla = H->domlen_x;
-  H->PFFT_Domain.domlen_y_cholla = H->domlen_y;
-  H->PFFT_Domain.domlen_z_cholla = H->domlen_z;
-  H->PFFT_Domain.xblocal_cholla = H->xblocal;
-  H->PFFT_Domain.yblocal_cholla = H->yblocal;
-  H->PFFT_Domain.zblocal_cholla = H->zblocal;
+  H->PFFT_Domain.domlen_x_cholla = H->dx * H->PFFT_Domain.nx_local_cholla;
+  H->PFFT_Domain.domlen_y_cholla = H->dy * H->PFFT_Domain.ny_local_cholla;
+  H->PFFT_Domain.domlen_z_cholla = H->dz * H->PFFT_Domain.nz_local_cholla;
+  H->PFFT_Domain.xblocal_cholla = xmin_global + xlen_global * ((Real) H->PFFT_Domain.nx_local_start_cholla) / ((Real) nx_global );
+  H->PFFT_Domain.yblocal_cholla = ymin_global + ylen_global * ((Real) H->PFFT_Domain.ny_local_start_cholla) / ((Real) ny_global );
+  H->PFFT_Domain.zblocal_cholla = zmin_global + zlen_global * ((Real) H->PFFT_Domain.nz_local_start_cholla) / ((Real) nz_global ); 
   H->domlen_x = H->dx * nx_local;
   H->domlen_y = H->dy * ny_local;
   H->domlen_z = H->dz * nz_local;
