@@ -2610,9 +2610,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     max_l = -1;
     
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {
     
           k_0 = k - k_offset;
           j_0 = j - j_offset;
@@ -2627,8 +2627,8 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;
           
-    
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.density[id] = dataset_buffer[buf_id];
           C.density[id] = 13.4914;
@@ -2664,9 +2664,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     min_l = 1e65;
     max_l = -1;
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {    
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {    
           k_0 = k - k_offset;
           j_0 = j - j_offset;
           i_0 = i - i_offset;
@@ -2676,7 +2676,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( j_0 >= ny_0 ) j_0 -= ny_0;          
           if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;  
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.momentum_x[id] = dataset_buffer[buf_id];
           C.momentum_x[id] = 0;
@@ -2712,9 +2712,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     min_l = 1e65;
     max_l = -1;
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {    
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {    
           k_0 = k - k_offset;
           j_0 = j - j_offset;
           i_0 = i - i_offset;
@@ -2724,7 +2724,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( j_0 >= ny_0 ) j_0 -= ny_0;          
           if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;  
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.momentum_y[id] = dataset_buffer[buf_id];
           C.momentum_y[id] = 0;
@@ -2759,9 +2759,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     min_l = 1e65;
     max_l = -1;
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {    
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {    
           k_0 = k - k_offset;
           j_0 = j - j_offset;
           i_0 = i - i_offset;
@@ -2770,8 +2770,8 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( j_0 < 0 ) j_0 += ny_0;
           if ( j_0 >= ny_0 ) j_0 -= ny_0;          
           if ( k_0 < 0 ) k_0 += nz_0;
-          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.momentum_z[id] = dataset_buffer[buf_id];
           C.momentum_z[id] = 0;
@@ -2806,9 +2806,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     min_l = 1e65;
     max_l = -1;
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {    
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {    
           k_0 = k - k_offset;
           j_0 = j - j_offset;
           i_0 = i - i_offset;
@@ -2818,7 +2818,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( j_0 >= ny_0 ) j_0 -= ny_0;          
           if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;  
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.Energy[id] = dataset_buffer[buf_id];
           C.Energy[id] = 38.6787;
@@ -2858,9 +2858,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     min_l = 1e65;
     max_l = -1;
     // Copy the density array to the grid 
-    for (k=0; k<nz_pfft; k++) {
-      for (j=0; j<ny_pfft; j++) {
-        for (i=0; i<nx_pfft; i++) {    
+    for (k=0; k<H.nz_real; k++) {
+      for (j=0; j<H.ny_real; j++) {
+        for (i=0; i<H.nx_real; i++) {    
           k_0 = k - k_offset;
           j_0 = j - j_offset;
           i_0 = i - i_offset;
@@ -2870,7 +2870,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           if ( j_0 >= ny_0 ) j_0 -= ny_0;          
           if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;  
-          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx_real + (k+H.n_ghost)*H.nx_real*H.ny_real;
           buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
           C.GasEnergy[id] = dataset_buffer[buf_id];
           C.GasEnergy[id] = 38.6787;
