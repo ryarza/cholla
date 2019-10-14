@@ -2595,55 +2595,313 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     
     // need a dataset buffer to remap fastest index
     dataset_buffer = (Real *) malloc(nz_0*ny_0*nx_0*sizeof(Real));
-    // 
-    // 
-    // // Open the density dataset
-    // dataset_id = H5Dopen(file_id, "/density", H5P_DEFAULT);
-    // // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
-    // status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
-    // // Free the dataset id
-    // status = H5Dclose(dataset_id);
-    // 
-    // 
-    // mean_l = 0;
-    // min_l = 1e65;
-    // max_l = -1;
-    // 
-    // // Copy the density array to the grid 
-    // for (k=0; k<nz_pfft; k++) {
-    //   for (j=0; j<ny_pfft; j++) {
-    //     for (i=0; i<nx_pfft; i++) {
-    // 
-    //       k_0 = 
-    //       j_0 = 
-    //       i_0 =
-    // 
-    //       id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
-    //       buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
-    //       C.density[id] = dataset_buffer[buf_id];
-    //       mean_l += C.density[id];
-    //       if ( C.density[id] > max_l ) max_l = C.density[id];
-    //       if ( C.density[id] < min_l ) min_l = C.density[id];
-    //     }
-    //   }
-    // }
-    // mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
-    // 
-    // #if MPI_CHOLLA
-    // mean_g = ReduceRealAvg( mean_l );
-    // max_g = ReduceRealMax( max_l );
-    // min_g = ReduceRealMin( min_l );
-    // mean_l = mean_g;
-    // max_l = max_g;
-    // min_l = min_g;
-    // #endif
-    // 
-    // #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
-    // chprintf( " Density  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3] \n", mean_l, min_l, max_l );
-    // #endif
-    // 
-    // 
-    // 
+    
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/density", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    
+    
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {
+    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;
+                    
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;
+          
+    
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.density[id] = dataset_buffer[buf_id];
+          mean_l += C.density[id];
+          if ( C.density[id] > max_l ) max_l = C.density[id];
+          if ( C.density[id] < min_l ) min_l = C.density[id];
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    #endif
+    
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " Density  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3] \n", mean_l, min_l, max_l );
+    #endif
+    
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/momentum_x", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;          
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.momentum_x[id] = dataset_buffer[buf_id];
+          mean_l += C.momentum_x[id];
+          if ( C.momentum_x[id] > max_l ) max_l = C.momentum_x[id];
+          if ( C.momentum_x[id] < min_l ) min_l = C.momentum_x[id];
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    #endif
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " abs(Momentum X)  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3 km s^-1] \n", mean_l, min_l, max_l );
+    #endif
+    
+    
+    
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/momentum_y", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;          
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.momentum_y[id] = dataset_buffer[buf_id];
+          mean_l += C.momentum_y[id];
+          if ( C.momentum_y[id] > max_l ) max_l = C.momentum_y[id];
+          if ( C.momentum_y[id] < min_l ) min_l = C.momentum_y[id];
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    #endif
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " abs(Momentum Y)  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3 km s^-1] \n", mean_l, min_l, max_l );
+    #endif
+    
+    
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/momentum_z", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;          
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.momentum_z[id] = dataset_buffer[buf_id];
+          mean_l += C.momentum_z[id];
+          if ( C.momentum_z[id] > max_l ) max_l = C.momentum_z[id];
+          if ( C.momentum_z[id] < min_l ) min_l = C.momentum_z[id];
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    #endif
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " abs(Momentum Z)  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3 km s^-1] \n", mean_l, min_l, max_l );
+    #endif
+    
+    
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/Energy", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;          
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.Energy[id] = dataset_buffer[buf_id];
+          mean_l += C.Energy[id];
+          if ( C.Energy[id] > max_l ) max_l = C.Energy[id];
+          if ( C.Energy[id] < min_l ) min_l = C.Energy[id];
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    #endif
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " Energy  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3 km^2 s^-2 ] \n", mean_l, min_l, max_l );
+    #endif    
+
+    
+    // Open the density dataset
+    dataset_id = H5Dopen(file_id, "/GasEnergy", H5P_DEFAULT);
+    // Read the density array into the dataset buffer  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+    
+    Real temp, temp_max_l, temp_min_l, temp_mean_l;
+    Real temp_min_g, temp_max_g, temp_mean_g;
+    temp_mean_l = 0;
+    temp_min_l = 1e65;
+    temp_max_l = -1;
+    mean_l = 0;
+    min_l = 1e65;
+    max_l = -1;
+    // Copy the density array to the grid 
+    for (k=0; k<nz_pfft; k++) {
+      for (j=0; j<ny_pfft; j++) {
+        for (i=0; i<nx_pfft; i++) {    
+          k_0 = k - k_offset;
+          j_0 = j - j_offset;
+          i_0 = i - i_offset;
+          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 >= nx_0 ) i_0 -= ny_0;
+          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 >= ny_0 ) j_0 -= ny_0;          
+          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 >= nz_0 ) k_0 -= nz_0;  
+          id = (i+H.n_ghost) + (j+H.n_ghost)*nx_pfft + (k+H.n_ghost)*nx_pfft*ny_pfft;
+          buf_id = k_0 + j_0*nz_0 + i_0*nz_0*ny_0;
+          C.GasEnergy[id] = dataset_buffer[buf_id];
+          mean_l += C.GasEnergy[id];
+          if ( C.GasEnergy[id] > max_l ) max_l = C.GasEnergy[id];
+          if ( C.GasEnergy[id] < min_l ) min_l = C.GasEnergy[id];
+          temp = C.GasEnergy[id] / C.density[id] * ( gama - 1 ) * MP / KB * 1e10 ;
+          temp_mean_l += temp;
+          // chprintf( "%f\n", temp);
+          if ( temp > temp_max_l ) temp_max_l = temp;
+          if ( temp < temp_min_l ) temp_min_l = temp;
+        }
+      }
+    }
+    mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    temp_mean_l /= ( H.nz_real * H.ny_real * H.nx_real );
+    
+    #if MPI_CHOLLA
+    mean_g = ReduceRealAvg( mean_l );
+    max_g = ReduceRealMax( max_l );
+    min_g = ReduceRealMin( min_l );
+    mean_l = mean_g;
+    max_l = max_g;
+    min_l = min_g;
+    temp_mean_g = ReduceRealAvg( temp_mean_l );
+    temp_max_g = ReduceRealMax( temp_max_l );
+    temp_min_g = ReduceRealMin( temp_min_l );
+    temp_mean_l = temp_mean_g;
+    temp_max_l = temp_max_g;
+    temp_min_l = temp_min_g;
+    #endif
+    
+    #if defined(PRINT_INITIAL_STATS) && defined(COSMOLOGY) 
+    chprintf( " GasEnergy  Mean: %f   Min: %f   Max: %f      [ h^2 Msun kpc^-3 km^2 s^-2 ] \n", mean_l, min_l, max_l );
+    chprintf( " Temperature  Mean: %f   Min: %f   Max: %f      [ K ] \n", temp_mean_l, temp_min_l, temp_max_l );
+    #endif
+    
     #else //CUSTOM_DOMAIN_PFFT
     
     // need a dataset buffer to remap fastest index
