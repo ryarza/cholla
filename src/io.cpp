@@ -2618,13 +2618,13 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           j_0 = j - j_offset;
           i_0 = i - i_offset;
           
-          if ( i_0 < nx_0 ) i_0 += ny_0;
+          if ( i_0 < 0 ) i_0 += ny_0;
           if ( i_0 >= nx_0 ) i_0 -= ny_0;
           
-          if ( j_0 < ny_0 ) j_0 += ny_0;
+          if ( j_0 < 0 ) j_0 += ny_0;
           if ( j_0 >= ny_0 ) j_0 -= ny_0;
                     
-          if ( k_0 < nz_0 ) k_0 += nz_0;
+          if ( k_0 < 0 ) k_0 += nz_0;
           if ( k_0 >= nz_0 ) k_0 -= nz_0;
           
     
