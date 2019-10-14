@@ -234,11 +234,12 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   }
   
   
-  
+  bool double_include;
   
   
   
   for( pIndx=0; pIndx<n_to_load; pIndx++ ){
+    double_include = false;
     pPos_x = dataset_buffer_px[pIndx];
     pPos_y = dataset_buffer_py[pIndx];
     pPos_z = dataset_buffer_pz[pIndx];
@@ -290,6 +291,10 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
       // std::cout << "  Particle Z: " << pPos_z << std::endl;
       // continue;
     // }
+    
+    if ( pPos_x - Lx_local < G.xMin || pPos_x + Lx_local >= G.xMax ) double_include = true;
+    if ( pPos_y - Ly_local < G.yMin || pPos_y + Ly_local >= G.yMax ) double_include = true;
+    if ( pPos_z - Lz_local < G.zMin || pPos_z + Lz_local >= G.zMax ) double_include = true;
   
     if  ( pPos_x > px_max ) px_max = pPos_x;
     if  ( pPos_y > py_max ) py_max = pPos_y;
@@ -323,6 +328,26 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     partIDs.push_back(pID);
     #endif
     n_local += 1;
+    
+    if (double_include){
+      pos_x.push_back( pPos_x );
+      pos_y.push_back( pPos_y );
+      pos_z.push_back( pPos_z );
+      vel_x.push_back( pVel_x );
+      vel_y.push_back( pVel_y );
+      vel_z.push_back( pVel_z );
+      grav_x.push_back( 0.0 );
+      grav_y.push_back( 0.0 );
+      grav_z.push_back( 0.0 );
+      #ifndef SINGLE_PARTICLE_MASS
+      mass.push_back( pMass );
+      #endif
+      #ifdef PARTICLE_IDS
+      partIDs.push_back(pID);
+      #endif
+      n_local += 1;
+    }
+    
   }
   #ifndef MPI_CHOLLA
   chprintf( " Loaded  %ld  particles\n", n_local );
