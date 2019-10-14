@@ -264,20 +264,20 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     in_local = true;
     if ( pPos_x < G.domainMin_x || pPos_x > G.domainMax_x ){
       // std::cout << " Particle outside global domain " << std::endl;
-      continue;
+      // continue;
     }
     if ( pPos_y < G.domainMin_y || pPos_y > G.domainMax_y ){
       // std::cout << " Particle outside global domain " << std::endl;
-      continue;
+      // continue;
     }
     if ( pPos_z < G.domainMin_z || pPos_z > G.domainMax_z ){
       // std::cout << " Particle outside global domain " << std::endl;
-      continue;
+      // continue;
     }
     if ( pPos_x < G.xMin || pPos_x >= G.xMax ) in_local = false;
     if ( pPos_y < G.yMin || pPos_y >= G.yMax ) in_local = false;
     if ( pPos_z < G.zMin || pPos_z >= G.zMax ) in_local = false;
-    // if ( ! in_local  ) {
+    if ( ! in_local  ) {
       // #ifdef PARTICLE_IDS
       // std::cout << " Particle outside Loacal  domain    pID: " << pID << std::endl;
       // #else
@@ -289,8 +289,8 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
       // std::cout << "  Particle X: " << pPos_x << std::endl;
       // std::cout << "  Particle Y: " << pPos_y << std::endl;
       // std::cout << "  Particle Z: " << pPos_z << std::endl;
-      // continue;
-    // }
+      continue;
+    }
     
     // if ( pPos_x - Lx_local >= G.xMin || pPos_x + Lx_local < G.xMax ) double_include = true;
     // if ( pPos_y - Ly_local >= G.yMin || pPos_y + Ly_local < G.yMax ) double_include = true;
