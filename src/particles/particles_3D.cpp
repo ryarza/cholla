@@ -121,7 +121,7 @@ void Particles_3D::Initialize( struct parameters *P, Grav3D &Grav,  Real xbound,
   
   if (strcmp(P->init, "Zeldovich_Pancake")==0) Initialize_Zeldovich_Pancake( P );
   
-  if (strcmp(P->init, "Read_Grid")==0)  Load_Particles_Data(  P );
+  // if (strcmp(P->init, "Read_Grid")==0)  Load_Particles_Data(  P );
   
   #ifdef MPI_CHOLLA
   n_total_initial = ReducePartIntSum(n_local);
