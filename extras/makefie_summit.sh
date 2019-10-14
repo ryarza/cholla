@@ -153,10 +153,10 @@ NVINCL = $(INCL) $(CUDA_INCL)
 LIBS   = -lm $(HDF5_LIBS) $(CUDA_LIBS)
 
 ifeq ($(POISSON_SOLVER),-DPFFT)
-FFTW_INCL = -I/ccs/proj/ast149/code/fftw/include
-FFTW_LIBS = -L/ccs/proj/ast149/code/fftw/lib -lfftw3
-PFFT_INCL = -I/ccs/proj/ast149/code/pfft/include
-PFFT_LIBS = -L/ccs/proj/ast149/code/pfft/lib  -lpfft  -lfftw3_mpi -lfftw3
+FFTW_INCL = -I/ccs/proj/csc380/cholla/fom/code/fftw/include
+FFTW_LIBS = -L/ccs/proj/csc380/cholla/fom/code/fftw/lib -lfftw3
+PFFT_INCL = -I/ccs/proj/csc380/cholla/fom/code/pfft/include
+PFFT_LIBS = -L/ccs/proj/csc380/cholla/fom/code/pfft/lib  -lpfft  -lfftw3_mpi -lfftw3
 INCL += $(FFTW_INCL) $(PFFT_INCL)
 LIBS += $(FFTW_LIBS) $(PFFT_LIBS)
 endif
@@ -167,8 +167,8 @@ OUTPUT_TEMPERATURE = -DOUTPUT_TEMPERATURE
 OUTPUT_CHEMISTRY = -DOUTPUT_CHEMISTRY
 SCALAR = -DSCALAR
 N_OMP_THREADS_GRACKLE = -DN_OMP_THREADS_GRACKLE=12
-GRACKLE_INCL = -I/ccs/proj/ast149/code/grackle/include
-GRACKLE_LIBS = -L/ccs/proj/ast149/code/grackle/lib -lgrackle
+GRACKLE_INCL = -I/ccs/proj/csc380/cholla/fom/code/grackle/include
+GRACKLE_LIBS = -L/ccs/proj/csc380/cholla/fom/code/grackle/lib -lgrackle
 INCL += $(GRACKLE_INCL)
 LIBS += $(GRACKLE_LIBS)
 endif
