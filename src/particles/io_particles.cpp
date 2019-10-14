@@ -228,7 +228,6 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   
   #endif
   
-  #endif
   
   chprintf( "Domain:\n");
   for(int n=0; n<nproc; n++)
@@ -241,6 +240,18 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     MPI_Barrier(world);
   }
   
+  chprintf( "xblocal:\n");
+  for(int n=0; n<nproc; n++)
+  {
+    if(n==procID)
+    {
+      printf("procID %d [ %f  %f  %f  ] \n", procID, xblocal_cholla, yblocal_cholla, zblocal_cholla );
+    } 
+    fflush(stdout);
+    MPI_Barrier(world);
+  }
+  
+  #endif
   
   bool double_include;
   
@@ -277,16 +288,16 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   
     in_local = true;
     if ( pPos_x < G.domainMin_x || pPos_x > G.domainMax_x ){
-      std::cout << " Particle outside global domain: "<< pPos_x << " [ " << G.domainMin_x << " , " << G.domainMax_x << " ]" << std::endl;
+      // std::cout << " Particle outside global domain: "<< pPos_x << " [ " << G.domainMin_x << " , " << G.domainMax_x << " ]" << std::endl;
       
       // continue;
     }
     if ( pPos_y < G.domainMin_y || pPos_y > G.domainMax_y ){
-      std::cout << " Particle outside global domain: "<< pPos_y << " [ " << G.domainMin_y << " , " << G.domainMax_y << " ]" << std::endl;
+      // std::cout << " Particle outside global domain: "<< pPos_y << " [ " << G.domainMin_y << " , " << G.domainMax_y << " ]" << std::endl;
       // continue;
     }
     if ( pPos_z < G.domainMin_z || pPos_z > G.domainMax_z ){
-      std::cout << " Particle outside global domain: "<< pPos_z << " [ " << G.domainMin_z << " , " << G.domainMax_z << " ]" << std::endl;
+      // std::cout << " Particle outside global domain: "<< pPos_z << " [ " << G.domainMin_z << " , " << G.domainMax_z << " ]" << std::endl;
       // continue;
     }
     if ( pPos_x < G.xMin || pPos_x >= G.xMax ) in_local = false;
