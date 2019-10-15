@@ -304,8 +304,8 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
           usleep(50);
           MPI_Barrier(world);
         }
+        #endif
       }
-      #endif
       
       #endif
 
