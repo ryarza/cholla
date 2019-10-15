@@ -20,6 +20,8 @@
 #ifdef COSMOLOGY
 #include "cosmology/cosmology.h"
 #endif
+#include <unistd.h>
+
 
 using namespace std;
 
@@ -2551,10 +2553,10 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     
     
     #ifdef CUSTOM_DOMAIN_PFFT
-    int nx_0, ny_0, nz_0;
-    int nx_pfft, ny_pfft, nz_pfft;
-    int nx_local_start_0, ny_local_start_0, nz_local_start_0;
-    int nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft;
+    ptrdiff_t nx_0, ny_0, nz_0;
+    ptrdiff_t nx_pfft, ny_pfft, nz_pfft;
+    ptrdiff_t nx_local_start_0, ny_local_start_0, nz_local_start_0;
+    ptrdiff_t nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft;
     
     nx_0 = H.PFFT_Domain.nx_local_cholla;
     ny_0 = H.PFFT_Domain.ny_local_cholla;
@@ -2573,7 +2575,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     nz_local_start_pfft = H.PFFT_Domain.nz_local_start;
     
     int k_0, j_0, i_0;
-    int k_offset, j_offset, i_offset;
+    ptrdiff_t k_offset, j_offset, i_offset;
     
     k_offset = nz_local_start_pfft - nz_local_start_0;
     j_offset = ny_local_start_pfft - ny_local_start_0;
@@ -2591,6 +2593,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           printf("procID %d [ %d %d %d ] -> [ %d %d %d ] \n", procID, nx_0, ny_0, nz_0, nx_pfft, ny_pfft, nz_pfft);
         } 
         fflush(stdout);
+        usleep(50);
         MPI_Barrier(world);
       }
       
@@ -2602,6 +2605,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           printf("procID %d [ %d %d %d ] -> [ %d %d %d ] \n", procID, nx_local_start_0, ny_local_start_0, nz_local_start_0, nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft);
         } 
         fflush(stdout);
+        usleep(50);
         MPI_Barrier(world);
       }
       
