@@ -2592,6 +2592,19 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       
     }
     
+    fflush(stdout);
+    MPI_Barrier(world);
+    chprintf( "Local Size:\n");
+    for(int n=0; n<nproc; n++)
+    {
+      if(n==procID)
+      {
+        printf("procID %d [ %d %d %d ] \n", procID, H.nx_real, H.ny_real, H.nz_real);
+      } 
+      fflush(stdout);
+      MPI_Barrier(world);
+    }
+    
     
     // need a dataset buffer to remap fastest index
     dataset_buffer = (Real *) malloc(nz_0*ny_0*nx_0*sizeof(Real));
