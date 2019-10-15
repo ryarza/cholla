@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
   #ifdef GRAVITY
   G.Compute_Gravitational_Potential( &P);
   #endif
-  exit(-1);
+  // exit(-1);
   // set boundary conditions (assign appropriate values to ghost cells)
   chprintf("Setting boundary conditions...\n");
   G.Set_Boundary_Conditions_All(P);
