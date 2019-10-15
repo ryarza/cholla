@@ -253,11 +253,7 @@ void Grid3D::Copy_Hydro_Density_to_Gravity_Function( int g_start, int g_end){
         #endif
 
         #ifdef PARTICLES
-        #ifdef CUSTOM_DOMAIN_PFFT
-        Grav.F.density_h[id_grav] += 0; //Hydro density is added AFTER partices density
-        #else
         Grav.F.density_h[id_grav] += dens; //Hydro density is added AFTER partices density
-        #endif
         #else
         Grav.F.density_h[id_grav] = dens;
         #endif
