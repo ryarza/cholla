@@ -324,7 +324,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   
   
   for( pIndx=0; pIndx<n_to_load; pIndx++ ){
-    double_include = false;
+
     pPos_x = dataset_buffer_px[pIndx];
     pPos_y = dataset_buffer_py[pIndx];
     pPos_z = dataset_buffer_pz[pIndx];
