@@ -2593,8 +2593,8 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           printf("procID %d [ %ld %ld %ld ] -> [ %ld %ld %ld ] \n", procID, nx_0, ny_0, nz_0, nx_pfft, ny_pfft, nz_pfft);
         } 
         fflush(stdout);
-        usleep(50);
         MPI_Barrier(world);
+        usleep(100);
       }
       
       chprintf( "Start Index:\n");
@@ -2605,8 +2605,8 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
           printf("procID %d [ %ld %ld %ld ] -> [ %ld %ld %ld ] \n", procID, nx_local_start_0, ny_local_start_0, nz_local_start_0, nx_local_start_pfft, ny_local_start_pfft, nz_local_start_pfft);
         } 
         fflush(stdout);
-        usleep(50);
         MPI_Barrier(world);
+        usleep(100);
       }
       
     }
