@@ -258,7 +258,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   }
   
   
-  int k, j, i;
+  // int k, j, i;
   
   for( k=0; k<nz_local; k++){
     for( j=0; j<ny_local; j++){
