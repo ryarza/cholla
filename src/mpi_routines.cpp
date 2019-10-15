@@ -248,8 +248,23 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
 
       /* use a block decomposition */
       DomainDecompositionBLOCK(P, H, nx_gin, ny_gin, nz_gin);
-
+      
       #if defined(GRAVITY) && defined(PFFT) && defined(CUSTOM_DOMAIN_PFFT)
+      
+      fflush(stdout);
+      MPI_Barrier(world);
+      chprintf( " Cholla Local Size:\n");
+      for(int n=0; n<nproc; n++)
+      {
+        if(n==procID)
+        {
+          printf("procID %d [ %d %d %d ] \n", procID, nx_local, ny_local, nz_local);
+        } 
+        fflush(stdout);
+        usleep(50);
+        MPI_Barrier(world);
+      }
+      
       H->PFFT_Domain.INITIALIZED = false;
       H->PFFT_Domain.Initialize(P);
       H->PFFT_Domain.nx_local_cholla = nx_local;
