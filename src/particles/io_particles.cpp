@@ -16,7 +16,7 @@
 #ifdef MPI_CHOLLA
 #include"../mpi_routines.h"
 #endif
-
+#include <unistd.h>
 
 
 void Particles_3D::Load_Particles_Data( struct parameters *P, struct Header &H){
@@ -226,6 +226,11 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   yblocal_cholla = H.PFFT_Domain.yblocal_cholla;
   zblocal_cholla = H.PFFT_Domain.zblocal_cholla;
   
+  ptrdiff_t nx_local, ny_local, nz_local;
+  nx_local = H.PFFT_Domain.nx_local;
+  ny_local = H.PFFT_Domain.ny_local;
+  nz_local = H.PFFT_Domain.nz_local;
+  
   
   
   chprintf( "Domain:\n");
@@ -237,6 +242,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     } 
     fflush(stdout);
     MPI_Barrier(world);
+    usleep(100);
   }
   
   chprintf( "xblocal:\n");
@@ -248,11 +254,64 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     } 
     fflush(stdout);
     MPI_Barrier(world);
+    usleep(100);
   }
   
+  
+  int k, j, i;
+  
+  for( k=0; k<nz_local; k++){
+    for( j=0; j<ny_local; j++){
+      for( i=0; i<nx_local; i++){
+        
+        pPos_x = G.xMin + i*G.dx + 0.5*dx;
+        pPos_y = G.yMin + j*G.dy + 0.5*dy;
+        pPos_z = G.zMin + k*G.dz + 0.5*dz; 
+        
+        pVel_x = 0;
+        pVel_y = 0;
+        pVel_z = 0;
+        
+        if  ( pPos_x > px_max ) px_max = pPos_x;
+        if  ( pPos_y > py_max ) py_max = pPos_y;
+        if  ( pPos_z > pz_max ) pz_max = pPos_z;
+      
+        if  ( pPos_x < px_min ) px_min = pPos_x;
+        if  ( pPos_y < py_min ) py_min = pPos_y;
+        if  ( pPos_z < pz_min ) pz_min = pPos_z;
+      
+        if  ( pVel_x > vx_max ) vx_max = pVel_x;
+        if  ( pVel_y > vy_max ) vy_max = pVel_y;
+        if  ( pVel_z > vz_max ) vz_max = pVel_z;
+      
+        if  ( pVel_x < vx_min ) vx_min = pVel_x;
+        if  ( pVel_y < vy_min ) vy_min = pVel_y;
+        if  ( pVel_z < vz_min ) vz_min = pVel_z;
+      
+        pos_x.push_back( pPos_x );
+        pos_y.push_back( pPos_y );
+        pos_z.push_back( pPos_z );
+        vel_x.push_back( pVel_x );
+        vel_y.push_back( pVel_y );
+        vel_z.push_back( pVel_z );
+        grav_x.push_back( 0.0 );
+        grav_y.push_back( 0.0 );
+        grav_z.push_back( 0.0 );
+
+        n_local += 1;
+        
+        
+      }
+    }
+  }
+  
+  
   #endif
   #endif
   
+  
+  
+  #ifndef CUSTOM_DOMAIN_PFFT
   bool double_include;
   
   
@@ -472,6 +531,10 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     }
     
   }
+  
+  #endif //CUSTOM_DOMAIN_PFFT
+  
+  
   #ifndef MPI_CHOLLA
   chprintf( " Loaded  %ld  particles\n", n_local );
   #else
