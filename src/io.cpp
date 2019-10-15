@@ -2613,9 +2613,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
         usleep(100);
       }
       
+      #endif
     }
     
-    #endif
     
     // need a dataset buffer to remap fastest index
     dataset_buffer = (Real *) malloc(nz_0*ny_0*nx_0*sizeof(Real));
