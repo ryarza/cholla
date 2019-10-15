@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
   #ifdef GRAVITY
   G.Compute_Gravitational_Potential( &P);
   #endif
-
+  exit(-1);
   // set boundary conditions (assign appropriate values to ghost cells)
   chprintf("Setting boundary conditions...\n");
   G.Set_Boundary_Conditions_All(P);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
   #ifdef PARTICLES
   G.Get_Particles_Accelration();
   #endif
-  exit(-1);
+  
   chprintf("Dimensions of each cell: dx = %f dy = %f dz = %f\n", G.H.dx, G.H.dy, G.H.dz);
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
