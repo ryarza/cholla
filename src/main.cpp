@@ -105,11 +105,11 @@ int main(int argc, char *argv[])
   #ifdef PARTICLES
   G.Initialize_Particles(&P);
   #endif
-  exit(-1);
+  
   #ifdef COSMOLOGY
   G.Initialize_Cosmology(&P);
   #endif
-  
+  exit(-1);
   #ifdef COOLING_GRACKLE
   G.Initialize_Grackle(&P);
   #endif
