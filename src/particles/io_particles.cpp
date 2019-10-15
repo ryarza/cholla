@@ -232,7 +232,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   nz_local = H.PFFT_Domain.nz_local;
   
   
-  
+  #ifdef PRINT_PFFT_DOMAIN
   chprintf( "Domain:\n");
   for(int n=0; n<nproc; n++)
   {
@@ -256,6 +256,8 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     MPI_Barrier(world);
     usleep(100);
   }
+  #endif
+  
   
   
   // int k, j, i;

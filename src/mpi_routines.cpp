@@ -253,6 +253,9 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
       
       #if defined(GRAVITY) && defined(PFFT) && defined(CUSTOM_DOMAIN_PFFT)
       
+      
+      #ifdef PRINT_PFFT_DOMAIN
+      
       fflush(stdout);
       MPI_Barrier(world);
       chprintf( "Cholla Local Size:\n");
@@ -266,6 +269,8 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
         usleep(50);
         MPI_Barrier(world);
       }
+      
+      #endif
       
       H->PFFT_Domain.INITIALIZED = false;
       H->PFFT_Domain.Initialize(P);
@@ -285,6 +290,7 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
         ny_local_start = H->PFFT_Domain.ny_local_start;
         nz_local_start = H->PFFT_Domain.nz_local_start;
         
+        #ifdef PRINT_PFFT_DOMAIN
         fflush(stdout);
         MPI_Barrier(world);
         chprintf( "PFFT New Local Size:\n");
@@ -299,6 +305,8 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
           MPI_Barrier(world);
         }
       }
+      #endif
+      
       #endif
 
       break;

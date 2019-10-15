@@ -2537,7 +2537,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     Real mean_l, min_l, max_l;
     Real mean_g, min_g, max_g;
     
-    
+    #ifdef PRINT_PFFT_DOMAIN
     fflush(stdout);
     MPI_Barrier(world);
     chprintf( "Local Size:\n");
@@ -2551,6 +2551,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       MPI_Barrier(world);
     }
     
+    #endif
     
     #ifdef CUSTOM_DOMAIN_PFFT
     ptrdiff_t nx_0, ny_0, nz_0;
@@ -2583,6 +2584,9 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
     
     if ( ( nx_0 != nx_pfft ) || ( ny_0 != ny_pfft ) || ( nz_0 != nz_pfft ) ){
       
+      #ifdef PRINT_PFFT_DOMAIN
+      
+      
       fflush(stdout);
       MPI_Barrier(world);
       chprintf( "Local Size:\n");
@@ -2611,7 +2615,7 @@ void Grid3D::Read_Grid_HDF5(hid_t file_id, struct parameters P)
       
     }
     
-
+    #endif
     
     // need a dataset buffer to remap fastest index
     dataset_buffer = (Real *) malloc(nz_0*ny_0*nx_0*sizeof(Real));
