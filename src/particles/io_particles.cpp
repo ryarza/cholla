@@ -264,9 +264,9 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
     for( j=0; j<ny_local; j++){
       for( i=0; i<nx_local; i++){
         
-        pPos_x = G.xMin + i*G.dx + 0.5*dx;
-        pPos_y = G.yMin + j*G.dy + 0.5*dy;
-        pPos_z = G.zMin + k*G.dz + 0.5*dz; 
+        pPos_x = G.xMin + i*G.dx + 0.5*G.dx;
+        pPos_y = G.yMin + j*G.dy + 0.5*G.dy;
+        pPos_z = G.zMin + k*G.dz + 0.5*G.dz; 
         
         pVel_x = 0;
         pVel_y = 0;
