@@ -8,6 +8,8 @@
 #include "cuda_mpi_routines.h"
 #include "MPI_Comm_node.h"
 #include <iostream>
+#include <unistd.h>
+
 
 /*Global MPI Variables*/
 int procID; /*process rank*/
@@ -258,7 +260,7 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
       {
         if(n==procID)
         {
-          printf("procID %d [ %d %d %d ] \n", procID, nx_local, ny_local, nz_local);
+          printf("procID %d [ %ld %ld %ld ] \n", procID, nx_local, ny_local, nz_local);
         } 
         fflush(stdout);
         usleep(50);
