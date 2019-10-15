@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
   // initialize the grid
   G.Initialize(&P);
   chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
-  
+  exit(-1);
   // Set initial conditions and calculate first dt
   chprintf("Setting initial conditions...\n");
   G.Set_Initial_Conditions(P);
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
   #ifdef PARTICLES
   G.Initialize_Particles(&P);
   #endif
-  exit(-1);
+  
   #ifdef COSMOLOGY
   G.Initialize_Cosmology(&P);
   #endif
