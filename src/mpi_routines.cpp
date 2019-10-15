@@ -255,7 +255,7 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
       
       fflush(stdout);
       MPI_Barrier(world);
-      chprintf( " Cholla Local Size:\n");
+      chprintf( "Cholla Local Size:\n");
       for(int n=0; n<nproc; n++)
       {
         if(n==procID)
@@ -284,6 +284,20 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
         nx_local_start = H->PFFT_Domain.nx_local_start;
         ny_local_start = H->PFFT_Domain.ny_local_start;
         nz_local_start = H->PFFT_Domain.nz_local_start;
+        
+        fflush(stdout);
+        MPI_Barrier(world);
+        chprintf( "PFFT New Local Size:\n");
+        for(int n=0; n<nproc; n++)
+        {
+          if(n==procID)
+          {
+            printf("procID %d [ %ld %ld %ld ] -> [ %ld %ld %ld ] \n", procID, H->PFFT_Domain.nx_local_cholla, H->PFFT_Domain.ny_local_cholla, H->PFFT_Domain.nz_local_cholla, H->PFFT_Domain.nx_local, H->PFFT_Domain.ny_local, H->PFFT_Domain.nz_local);
+          } 
+          fflush(stdout);
+          usleep(50);
+          MPI_Barrier(world);
+        }
       }
       #endif
 

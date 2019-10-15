@@ -14,25 +14,25 @@
 class Domain_PFFT_3D{
   
   public:
-  int nx_total;
+  ptrdiff_t nx_total;
   int ny_total;
-  int nz_total;
+  ptrdiff_t nz_total;
   
-  int nx_local;
-  int ny_local;
-  int nz_local;
+  ptrdiff_t nx_local;
+  ptrdiff_t ny_local;
+  ptrdiff_t nz_local;
   
-  int nx_local_start;
-  int ny_local_start;
-  int nz_local_start;
+  ptrdiff_t nx_local_start;
+  ptrdiff_t ny_local_start;
+  ptrdiff_t nz_local_start;
 
-  int nx_local_cholla;
-  int ny_local_cholla;
-  int nz_local_cholla;
+  ptrdiff_t nx_local_cholla;
+  ptrdiff_t ny_local_cholla;
+  ptrdiff_t nz_local_cholla;
 
-  int nx_local_start_cholla;
-  int ny_local_start_cholla;
-  int nz_local_start_cholla;
+  ptrdiff_t nx_local_start_cholla;
+  ptrdiff_t ny_local_start_cholla;
+  ptrdiff_t nz_local_start_cholla;
   
   Real domlen_x_cholla;
   Real domlen_y_cholla;
