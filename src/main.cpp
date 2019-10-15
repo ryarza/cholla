@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   chprintf("Setting initial conditions...\n");
   G.Set_Initial_Conditions(P);
   chprintf("Initial conditions set.\n");
-  // exit(-1);  
+    
   // set main variables for Read_Grid inital conditions
   if (strcmp(P.init, "Read_Grid") == 0) {
     dti = C_cfl / G.H.dt;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
   #ifdef PARTICLES
   G.Initialize_Particles(&P);
   #endif
-  
+  exit(-1);
   #ifdef COSMOLOGY
   G.Initialize_Cosmology(&P);
   #endif
