@@ -17,6 +17,7 @@
 #include"../mpi_routines.h"
 #endif
 #include <unistd.h>
+#include "../random_functions.h"
 
 
 void Particles_3D::Load_Particles_Data( struct parameters *P, struct Header &H){
