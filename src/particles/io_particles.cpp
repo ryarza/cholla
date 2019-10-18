@@ -259,7 +259,7 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
   #endif
   
   
-  
+  Real vmax = 73.0; 
   // int k, j, i;
   
   for( k=0; k<nz_local; k++){
@@ -277,9 +277,9 @@ void Particles_3D::Load_Particles_Data_HDF5(hid_t file_id, int nfile, struct par
         if ( pPos_z < G.zMin || pPos_z >= G.zMax ) in_local = false;
         if ( ! in_local  ) printf("Particle outside local domain\n" ); 
         
-        pVel_x = 0;
-        pVel_y = 0;
-        pVel_z = 0;
+        pVel_x = Rand_Real( -vmax, vmax);
+        pVel_y = Rand_Real( -vmax, vmax);
+        pVel_z = Rand_Real( -vmax, vmax);
         
         if  ( pPos_x > px_max ) px_max = pPos_x;
         if  ( pPos_y > py_max ) py_max = pPos_y;
