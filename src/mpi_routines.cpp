@@ -536,7 +536,8 @@ void DomainDecompositionBLOCK(struct parameters *P, struct Header *H, int nx_gin
   // nproc_x = P->n_proc_x;
   // nproc_y = P->n_proc_y;
   // nproc_z = P->n_proc_z;
-  chprintf("Setting MPI grid: nx=%d  ny=%d  nz=%d\n", nproc_x, nproc_y, nproc_z);
+  // chprintf("Setting MPI grid: nx=%d  ny=%d  nz=%d\n", nproc_x, nproc_y, nproc_z);
+  chprintf("Setting MPI grid: nx=%d  ny=%d  nz=%d\n", P->n_proc_x, P->n_proc_y, P->n_proc_z);
   #endif
 
   //chprintf("Allocating tiling.\n");
