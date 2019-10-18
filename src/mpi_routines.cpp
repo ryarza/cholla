@@ -533,9 +533,9 @@ void DomainDecompositionBLOCK(struct parameters *P, struct Header *H, int nx_gin
   }
   
   #ifdef SET_MPI_GRID
-  nproc_x = P.n_proc_x;
-  nproc_y = P.n_proc_y;
-  nproc_z = P.n_proc_z;
+  nproc_x = P->n_proc_x;
+  nproc_y = P->n_proc_y;
+  nproc_z = P->n_proc_z;
   chprintf("Setting MPI grid: nx=%d  ny=%d  nz=%d\n", nproc_x, nproc_y, nproc_z);
   #endif
 
