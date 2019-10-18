@@ -233,6 +233,13 @@ struct parameters
 #ifdef TILED_INITIAL_CONDITIONS
   Real tile_length;
 #endif //TILED_INITIAL_CONDITIONS
+
+#ifdef SET_MPI_GRID
+  int n_proc_x;
+  int n_proc_y;
+  int n_proc_z;
+#endif
+
 };
 
 
