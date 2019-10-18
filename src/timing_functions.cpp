@@ -74,7 +74,7 @@ void Time::End_and_Record_Time( int time_var ){
     time_dt_min = t_min;
     time_dt_max = t_max;
     time_dt_mean = t_avg;
-    if (n_steps > 0) time_dt_all += t_avg;
+    if (n_steps > 0) time_dt_all += t_max;
   }
   #endif
 
@@ -83,27 +83,27 @@ void Time::End_and_Record_Time( int time_var ){
     time_hydro_min = t_min;
     time_hydro_max = t_max;
     time_hydro_mean = t_avg;
-    if (n_steps > 0) time_hydro_all += t_avg;
+    if (n_steps > 0) time_hydro_all += t_max;
   }
   if( time_var == 2 ){
     time_bound_min = t_min;
     time_bound_max = t_max;
     time_bound_mean = t_avg;
-    if (n_steps > 0) time_bound_all += t_avg;
+    if (n_steps > 0) time_bound_all += t_max;
   }
   #ifdef GRAVITY
   if( time_var == 3 ){
     time_potential_min = t_min;
     time_potential_max = t_max;
     time_potential_mean = t_avg;
-    if (n_steps > 0) time_potential_all += t_avg;
+    if (n_steps > 0) time_potential_all += t_max;
   }
 
   if( time_var == 9 ){
     time_bound_pot_min = t_min;
     time_bound_pot_max = t_max;
     time_bound_pot_mean = t_avg;
-    if (n_steps > 0) time_bound_pot_all += t_avg;
+    if (n_steps > 0) time_bound_pot_all += t_max;
   }
   #endif
   
@@ -112,35 +112,35 @@ void Time::End_and_Record_Time( int time_var ){
     time_part_dens_min = t_min;
     time_part_dens_max = t_max;
     time_part_dens_mean = t_avg;
-    if (n_steps > 0) time_part_dens_all += t_avg;
+    if (n_steps > 0) time_part_dens_all += t_max;
   }
 
   if( time_var == 5 ){
     time_part_dens_transf_min = t_min;
     time_part_dens_transf_max = t_max;
     time_part_dens_transf_mean = t_avg;
-    if (n_steps > 0) time_part_dens_transf_all += t_avg;
+    if (n_steps > 0) time_part_dens_transf_all += t_max;
   }
 
   if( time_var == 6 ){
     time_advance_particles_1_min = t_min;
     time_advance_particles_1_max = t_max;
     time_advance_particles_1_mean = t_avg;
-    if (n_steps > 0) time_advance_particles_1_all += t_avg;
+    if (n_steps > 0) time_advance_particles_1_all += t_max;
   }
 
   if( time_var == 7 ){
     time_advance_particles_2_min = t_min;
     time_advance_particles_2_max = t_max;
     time_advance_particles_2_mean = t_avg;
-    if (n_steps > 0) time_advance_particles_2_all += t_avg;
+    if (n_steps > 0) time_advance_particles_2_all += t_max;
   }
 
   if( time_var == 8 ){
     time_part_tranf_min = t_min;
     time_part_tranf_max = t_max;
     time_part_tranf_mean = t_avg;
-    if (n_steps > 0) time_part_tranf_all += t_avg;
+    if (n_steps > 0) time_part_tranf_all += t_max;
   }
   #endif
 
@@ -149,7 +149,7 @@ void Time::End_and_Record_Time( int time_var ){
     time_cooling_min = t_min;
     time_cooling_max = t_max;
     time_cooling_mean = t_avg;
-    if (n_steps > 0) time_cooling_all += t_avg;
+    if (n_steps > 0) time_cooling_all += t_max;
   }
   #endif
 }
