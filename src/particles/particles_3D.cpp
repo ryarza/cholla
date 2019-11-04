@@ -21,8 +21,7 @@ void Grid3D::Initialize_Particles( struct parameters *P ){
   chprintf( "\nInitializing Particles...\n");
   
   Particles.Initialize( P, Grav, H.xbound, H.ybound, H.zbound, H.xdglobal, H.ydglobal, H.zdglobal );
-  
-  if (strcmp(P->init, "Uniform")==0)  Initialize_Uniform_Particles();  
+   
   
   #ifdef MPI_CHOLLA
   MPI_Barrier( world );
@@ -117,6 +116,8 @@ void Particles_3D::Initialize( struct parameters *P, Grav3D &Grav,  Real xbound,
   Initialize_Grid_Values();
   
   // Initialize Particles
+  if (strcmp(P->init, "Uniform")==0)  Initialize_Uniform(); 
+  
   if (strcmp(P->init, "Spherical_Overdensity_3D")==0) Initialize_Sphere();
   
   if (strcmp(P->init, "Zeldovich_Pancake")==0) Initialize_Zeldovich_Pancake( P );
@@ -200,6 +201,15 @@ void Particles_3D::Initialize_Grid_Values( void ){
   }
 }
 
+
+void Particles_3D::Get_Position( int i, int j, int k, Real *x_pos, Real *y_pos, Real *z_pos){
+  /* position relative to local xyz bounds */
+  *x_pos = G.xMin + i*G.dx + 0.5*G.dx;
+  *y_pos = G.yMin + i*G.dy + 0.5*G.dy;
+  *z_pos = G.zMin + i*G.dz + 0.5*G.dz;
+}
+
+
 void Particles_3D::Initialize_Sphere( void ){
   int i, j, k, id;
   Real center_x, center_y, center_z, radius, sphereR;
@@ -266,57 +276,63 @@ void Particles_3D::Initialize_Zeldovich_Pancake( struct parameters *P ){
 
 
 
-void Grid3D::Initialize_Uniform_Particles(){
+void Particles_3D::Initialize_Uniform(){
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos;
   
   Real dVol, Mparticle;
-  dVol = H.dx * H.dy * H.dz;
+  dVol = G.dx * G.dy * G.dz;
   Mparticle = dVol;
 
   #ifdef SINGLE_PARTICLE_MASS
-  Particles.particle_mass = Mparticle;
+  #ifdef COSMOLOGY
+  particle_mass = 542835642.859666; 
+  chprintf( " Using Single mass for DM particles: %f  Msun/h\n", particle_mass);
+  #else
+  particle_mass = Mparticle;
+  #endif
   #endif
   
+  
   part_int_t pID = 0;
-  for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
-    for (j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
-      for (i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
-        id = i + j*H.nx + k*H.nx*H.ny;
+  for (k=0; k<G.nz_local; k++) {
+    for (j=0; j<G.ny_local; j++) {
+      for (i=0; i<G.nx_local; i++) {
+        id = i + j*G.nx_local + k*G.nx_local*G.ny_local;
 
         // // get the centered cell positions at (i,j,k)
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
         
-        Particles.pos_x.push_back( x_pos - 0.25*H.dx );
-        Particles.pos_y.push_back( y_pos - 0.25*H.dy );
-        Particles.pos_z.push_back( z_pos - 0.25*H.dz );
-        Particles.vel_x.push_back( 0.0 );
-        Particles.vel_y.push_back( 0.0 );
-        Particles.vel_z.push_back( 0.0 );
-        Particles.grav_x.push_back( 0.0 );
-        Particles.grav_y.push_back( 0.0 );
-        Particles.grav_z.push_back( 0.0 );
+        pos_x.push_back( x_pos  );
+        pos_y.push_back( y_pos  );
+        pos_z.push_back( z_pos  );
+        vel_x.push_back( 0.0 );
+        vel_y.push_back( 0.0 );
+        vel_z.push_back( 0.0 );
+        grav_x.push_back( 0.0 );
+        grav_y.push_back( 0.0 );
+        grav_z.push_back( 0.0 );
         #ifdef PARTICLE_IDS
-        Particles.partIDs.push_back( pID );
+        partIDs.push_back( pID );
         #endif
         #ifndef SINGLE_PARTICLE_MASS
-        Particles.mass.push_back( Mparticle );
+        mass.push_back( Mparticle );
         #endif
         pID += 1;        
       }
     }
   }
   
-  Particles.n_local = Particles.pos_x.size();
+  n_local = pos_x.size();
   
   #ifdef MPI_CHOLLA
-  Particles.n_total_initial = ReducePartIntSum(Particles.n_local);
+  n_total_initial = ReducePartIntSum(n_local);
   #else
-  Particles.n_total_initial = Particles.n_local;
+  n_total_initial = n_local;
   #endif
 
-  chprintf( " Particles Uniform Grid Initialized, n_local: %lu, n_total: %lu\n", Particles.n_local, Particles.n_total_initial );
+  chprintf( " Particles Uniform Grid Initialized, n_local: %lu, n_total: %lu\n", n_local, n_total_initial );
 }
 
 

@@ -1106,6 +1106,31 @@ void Grid3D::Spherical_Overdensity_3D()
 void Grid3D::Uniform_Grid()
 {
   chprintf( " Initializing Uniform Grid\n");
+  
+  Real dens, vx, vy, vz, U;
+  dens = 13.489168;
+  vx = 0;
+  vy = 0;
+  vz = 0;
+  U = 38.656069;
+  
+  #ifdef COOLING_GRACKLE
+  Real HI_frac = INITIAL_FRACTION_HI;
+  Real HII_frac = INITIAL_FRACTION_HII;
+  Real HeI_frac = INITIAL_FRACTION_HEI;
+  Real HeII_frac = INITIAL_FRACTION_HEII;
+  Real HeIII_frac = INITIAL_FRACTION_HEIII;
+  Real e_frac = INITIAL_FRACTION_ELECTRON;
+  Real metal_frac = INITIAL_FRACTION_METAL;
+  chprintf( " Initial HI Fraction:    %e \n", HI_frac);
+  chprintf( " Initial HII Fraction:   %e \n", HII_frac);
+  chprintf( " Initial HeI Fraction:   %e \n", HeI_frac);
+  chprintf( " Initial HeII Fraction:  %e \n", HeII_frac);
+  chprintf( " Initial HeIII Fraction: %e \n", HeIII_frac);
+  chprintf( " Initial elect Fraction: %e \n", e_frac);
+  chprintf( " Initial metal Fraction: %e \n", metal_frac);
+  #endif
+  
   int i, j, k, id;
   // set the initial values of the conserved variables
   for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
@@ -1113,16 +1138,26 @@ void Grid3D::Uniform_Grid()
       for (i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
         id = i + j*H.nx + k*H.nx*H.ny;
 
-        C.density[id] = 0;
-        C.momentum_x[id] = 0;
-        C.momentum_y[id] = 0;
-        C.momentum_z[id] = 0;
-        C.Energy[id] = 0;
+        C.density[id] = dens;
+        C.momentum_x[id] = dens * vx;
+        C.momentum_y[id] = dens * vy;
+        C.momentum_z[id] = dens * vz;
+        C.Energy[id] = 0.5 * dens * ( vx*vx + vy*vy + vz*vz ) + U;
 
         #ifdef DE
-        C.GasEnergy[id] = 0;
+        C.GasEnergy[id] = U;
         #endif
-      }
+        
+        #ifdef COOLING_GRACKLE
+        C.scalar[0*H.n_cells + id] = HI_frac * dens;
+        C.scalar[1*H.n_cells + id] = HII_frac * dens;
+        C.scalar[2*H.n_cells + id] = HeI_frac * dens;
+        C.scalar[3*H.n_cells + id] = HeII_frac * dens;
+        C.scalar[4*H.n_cells + id] = HeIII_frac * dens;
+        C.scalar[5*H.n_cells + id] = e_frac * dens;
+        C.scalar[6*H.n_cells + id] = metal_frac * dens;
+        #endif
+      }      
     }
   }
 }

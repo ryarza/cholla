@@ -133,6 +133,8 @@ class Particles_3D
   
   void Initialize_Grid_Values();
   
+  void Initialize_Uniform();
+  
   void Initialize_Sphere();
   
   void Initialize_Zeldovich_Pancake( struct parameters *P );
@@ -146,6 +148,8 @@ class Particles_3D
   void Clear_Density();
   
   void Get_Density_CIC_Serial( );
+  
+  void Get_Position(int i, int j, int k, Real *x_pos, Real *y_pos, Real *z_pos);
   
   #ifdef HDF5
   void Load_Particles_Data_HDF5( hid_t file_id, int nfile, struct parameters *P );
