@@ -248,6 +248,64 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
 
       /* use a block decomposition */
       DomainDecompositionBLOCK(P, H, nx_gin, ny_gin, nz_gin);
+      
+      #if defined(GRAVITY) && defined(PFFT) && defined(CUSTOM_DOMAIN_PFFT)
+      
+      
+      #ifdef PRINT_PFFT_DOMAIN
+      
+      fflush(stdout);
+      MPI_Barrier(world);
+      chprintf( "Cholla Local Size:\n");
+      for(int n=0; n<nproc; n++)
+      {
+        if(n==procID)
+        {
+          printf("procID %d [ %ld %ld %ld ] \n", procID, nx_local, ny_local, nz_local);
+        } 
+        fflush(stdout);
+        usleep(50);
+        MPI_Barrier(world);
+      }
+      
+      #endif
+      
+      H->PFFT_Domain.INITIALIZED = false;
+      H->PFFT_Domain.Initialize(P);
+      H->PFFT_Domain.nx_local_cholla = nx_local;
+      H->PFFT_Domain.ny_local_cholla = ny_local;
+      H->PFFT_Domain.nz_local_cholla = nz_local;
+      H->PFFT_Domain.nx_local_start_cholla = nx_local_start;
+      H->PFFT_Domain.ny_local_start_cholla = ny_local_start;
+      H->PFFT_Domain.nz_local_start_cholla = nz_local_start;
+      if ( H->PFFT_Domain.nx_local != nx_local ||  H->PFFT_Domain.ny_local != ny_local ||  H->PFFT_Domain.nz_local != nz_local ){
+        chprintf(" WARNING: PFFT domain is not the same as Cholla domain\n");
+        chprintf(" WARNING: Changing Cholla domain to match PFFT domain\n");
+        nx_local = H->PFFT_Domain.nx_local;
+        ny_local = H->PFFT_Domain.ny_local;
+        nz_local = H->PFFT_Domain.nz_local;  
+        nx_local_start = H->PFFT_Domain.nx_local_start;
+        ny_local_start = H->PFFT_Domain.ny_local_start;
+        nz_local_start = H->PFFT_Domain.nz_local_start;
+        
+        #ifdef PRINT_PFFT_DOMAIN
+        fflush(stdout);
+        MPI_Barrier(world);
+        chprintf( "PFFT New Local Size:\n");
+        for(int n=0; n<nproc; n++)
+        {
+          if(n==procID)
+          {
+            printf("procID %d [ %ld %ld %ld ] -> [ %ld %ld %ld ] \n", procID, H->PFFT_Domain.nx_local_cholla, H->PFFT_Domain.ny_local_cholla, H->PFFT_Domain.nz_local_cholla, H->PFFT_Domain.nx_local, H->PFFT_Domain.ny_local, H->PFFT_Domain.nz_local);
+          } 
+          fflush(stdout);
+          usleep(50);
+          MPI_Barrier(world);
+        }
+        #endif
+      }
+      
+      #endif
 
       break;
 
@@ -885,6 +943,22 @@ void Set_Parallel_Domain(Real xmin_global, Real ymin_global, Real zmin_global, R
     H->dy = H->domlen_y / (H->ny - 2*H->n_ghost);
     H->dz = H->domlen_z / (H->nz - 2*H->n_ghost);
   }
+  
+  #if defined(GRAVITY) && defined(PFFT) && defined(CUSTOM_DOMAIN_PFFT)
+  H->PFFT_Domain.domlen_x_cholla = H->dx * H->PFFT_Domain.nx_local_cholla;
+  H->PFFT_Domain.domlen_y_cholla = H->dy * H->PFFT_Domain.ny_local_cholla;
+  H->PFFT_Domain.domlen_z_cholla = H->dz * H->PFFT_Domain.nz_local_cholla;
+  H->PFFT_Domain.xblocal_cholla = xmin_global + xlen_global * ((Real) H->PFFT_Domain.nx_local_start_cholla) / ((Real) nx_global );
+  H->PFFT_Domain.yblocal_cholla = ymin_global + ylen_global * ((Real) H->PFFT_Domain.ny_local_start_cholla) / ((Real) ny_global );
+  H->PFFT_Domain.zblocal_cholla = zmin_global + zlen_global * ((Real) H->PFFT_Domain.nz_local_start_cholla) / ((Real) nz_global ); 
+  H->domlen_x = H->dx * nx_local;
+  H->domlen_y = H->dy * ny_local;
+  H->domlen_z = H->dz * nz_local;
+  H->xblocal = H->xbound + H->dx * nx_local_start;
+  H->yblocal = H->ybound + H->dy * ny_local_start;
+  H->zblocal = H->zbound + H->dz * nz_local_start;
+  #endif
+
 
   /* make sure the domain is properly set for this decomposition*/
   if(pd_flag==0)

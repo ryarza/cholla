@@ -4,10 +4,81 @@
 #include "potential_PFFT_3D.h"
 #include<iostream>
 #include "../io.h"
+#include <unistd.h>
+
+
+
+Domain_PFFT_3D::Domain_PFFT_3D(void){}
+
+void Domain_PFFT_3D::Initialize( struct parameters *P){
+  
+  nproc_pfft = nproc;
+  chprintf("Initializing PFFT:  %d processes\n", nproc_pfft );
+  pfft_init();
+  
+  nprocs_grid_pfft[0] = nproc_z;
+  nprocs_grid_pfft[1] = nproc_y;
+  nprocs_grid_pfft[2] = nproc_x;
+  
+  n_pfft[0] = P->nz;
+  n_pfft[1] = P->ny;
+  n_pfft[2] = P->nx;
+  
+  
+  // /* Create 3-dimensional process grid of size np_pfft[0] x np_pfft[1] x np_pfft[2] */
+  pfft_create_procmesh(3, MPI_COMM_WORLD, nprocs_grid_pfft, &comm_pfft);
+  MPI_Comm_rank( comm_pfft, &procID_pfft );
+  MPI_Cart_coords( comm_pfft, procID_pfft, 3, pcoords_pfft);
+  
+  for (int i=0; i<nproc; i++){
+    if ( procID == i )    printf(" ProcID: %d  Proc Coords: [ %d %d %d] \n", procID_pfft, pcoords_pfft[0], pcoords_pfft[1], pcoords_pfft[2] );
+    usleep(50);
+    MPI_Barrier(world);
+  }
+  
+  /* Get parameters of data distribution */
+  alloc_local_fwd = pfft_local_size_dft_r2c_3d(
+      n_pfft, comm_pfft, PFFT_TRANSPOSED_OUT ,
+      local_n_in_pfft, local_in_start_pfft, local_n_transform_fwd_pfft, local_transform_fwd_start_pfft);
+  
+  alloc_local_bwd = pfft_local_size_dft_c2r_3d(
+      n_pfft, comm_pfft, PFFT_TRANSPOSED_IN ,
+      local_n_transform_bwd_pfft, local_transform_bwd_start_pfft, local_n_out_pfft, local_out_start_pfft);
+      
+  //Check the dimensions of the input and the transform are the same
+  bool domain_error = false;
+  for (int i=0; i<3; i++ ){
+    if ( local_n_in_pfft[i] != local_n_out_pfft[i]) domain_error = true;
+    if ( local_in_start_pfft[i] != local_out_start_pfft[i]) domain_error = true;
+    if ( local_n_transform_fwd_pfft[i] != local_n_transform_bwd_pfft[i]) domain_error = true;
+    if ( local_transform_fwd_start_pfft[i] != local_transform_bwd_start_pfft[i]) domain_error = true;
+  }
+  if ( domain_error ){
+    printf("PFFT: FFT doamin error \n" );
+    exit(-1);
+  }
+      
+  nx_local = local_n_in_pfft[2];
+  ny_local = local_n_in_pfft[1];
+  nz_local = local_n_in_pfft[0];    
+  
+  nx_local_start = local_in_start_pfft[2];
+  ny_local_start = local_in_start_pfft[1];
+  nz_local_start = local_in_start_pfft[0];
+  
+  chprintf(" PFFT process: nx:%d ny:%d nz:%d \n", nprocs_grid_pfft[2], nprocs_grid_pfft[1], nprocs_grid_pfft[0]);
+  chprintf(" PFFT cells:   nx:%d ny:%d nz:%d \n", n_pfft[2], n_pfft[1], n_pfft[0]);
+  chprintf(" PFFT local:   nx:%d ny:%d nz:%d \n", nx_local, ny_local, nz_local );
+  
+  INITIALIZED = true;
+  
+  
+}
+
 
 Potential_PFFT_3D::Potential_PFFT_3D( void ){}
 
-void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y_min, Real z_min, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real){
+void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y_min, Real z_min, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real, struct Header &H){
 
   Lbox_x = Lx;
   Lbox_y = Ly;
@@ -37,6 +108,45 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
   chprintf( " Using Poisson Solver: PFFT\n");
 
   nproc_pfft = nproc;
+  
+  
+  #ifdef CUSTOM_DOMAIN_PFFT
+  if (H.PFFT_Domain.INITIALIZED){
+    chprintf(" PFFT Initialized:  %d processes\n", nproc_pfft );
+    
+    chprintf( "  PFFT: L[ %f %f %f ] N_local[ %d %d %d ] dx[ %f %f %f ]\n", Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local, dx, dy, dz );
+    
+    nprocs_grid_pfft[0] = nproc_z;
+    nprocs_grid_pfft[1] = nproc_y;
+    nprocs_grid_pfft[2] = nproc_x;
+
+    n_pfft[0] = nz_total;
+    n_pfft[1] = ny_total;
+    n_pfft[2] = nx_total;
+    
+    // /* Create 3-dimensional process grid of size np_pfft[0] x np_pfft[1] x np_pfft[2] */
+    pfft_create_procmesh(3, MPI_COMM_WORLD, nprocs_grid_pfft, &comm_pfft);
+    MPI_Comm_rank( comm_pfft, &procID_pfft );
+    MPI_Cart_coords( comm_pfft, procID_pfft, 3, pcoords_pfft);
+    
+    /* Get parameters of data distribution */
+    alloc_local = pfft_local_size_dft_r2c_3d(
+        n_pfft, comm_pfft, PFFT_TRANSPOSED_OUT ,
+        local_ni_pfft, local_i_start_pfft, local_ntrans_pfft, local_trans_start_pfft);
+
+    chprintf("  PFFT process: nx:%d ny:%d nz:%d \n", nprocs_grid_pfft[2], nprocs_grid_pfft[1], nprocs_grid_pfft[0]);
+    chprintf("  PFFT cells:   nx:%d ny:%d nz:%d \n", n_pfft[2], n_pfft[1], n_pfft[0]);
+    chprintf("  PFFT local:   nx:%d ny:%d nz:%d \n", local_ni_pfft[2], local_ni_pfft[1], local_ni_pfft[0] );
+  
+    // 
+    // local_ni_pfft[2] = H.PFFT_Domain.nx_local; 
+    // local_ni_pfft[1] = H.PFFT_Domain.ny_local;
+    // local_ni_pfft[0] = H.PFFT_Domain.nz_local;
+    // 
+    // local_i_start_pfft[2]
+    
+  }
+  #else
 
   chprintf(" Initializing PFFT:  %d processes\n", nproc_pfft );
   pfft_init();
@@ -64,6 +174,8 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
   chprintf("  PFFT process: nx:%d ny:%d nz:%d \n", nprocs_grid_pfft[2], nprocs_grid_pfft[1], nprocs_grid_pfft[0]);
   chprintf("  PFFT cells:   nx:%d ny:%d nz:%d \n", n_pfft[2], n_pfft[1], n_pfft[0]);
   chprintf("  PFFT local:   nx:%d ny:%d nz:%d \n", local_ni_pfft[2], local_ni_pfft[1], local_ni_pfft[0] );
+  
+  #endif
   
   if ( local_ni_pfft[2] != nx_local ||  local_ni_pfft[1] != ny_local ||  local_ni_pfft[0] != nz_local ){
     std::cout << " ERROR: PFFT domain is not the same as Cholla domain\n" << std::endl;
