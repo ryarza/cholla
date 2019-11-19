@@ -1,6 +1,8 @@
 #ifdef GRAVITY
 #ifdef PFFT
 
+#define PRINT_PFFT_DOMAIN
+
 #include "potential_PFFT_3D.h"
 #include<iostream>
 #include "../io.h"
@@ -57,30 +59,57 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
   MPI_Comm_rank( comm_pfft, &procID_pfft );
   MPI_Cart_coords( comm_pfft, procID_pfft, 3, pcoords_pfft);
   
+
   /* Get parameters of data distribution */
-  alloc_local = pfft_local_size_dft_r2c_3d(
+  alloc_local_fwd = pfft_local_size_dft_r2c_3d(
       n_pfft, comm_pfft, PFFT_TRANSPOSED_OUT ,
-      local_ni_pfft, local_i_start_pfft, local_ntrans_pfft, local_trans_start_pfft);
+      local_n_in_pfft, local_in_start_pfft, local_n_transform_fwd_pfft, local_transform_fwd_start_pfft);
+    
+  alloc_local_bwd = pfft_local_size_dft_c2r_3d(
+    n_pfft, comm_pfft, PFFT_TRANSPOSED_IN ,
+    local_n_transform_bwd_pfft, local_transform_bwd_start_pfft, local_n_out_pfft, local_out_start_pfft);
+  
+  
+  if ( alloc_local_fwd != alloc_local_bwd ){
+    chprintf( "PFFT ERROR: FWD and BWD FFTs  allocation sizes are different \n");
+    exit(-1);
+  }
+  
+  int FFT_size_error = 0;
+  for ( int i=0; i<3; i++ ){
+    if ( local_n_in_pfft[i] != local_n_out_pfft[i] ) FFT_size_error = 1;
+    if ( local_n_transform_fwd_pfft[i] != local_n_transform_bwd_pfft[i] ) FFT_size_error = 2;
+    if ( local_transform_fwd_start_pfft[i] != local_transform_bwd_start_pfft[i] ) FFT_size_error = 3;
+  }
+  
+  if ( FFT_size_error > 0 ){
+    if ( FFT_size_error == 1 ) chprintf( " PFFT ERROR: FWD and BWD FFTs sizes are different");
+    if ( FFT_size_error == 2 ) chprintf( " PFFT ERROR: FWD and BWD FFTs sizes are different");
+    if ( FFT_size_error == 3 ) chprintf( " PFFT ERROR: FWD and BWD FFTs start index are different");
+    exit(-1);
+  }
 
   chprintf("  PFFT process: nx:%d ny:%d nz:%d \n", nprocs_grid_pfft[2], nprocs_grid_pfft[1], nprocs_grid_pfft[0]);
   chprintf("  PFFT cells:   nx:%d ny:%d nz:%d \n", n_pfft[2], n_pfft[1], n_pfft[0]);
-  chprintf("  PFFT local:   nx:%d ny:%d nz:%d \n", local_ni_pfft[2], local_ni_pfft[1], local_ni_pfft[0] );
+  chprintf("  PFFT local:   nx:%d ny:%d nz:%d \n", local_n_in_pfft[2], local_n_in_pfft[1], local_n_in_pfft[0] );
   
-  if ( local_ni_pfft[2] != nx_local ||  local_ni_pfft[1] != ny_local ||  local_ni_pfft[0] != nz_local ){
+  if ( local_n_in_pfft[2] != nx_local ||  local_n_in_pfft[1] != ny_local ||  local_n_in_pfft[0] != nz_local ){
     std::cout << " ERROR: PFFT domain is not the same as Cholla domain\n" << std::endl;
-    std::cout << " PFFT   Domain: [ " << local_ni_pfft[2] << " , " << local_ni_pfft[1] << " , " << local_ni_pfft[0] << " ]" << std::endl;
+    std::cout << " PFFT   Domain: [ " << local_n_in_pfft[2] << " , " << local_n_in_pfft[1] << " , " << local_n_in_pfft[0] << " ]" << std::endl;
     std::cout << " Cholla Domain: [ " << nx_local << " , " << ny_local << " , " << nz_local << " ]" << std::endl;  
     exit(-1);
   }
   
+  #ifdef PRINT_PFFT_DOMAIN
   for ( int i=0; i<nproc; i++ ){
     if (procID_pfft == i ){
-      printf( "Proc: %d %d -> \n", procID_pfft, procID);
+      printf( "Proc: %d %d -> [ %ld %ld %ld ] [ %ld %ld %ld ] \n", procID_pfft, procID, local_n_transform_fwd_pfft[0], local_n_transform_fwd_pfft[1], local_n_transform_fwd_pfft[2], local_transform_fwd_start_pfft[0], local_transform_fwd_start_pfft[1], local_transform_fwd_start_pfft[2] );
       
     }
     usleep(50);
     MPI_Barrier(world);
   }
+  #endif
   
   
   
@@ -107,9 +136,9 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
 
 void Potential_PFFT_3D::AllocateMemory_CPU( void ){
   /* Allocate memory */
-  F.input  = pfft_alloc_real(2*alloc_local);
-  F.transform = pfft_alloc_complex(alloc_local);
-  F.output = pfft_alloc_real(2*alloc_local);
+  F.input  = pfft_alloc_real(2*alloc_local_fwd);
+  F.transform = pfft_alloc_complex(alloc_local_fwd);
+  F.output = pfft_alloc_real(2*alloc_local_fwd);
   F.G = (Real *) malloc(n_cells_local*sizeof(Real));
 }
 
@@ -166,9 +195,9 @@ void Potential_PFFT_3D::Get_K_for_Green_function( void){
   Real k_x, k_y, k_z, G_x, G_y, G_z, G;
 
   double ksqrd;
-  for(ptrdiff_t k1=local_trans_start_pfft[1]; k1<local_trans_start_pfft[1]+local_ntrans_pfft[1]; k1++){
-    for(ptrdiff_t k2=local_trans_start_pfft[2]; k2<local_trans_start_pfft[2]+local_ntrans_pfft[2]; k2++){
-      for(ptrdiff_t k0=local_trans_start_pfft[0]; k0<local_trans_start_pfft[0]+local_ntrans_pfft[0]; k0++){
+  for(ptrdiff_t k1=local_transform_fwd_start_pfft[1]; k1<local_transform_fwd_start_pfft[1]+local_n_transform_fwd_pfft[1]; k1++){
+    for(ptrdiff_t k2=local_transform_fwd_start_pfft[2]; k2<local_transform_fwd_start_pfft[2]+local_n_transform_fwd_pfft[2]; k2++){
+      for(ptrdiff_t k0=local_transform_fwd_start_pfft[0]; k0<local_transform_fwd_start_pfft[0]+local_n_transform_fwd_pfft[0]; k0++){
         //  printf("out[%td, %td, %td] = %.2f + I * %.2f\n", k0, k1, k2, transf[m][0],transf[m][1]);
         k_0 = k0;
         k_1 = k1;
