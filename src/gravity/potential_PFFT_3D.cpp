@@ -4,6 +4,7 @@
 #include "potential_PFFT_3D.h"
 #include<iostream>
 #include "../io.h"
+#include <unistd.h>
 
 Potential_PFFT_3D::Potential_PFFT_3D( void ){}
 
@@ -70,6 +71,15 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
     std::cout << " PFFT   Domain: [ " << local_ni_pfft[2] << " , " << local_ni_pfft[1] << " , " << local_ni_pfft[0] << " ]" << std::endl;
     std::cout << " Cholla Domain: [ " << nx_local << " , " << ny_local << " , " << nz_local << " ]" << std::endl;  
     exit(-1);
+  }
+  
+  for ( int i=0; i<nproc; i++ ){
+    if (procID_pfft == i ){
+      printf( "Proc: %d %d -> \n", procID_pfft, procID);
+      
+    }
+    usleep(50);
+    MPI_Barrier(world);
   }
   
   
