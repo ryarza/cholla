@@ -106,7 +106,7 @@ void Potential_PFFT_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real 
       printf( "Proc: %d %d -> [ %ld %ld %ld ] [ %ld %ld %ld ] \n", procID_pfft, procID, local_n_transform_fwd_pfft[0], local_n_transform_fwd_pfft[1], local_n_transform_fwd_pfft[2], local_transform_fwd_start_pfft[0], local_transform_fwd_start_pfft[1], local_transform_fwd_start_pfft[2] );
       
     }
-    usleep(100);
+    usleep(300);
     MPI_Barrier(world);
   }
   #endif
