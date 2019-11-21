@@ -79,7 +79,10 @@ Real Interpolate( int n, Real x, Real *R_vals, Real *density_vals ){
 
 void Grid3D::Polytropic_Star( struct parameters P ){
   
-  Real n_poly = 3;
+  Real M_star = 1.98847e33; //Msun in gr;  //Solar Mass
+  Real R_star = 6.957e+10;  //Solar radius in cm
+  Real G = 6.67259e-8; // gravitational constant, cgs
+  Real n_poly = 1.5;
   
   chprintf( " Initializing Polytropic Star \n");
   chprintf( " Polytropic Index: %.1f  \n", n_poly );
@@ -89,13 +92,14 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   int n_points = 100000;
   Real *psi_vals =     new Real[n_points];
   Real *theta_vals =   new Real[n_points];
+  Real *theta_deriv =  new Real[n_points];
   Real *R_vals =       new Real[n_points];
   Real *density_vals = new Real[n_points];
   
   
   Real psi_min, psi_max, dpsi;
   psi_min = 1e-11;
-  psi_max = 10;
+  psi_max = 5;
   dpsi = ( psi_max - psi_min ) / n_points;
   for (int i=0; i<n_points; i++){
     psi_vals[i] = psi_min + (i+0.5)*dpsi;
@@ -117,19 +121,71 @@ void Grid3D::Polytropic_Star( struct parameters P ){
     theta_vals[i+1] = poly_coords[i+1].x;
   }
   
-  //Convert tho physical values
+  //Get the derivative of Theta with respect to Psi
+  Real theta_l, theta_r, d_psi, dtheta_dpsi;
   for ( int i=0; i<n_points; i++){
-    R_vals[i] = psi_vals[i];
-    density_vals[i] = theta_vals[i];
+    dx = psi_vals[i+1] - psi_vals[i];
+    if ( i == 0 ){
+      theta_l = theta_vals[i];
+      theta_r = theta_vals[i+1];
+      d_psi = psi_vals[i+1] - psi_vals[i];
+    }
+    else if ( i == n_points-1 ){
+      theta_l = theta_vals[i-1];
+      theta_r = theta_vals[i];
+      d_psi = psi_vals[i] - psi_vals[i-1];
+    }
+    else{
+      theta_l = theta_vals[i-1];
+      theta_r = theta_vals[i+1];
+      d_psi = psi_vals[i+1] - psi_vals[i-1];
+    }
+    dtheta_dpsi = ( theta_r - theta_l ) / d_psi;
+    theta_deriv[i] = dtheta_dpsi;  
+  }
+  
+  //Find the root of theta as a function of psi;
+  int root_indx = 0;
+  Real psi_root ;
+  for (int i=0; i<n_points; i++ ){
+    root_indx = i;
+    if ( theta_vals[i]*theta_vals[i+1] < 0) break;
+  }
+  psi_root = psi_vals[root_indx];
+  chprintf( " Theta Root:  %f   ->  theta values: %f %f \n", psi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
+  
+  //Get the derivative of theta evaluated at the root of theta
+  Real theta_deriv_root = theta_deriv[root_indx];
+  
+  chprintf( " Theta Deriv at Root:  %f   \n", theta_deriv_root );
+  
+    
+  
+  //Convert tho physical values
+  Real dens_avrg = ( 3 * M_star ) / ( 4 * M_PI * pow( R_star, 3) );
+  Real beta = - ( psi_root / 3 / theta_deriv_root );
+  Real dens_central = beta * dens_avrg;
+  Real pressure_central = G * M_star * M_star / pow( R_star, 4 ) / ( 4 * M_PI *( n_poly+1 ) * theta_deriv_root * theta_deriv_root );
+  Real K = pressure_central * pow( dens_central, -(n_poly+1)/n_poly );
+  Real alpha = sqrt( (n_poly + 1) * K / ( 4 * M_PI * G ) ) * pow( dens_central, (1-n_poly)/(2*n_poly) );
+  
+  chprintf( " dens_central / dens_avrg: %f \n", dens_central / dens_avrg );
+  chprintf( " K: %f \n", K );
+  chprintf( " alpha: %f \n", alpha );
+  for ( int i=0; i<n_points; i++){
+    R_vals[i] = alpha * psi_vals[i];
+    density_vals[i] = dens_central * pow( theta_vals[i], n_poly );
+    // density_vals[i] =  pow( theta_vals[i], n_poly );
+    // density_vals[i] = theta_vals[i];
   }
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
   Real density, pressure,  energy, dens_min;
   Real vx, vy, vz, v2;
-  center_x = 10;
-  center_y = 10;
-  center_z = 10;
+  center_x = P.xlen/2.0;
+  center_y = P.ylen/2.0;
+  center_z = P.zlen/2.0;
   vx = 0;
   vy = 0;
   vz = 0;
