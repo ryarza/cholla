@@ -87,39 +87,41 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   
   //Solve Lane–Emden equation for the polytrope 
   int n_points = 100000;
-  Real R_min, R_max, dR;
-  R_min = 1e-11;
-  R_max = 10;
-  dR = ( R_max - R_min ) / n_points;
-  Real *R_vals = new Real[n_points];
+  Real *psi_vals =     new Real[n_points];
+  Real *theta_vals =   new Real[n_points];
+  Real *R_vals =       new Real[n_points];
+  Real *density_vals = new Real[n_points];
+  
+  
+  Real psi_min, psi_max, dpsi;
+  psi_min = 1e-11;
+  psi_max = 10;
+  dpsi = ( psi_max - psi_min ) / n_points;
   for (int i=0; i<n_points; i++){
-    R_vals[i] = R_min + (i+0.5)*dR;
+    psi_vals[i] = psi_min + (i+0.5)*dpsi;
   }
   vector<Real2> poly_coords;
   //Set initial condition for the polytrope solution
   poly_coords.push_back( Real2(1, 0) );
+  theta_vals[0] = poly_coords[0].x;
+  
   //Solve the polytrope equation usin the RK4 module
   Real2 coords, coords_new;
   Real dx, x;  
   for (int i=0; i<n_points-1; i++){
-    dx = R_vals[i+1] - R_vals[i];
-    x = R_vals[i];
+    dx = psi_vals[i+1] - psi_vals[i];
+    x = psi_vals[i];
     coords = poly_coords[i];
     coords_new = RK4_Iteration( Derivative, x, coords, dx, n_poly );
     poly_coords.push_back( coords_new );
+    theta_vals[i+1] = poly_coords[i+1].x;
   }
   
-  //Comvert tho physical values
-  Real *density_vals = new Real[n_points];
+  //Convert tho physical values
   for ( int i=0; i<n_points; i++){
-    density_vals[i] = poly_coords[i].x;
+    R_vals[i] = psi_vals[i];
+    density_vals[i] = theta_vals[i];
   }
-  // Real val;
-  // int indx;
-  // val = 9.0;
-  // indx = Binary_Search( n_points, val, R_vals, 0, n_points-1 );
-  // chprintf("%f  %f  %f  \n", val, R_vals[indx], R_vals[indx+1]);
-  
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
@@ -163,6 +165,8 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   }
   
   //Free the Polytrope data
+  delete[] psi_vals;
+  delete[] theta_vals;
   delete[] R_vals;
   delete[] density_vals;
   poly_coords.clear();
