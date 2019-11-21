@@ -155,8 +155,8 @@ NVINCL = $(INCL) $(CUDA_INCL)
 LIBS   = -lm $(HDF5_LIBS) $(CUDA_LIBS)
 
 ifeq ($(POISSON_SOLVER),-DPFFT)
-FFTW_INCL = -I/cm/shared/apps/fftw/fftw-3.3.8/include
-FFTW_LIBS = -L/cm/shared/apps/fftw/fftw-3.3.8/lib -lfftw3
+FFTW_INCL = -I/data/groups/comp-astro/bruno/code/fftw/include
+FFTW_LIBS = -L/data/groups/comp-astro/bruno/code/fftw/lib -lfftw3
 PFFT_INCL = -I/data/groups/comp-astro/bruno/code/pfft/include
 PFFT_LIBS = -L/data/groups/comp-astro/bruno/code/pfft/lib  -lpfft  -lfftw3_mpi -lfftw3
 INCL += $(FFTW_INCL) $(PFFT_INCL)
