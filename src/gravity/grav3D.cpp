@@ -51,7 +51,8 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
 
   dens_avrg = 0;
 
-  Gconst = GN;
+  // Gconst = GN;
+  Gconst = 6.67259e-8; // gravitational constant, cgs
 
   TRANSFER_POTENTIAL_BOUNDARIES = false;
   
