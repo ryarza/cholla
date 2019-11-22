@@ -108,6 +108,7 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   //Set initial condition for the polytrope solution
   poly_coords.push_back( Real2(1, 0) );
   theta_vals[0] = poly_coords[0].x;
+  theta_deriv[0] = poly_coords[0].y;
   
   //Solve the polytrope equation usin the RK4 module
   Real2 coords, coords_new;
@@ -119,30 +120,31 @@ void Grid3D::Polytropic_Star( struct parameters P ){
     coords_new = RK4_Iteration( Derivative, x, coords, dx, n_poly );
     poly_coords.push_back( coords_new );
     theta_vals[i+1] = poly_coords[i+1].x;
+    theta_deriv[i+1] = poly_coords[i+1].y;
   }
   
   //Get the derivative of Theta with respect to Psi
-  Real theta_l, theta_r, d_psi, dtheta_dpsi;
-  for ( int i=0; i<n_points; i++){
-    dx = psi_vals[i+1] - psi_vals[i];
-    if ( i == 0 ){
-      theta_l = theta_vals[i];
-      theta_r = theta_vals[i+1];
-      d_psi = psi_vals[i+1] - psi_vals[i];
-    }
-    else if ( i == n_points-1 ){
-      theta_l = theta_vals[i-1];
-      theta_r = theta_vals[i];
-      d_psi = psi_vals[i] - psi_vals[i-1];
-    }
-    else{
-      theta_l = theta_vals[i-1];
-      theta_r = theta_vals[i+1];
-      d_psi = psi_vals[i+1] - psi_vals[i-1];
-    }
-    dtheta_dpsi = ( theta_r - theta_l ) / d_psi;
-    theta_deriv[i] = dtheta_dpsi;  
-  }
+  // Real theta_l, theta_r, d_psi, dtheta_dpsi;
+  // for ( int i=0; i<n_points; i++){
+  //   dx = psi_vals[i+1] - psi_vals[i];
+  //   if ( i == 0 ){
+  //     theta_l = theta_vals[i];
+  //     theta_r = theta_vals[i+1];
+  //     d_psi = psi_vals[i+1] - psi_vals[i];
+  //   }
+  //   else if ( i == n_points-1 ){
+  //     theta_l = theta_vals[i-1];
+  //     theta_r = theta_vals[i];
+  //     d_psi = psi_vals[i] - psi_vals[i-1];
+  //   }
+  //   else{
+  //     theta_l = theta_vals[i-1];
+  //     theta_r = theta_vals[i+1];
+  //     d_psi = psi_vals[i+1] - psi_vals[i-1];
+  //   }
+  //   dtheta_dpsi = ( theta_r - theta_l ) / d_psi;
+  //   theta_deriv[i] = dtheta_dpsi;  
+  // }
   
   //Find the root of theta as a function of psi;
   int root_indx = 0;
@@ -170,13 +172,11 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   Real alpha = sqrt( (n_poly + 1) * K / ( 4 * M_PI * G ) ) * pow( dens_central, (1-n_poly)/(2*n_poly) );
   
   chprintf( " dens_central / dens_avrg: %f \n", dens_central / dens_avrg );
-  chprintf( " K: %f \n", K );
-  chprintf( " alpha: %f \n", alpha );
+  // chprintf( " K: %f \n", K );
+  // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){
     R_vals[i] = alpha * psi_vals[i];
     density_vals[i] = dens_central * pow( theta_vals[i], n_poly );
-    // density_vals[i] =  pow( theta_vals[i], n_poly );
-    // density_vals[i] = theta_vals[i];
   }
   
   int i, j, k, id;
@@ -198,12 +198,11 @@ void Grid3D::Polytropic_Star( struct parameters P ){
 
         // // get the centered cell positions at (i,j,k)
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
-        // density = 0.0005;
-        pressure = 0.0005;
-
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
         density = Interpolate( n_points, r, R_vals, density_vals );
         density = fmax( density, dens_min );
+        pressure = K * pow( density, (n_poly-1)/n_poly );
+        // pressure = K * pow( dens_avrg, (n_poly-1)/n_poly ) / 100;
         
         v2 = vx*vx + vy*vy + vz*vz;
         energy = pressure/(gama-1) + 0.5*density*v2;
@@ -223,6 +222,7 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   //Free the Polytrope data
   delete[] psi_vals;
   delete[] theta_vals;
+  delete[] theta_deriv;
   delete[] R_vals;
   delete[] density_vals;
   poly_coords.clear();
