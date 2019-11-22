@@ -4,15 +4,15 @@
 
 ######################################
 # number of grid cells in the x dimension
-nx=512
+nx=256
 # number of grid cells in the y dimension
-ny=512
+ny=256
 # number of grid cells in the z dimension
-nz=512
+nz=256
 # output time
-tout=0
+tout=500
 # how often to output
-outstep=1000
+outstep=50
 # value of gamma
 gamma=1.66666667
 # name of initial conditions
