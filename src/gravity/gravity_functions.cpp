@@ -197,7 +197,7 @@ void Grid3D::Initialize_Gravity( struct parameters *P ){
 
 void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
   
-  Real Grav_Constant = Grav.Gconst * 0.1;
+  Real Grav_Constant = Grav.Gconst * 0.5;
   
   Real dens_avrg, current_a;
   
