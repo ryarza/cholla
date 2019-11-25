@@ -160,7 +160,6 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   Real theta_deriv_root = theta_deriv[root_indx];
   
   chprintf( " Theta Deriv at Root:  %f   \n", theta_deriv_root );
-  
     
   
   //Convert tho physical values
@@ -172,6 +171,9 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   Real alpha = sqrt( (n_poly + 1) * K / ( 4 * M_PI * G ) ) * pow( dens_central, (1-n_poly)/(2*n_poly) );
   
   chprintf( " dens_central / dens_avrg: %f \n", dens_central / dens_avrg );
+  chprintf( " pressure_central: %e \n", pressure_central );
+  Real cs_center = sqrt(  pressure_central / dens_central * P.gamma );
+  chprintf ( " T cross: %f s\n ", R_star / cs_center); 
   // chprintf( " K: %f \n", K );
   // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){
@@ -201,7 +203,7 @@ void Grid3D::Polytropic_Star( struct parameters P ){
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
         density = Interpolate( n_points, r, R_vals, density_vals );
         density = fmax( density, dens_min );
-        pressure = K * pow( density, (n_poly-1)/n_poly );
+        pressure = K * pow( density, (n_poly+1)/n_poly );
         // pressure = K * pow( dens_avrg, (n_poly-1)/n_poly ) / 100;
         
         v2 = vx*vx + vy*vy + vz*vz;
