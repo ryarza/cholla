@@ -3,6 +3,10 @@
 #include "io.h"
 #include <math.h>  
 #include <vector> 
+
+#ifdef MPI_CHOLLA
+#include "mpi_routines.h"
+#endif
      
 using namespace std; 
 
@@ -228,5 +232,119 @@ void Grid3D::Polytropic_Star( struct parameters P ){
   delete[] R_vals;
   delete[] density_vals;
   poly_coords.clear();
+  
+}
+
+Real Apply_Damping_Step( Grid3D &G ){
+  
+  Real relax_factor = 0.10;
+  Real max_speed = 0;
+  
+  Real dens, vx, vy, vz, v2, v, E, U;
+  int i, j, k, id;
+  for (k=0; k<G.Grav.nz_local; k++) {
+    for (j=0; j<G.Grav.ny_local; j++) {
+      for (i=0; i<G.Grav.nx_local; i++) {
+        id = (i+G.H.n_ghost) + (j+G.H.n_ghost)*G.H.nx + (k+G.H.n_ghost)*G.H.nx*G.H.ny;
+        
+        dens = G.C.density[id];
+        vx = G.C.momentum_x[id];
+        vy = G.C.momentum_y[id];
+        vz = G.C.momentum_z[id];
+        E = G.C.Energy[id];
+        v2 = vx*vx + vy*vy + vz*vz;
+        U = E - 0.5*dens*v2;
+        
+        //Add the drag term to the momentum
+        vx *= relax_factor;
+        vy *= relax_factor;
+        vz *= relax_factor;
+        v2 = vx*vx + vy*vy + vz*vz;
+        v = sqrt( v2 );
+        if ( v > max_speed ) max_speed = v;
+        
+        //Comute the energy with the updayed kinetic energy
+        E = U + 0.5*dens*v2;
+        
+        //Save the updated values
+        G.C.momentum_x[id] = dens*vx; 
+        G.C.momentum_y[id] = dens*vy; 
+        G.C.momentum_z[id] = dens*vz;
+        G.C.Energy[id] = E; 
+        
+      }
+    }
+  }
+  
+  //Get the global max speed
+  Real max_speed_global = max_speed;
+  #ifdef MPI_CHOLLA
+  max_speed_global = ReduceRealMax( max_speed );
+  #endif
+  
+  return max_speed_global;
+  
+  
+}
+
+
+void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
+  
+  chprintf( "Polytropic Star Iterative Relaxation \n");
+  
+  Real dti, max_speed, speed_threshold;
+  
+  speed_threshold = 1e-3;
+  
+  int n_step, n_iter_max; 
+  n_step = 0;
+  n_iter_max = 1000;
+  
+  bool converged;
+  while( n_step < n_iter_max ){
+    
+    converged = false;
+    
+    // calculate the timestep
+    set_dt(dti);
+    
+    // Advance the grid by one timestep
+    dti = Update_Hydro_Grid();
+    
+    // update the simulation time ( t += dt )
+    Update_Time();
+    
+    
+    #ifdef GRAVITY
+    //Compute Gravitational potential for next step
+    Compute_Gravitational_Potential( &P);
+    #endif
+    
+    //Include the damping terms in momentum and energy
+    max_speed = Apply_Damping_Step( *this );
+    chprintf(" %f    %f \n", max_speed, speed_threshold );
+    
+    // add one to the timestep count
+    n_step++;
+    
+    // set boundary conditions for next time step 
+    Set_Boundary_Conditions_Grid(P);
+    
+    //Check if the Iterative method has converged
+    if ( max_speed < speed_threshold ) converged = true;
+    
+    //Exit the iteartions if converged
+    if ( converged ) break;
+
+  }
+
+
+  //Restart the simulation time
+  H.t = 0;
+  Grav.INITIAL = true;
+  
+  
+  chprintf( " Finished Relaxation Iteration: %d  \n", n_step);
+
   
 }

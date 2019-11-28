@@ -10,7 +10,7 @@ ny=256
 # number of grid cells in the z dimension
 nz=256
 # output time
-tout= 9000
+tout= 0
 # how often to output
 outstep=100
 # value of gamma

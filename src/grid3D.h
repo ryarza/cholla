@@ -569,6 +569,9 @@ class Grid3D
     void Zeldovich_Pancake( struct parameters P );
     
     void Polytropic_Star( struct parameters P );
+    
+    void Polytropic_Star_Relaxation(  struct parameters &P  );
+
 
 
 #ifdef   MPI_CHOLLA
