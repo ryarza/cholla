@@ -228,6 +228,7 @@ __global__ void Get_Transfer_Indexs_Kernel( part_int_t n_total, bool *transfer_f
 __global__ void Get_N_Transfer_Particles_Kernel( part_int_t n_total, int *n_transfer_d, bool *transfer_flags_d, int *prefix_sum_d ){
   n_transfer_d[0] = prefix_sum_d[n_total-1] + (int)transfer_flags_d[n_total-1];
   // if (n_transfer_d[0] != 0 ) printf( "##Thread transfer: %d\n", n_transfer_d[0]); 
+  printf( " N_transfer: %d \n", n_transfer_d[0] );
 }
 
 
@@ -329,15 +330,20 @@ int Select_Particles_to_Transfer_GPU_function( part_int_t n_local, int side, Rea
   Get_N_Transfer_Particles_Kernel<<<1,1>>>( n_local,  n_transfer_d, transfer_flags_d, transfer_sum_d );
   CudaCheckError();
   
+  n_transfer_h[0] = 0; 
   CudaSafeCall( cudaMemcpy(n_transfer_h, n_transfer_d, sizeof(int), cudaMemcpyDeviceToHost) );
   CudaCheckError();
+  cudaDeviceSynchronize();
+  
+  n_transfer_h[0] = 0;
+  
   
   Get_Transfer_Indexs_Kernel<<<dim1dGrid,dim1dBlock>>>( n_local , transfer_flags_d, transfer_sum_d, transfer_indxs_d );
   CudaCheckError();
   
   
-  Remove_Transfred_Particles_Kernel<<<1,dim1dBlock >>>( n_local, n_transfer_d, transfer_flags_d, transfer_sum_d, transfer_indxs_d, pos_d );
-  CudaCheckError();
+  // Remove_Transfred_Particles_Kernel<<<1,dim1dBlock >>>( n_local, n_transfer_d, transfer_flags_d, transfer_sum_d, transfer_indxs_d, pos_d );
+  // CudaCheckError();
   
   // chprintf( "N transfer: %d\n", n_transfer_h[0]);
 
