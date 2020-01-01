@@ -196,7 +196,7 @@ void Grid3D::Load_and_Send_Particles_X0( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(0, 0, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send X0: " << Particles.n_send_x0 << std::endl; 
   MPI_Irecv(&Particles.n_recv_x0, 1, MPI_PART_INT, source[0], 0, world, &recv_request_n_particles[ireq_n_particles]);
   MPI_Isend(&Particles.n_send_x0, 1, MPI_PART_INT, dest[0],   1, world, &send_request_n_particles[0]);
   // if ( Particles.n_send_x0 > 0 )   if ( Particles.n_send_x0 > 0 ) std::cout << " Sent X0:  " << Particles.n_send_x0 <<  "  " << procID <<  "  to  "  <<  dest[0] <<  std::endl;
@@ -214,7 +214,7 @@ void Grid3D::Load_and_Send_Particles_X1( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(0, 1, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send X1: " << Particles.n_send_x1 << std::endl;
   MPI_Irecv(&Particles.n_recv_x1, 1, MPI_PART_INT, source[1], 1, world, &recv_request_n_particles[ireq_n_particles]);
   MPI_Isend(&Particles.n_send_x1, 1, MPI_PART_INT, dest[1],   0, world, &send_request_n_particles[1]);
   // if ( Particles.n_send_x1 > 0 )  std::cout << " Sent X1: " << Particles.n_send_x1 << std::endl;
@@ -232,7 +232,7 @@ void Grid3D::Load_and_Send_Particles_Y0( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(1, 0, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send Y0: " << Particles.n_send_y0 << std::endl;
   MPI_Isend(&Particles.n_send_y0, 1, MPI_PART_INT, dest[2],   3, world, &send_request_n_particles[0]);
   MPI_Irecv(&Particles.n_recv_y0, 1, MPI_PART_INT, source[2], 2, world, &recv_request_n_particles[ireq_n_particles]);
   // if ( Particles.n_send_y0 > 0 )   std::cout << " Sent Y0: " << Particles.n_send_y0 << std::endl;
@@ -250,7 +250,7 @@ void Grid3D::Load_and_Send_Particles_Y1( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(1, 1, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send Y1: " << Particles.n_send_y1 << std::endl;
   MPI_Isend(&Particles.n_send_y1, 1, MPI_PART_INT, dest[3],   2, world, &send_request_n_particles[1]);
   MPI_Irecv(&Particles.n_recv_y1, 1, MPI_PART_INT, source[3], 3, world, &recv_request_n_particles[ireq_n_particles]);
   // if ( Particles.n_send_y1 > 0 )  std::cout << " Sent Y1: " << Particles.n_send_y1 << std::endl;
@@ -268,7 +268,7 @@ void Grid3D::Load_and_Send_Particles_Z0( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(2, 0, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send Z0: " << Particles.n_send_z0 << std::endl;
   MPI_Isend(&Particles.n_send_z0, 1, MPI_PART_INT, dest[4],   5, world, &send_request_n_particles[0]);
   MPI_Irecv(&Particles.n_recv_z0, 1, MPI_PART_INT, source[4], 4, world, &recv_request_n_particles[ireq_n_particles]);
   // if ( Particles.n_send_z0 > 0 )   std::cout << " Sent Z0: " << Particles.n_send_z0 << std::endl;
@@ -286,7 +286,7 @@ void Grid3D::Load_and_Send_Particles_Z1( int ireq_n_particles, int ireq_particle
   #ifdef PARTICLES_GPU
   Particles.Load_Particles_to_Buffer_GPU(2, 1, send_buffer_x0_particles,  buffer_length_particles_x0_send );
   #endif //PARTICLES_GPU
-
+  // std::cout << "Send Z1: " << Particles.n_send_z1 << std::endl;
   MPI_Isend(&Particles.n_send_z1, 1, MPI_CHREAL, dest[5],   4, world, &send_request_n_particles[1]);
   MPI_Irecv(&Particles.n_recv_z1, 1, MPI_CHREAL, source[5], 5, world, &recv_request_n_particles[ireq_n_particles]);
   // if ( Particles.n_send_z1 > 0 )   std::cout << " Sent Z1: " << Particles.n_send_z1 << std::endl;
@@ -429,7 +429,7 @@ void Particles_3D::Load_Particles_to_Buffer_GPU( int direction, int side, Real *
   //Set the number of particles that will be sent
   *n_send += Select_Particles_to_Transfer_GPU_function(  n_local, side, domainMin, domainMax, pos, G.n_transfer_d, G.n_transfer_h, G.transfer_particles_flags_d, G.transfer_particles_indxs_d, G.transfer_particles_partial_sum_d, G.transfer_particles_sum_d  ); 
   
-  if ( *n_send > 0 ) printf( "###Transfered %d  particles\n", *n_send);
+  // if ( *n_send > 0 ) printf( "###Transfered %d  particles\n", *n_send);
   
 }
 
