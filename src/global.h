@@ -26,7 +26,7 @@ typedef double Real;
 #define PI 3.141592653589793
 #define MP 1.672622e-24 // mass of proton, grams
 #define KB 1.380658e-16 // boltzmann constant, cgs
-//#define GN 6.67259e-8 // gravitational constant, cgs
+#define G_CGS 6.67259e-8 // gravitational constant, cgs
 #define GN 4.49451e-18 // gravitational constant, kpc^3 / M_sun / kyr^2
 
 #define MYR 31.536e12 //Myears in secs
