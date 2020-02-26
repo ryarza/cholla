@@ -67,7 +67,11 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   Gconst = GN;
   if (strcmp(P->init, "Spherical_Overdensity_3D")==0){
     Gconst = 1;
-    chprintf(" WARNING: Using Gravitational Constant G=1.\n");
+    chprintf("WARNING: Using Gravitational Constant G=1.\n");
+  }
+  if (strcmp(P->init, "Polytropic_Star")==0){
+    Gconst = G_CGS;
+    chprintf("WARNING: Using Gravitational Constant in cgs units.\n");
   }
   
   //Flag too transfer the Potential boundaries
