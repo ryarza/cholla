@@ -12,8 +12,8 @@ using namespace std;
 
 class Real2 {
 public:
-  Real x = 0;
-  Real y = 0;
+  Real x;
+  Real y;
   
   //Cosntructor
   Real2( Real x0=0, Real y0=0 ): x(x0), y(y0) {}
@@ -241,29 +241,36 @@ Real Apply_Damping_Step( Grid3D &G ){
   Real max_speed = 0;
   
   Real dens, vx, vy, vz, v2, v, E, U;
+  Real dens_0, vx_0, vy_0, vz_0;
+  
   int i, j, k, id;
   for (k=0; k<G.Grav.nz_local; k++) {
     for (j=0; j<G.Grav.ny_local; j++) {
       for (i=0; i<G.Grav.nx_local; i++) {
         id = (i+G.H.n_ghost) + (j+G.H.n_ghost)*G.H.nx + (k+G.H.n_ghost)*G.H.nx*G.H.ny;
         
+        dens_0 = G.C.density_0[id];
+        vx_0   = G.C.momentum_x_0[id] / dens_0;
+        vy_0   = G.C.momentum_y_0[id] / dens_0;
+        vz_0   = G.C.momentum_z_0[id] / dens_0;
+        
         dens = G.C.density[id];
-        vx = G.C.momentum_x[id];
-        vy = G.C.momentum_y[id];
-        vz = G.C.momentum_z[id];
-        E = G.C.Energy[id];
+        vx   = G.C.momentum_x[id] / dens;
+        vy   = G.C.momentum_y[id] / dens;
+        vz   = G.C.momentum_z[id] / dens;
+        E    = G.C.Energy[id];
         v2 = vx*vx + vy*vy + vz*vz;
         U = E - 0.5*dens*v2;
         
         //Add the drag term to the momentum
-        vx *= relax_factor;
-        vy *= relax_factor;
-        vz *= relax_factor;
+        //INSERT HERE
+        
+
         v2 = vx*vx + vy*vy + vz*vz;
         v = sqrt( v2 );
         if ( v > max_speed ) max_speed = v;
         
-        //Comute the energy with the updayed kinetic energy
+        //Comute the energy with the updated kinetic energy
         E = U + 0.5*dens*v2;
         
         //Save the updated values
