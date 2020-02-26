@@ -4,11 +4,11 @@
 
 ######################################
 # number of grid cells in the x dimension
-nx=256
+nx=128
 # number of grid cells in the y dimension
-ny=256
+ny=128
 # number of grid cells in the z dimension
-nz=256
+nz=128
 # output time
 tout= 0
 # how often to output
@@ -32,5 +32,5 @@ yu_bcnd=1
 zl_bcnd=1
 zu_bcnd=1
 # path to output directory
-outdir=/raid/bruno/data/stars/polytrope/output_files/
+outdir=/home/bruno/Desktop/ssd_0/data/stars/polytrope/output_files/
 
