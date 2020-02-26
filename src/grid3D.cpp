@@ -636,6 +636,12 @@ Real Grid3D::Update_Grid(void)
   Cool.fields.metal_density   = &C.scalar[ 6*H.n_cells ];
   #endif
   
+  //Arrays for conserved variables at the begining of the timesteps
+  C.density_0    = &g0[0];
+  C.momentum_x_0 = &g0[H.n_cells];
+  C.momentum_y_0 = &g0[2*H.n_cells];
+  C.momentum_z_0 = &g0[3*H.n_cells];
+  
   // reset the grid flag to swap buffers
   gflag = (gflag+1)%2;
 

@@ -339,6 +339,22 @@ class Grid3D
       /*! \var grav_potential
       *  \brief Array containing the gravitational potential of each cell, only tracked separately when using  GRAVITY. */
       Real *Grav_potential;
+      
+      /*! \var density
+       *  \brief Array containing the density of each cell in the grid at the beginning of the timestep */
+      Real *density_0;
+
+      /*! \var momentum_x 
+       *  \brief Array containing the momentum in the x direction of each cell in the grid at the beginning of the timestep */
+      Real *momentum_x_0;
+
+      /*! \var momentum_y 
+       *  \brief Array containing the momentum in the y direction of each cell in the grid at the beginning of the timestep */
+      Real *momentum_y_0;
+
+      /*! \var momentum_z 
+       *  \brief Array containing the momentum in the z direction of each cell in the grid at the beginning of the timestep */
+      Real *momentum_z_0;			
 
       
     } C;
