@@ -132,6 +132,8 @@ int main(int argc, char *argv[])
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
+  //If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
+  if (strcmp(P.init, "Polytropic_Star") == 0) G.Polytropic_Star_Relaxation( P );
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {

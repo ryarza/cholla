@@ -579,6 +579,12 @@ class Grid3D
     void Uniform_Grid();
     
     void Zeldovich_Pancake( struct parameters P );
+    
+    // Initial Conditions for a Polytropic Star
+    void Polytropic_Star( struct parameters P );
+
+    // Relax the polytrope to achive hydrostatic equilibrium
+    void Polytropic_Star_Relaxation(  struct parameters &P  );
 
 
 #ifdef   MPI_CHOLLA

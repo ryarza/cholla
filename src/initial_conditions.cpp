@@ -72,6 +72,8 @@ void Grid3D::Set_Initial_Conditions(parameters P) {
     Uniform_Grid();  
   } else if (strcmp(P.init, "Zeldovich_Pancake")==0) {
     Zeldovich_Pancake(P);    
+  } else if (strcmp(P.init, "Polytropic_Star")==0) {
+    Polytropic_Star(P);   
   } else {
     chprintf ("ABORT: %s: Unknown initial conditions!\n", P.init);
     chexit(-1);
