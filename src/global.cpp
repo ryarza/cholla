@@ -263,7 +263,14 @@ parms->scale_outputs_file[0] = '\0';
     else if (strcmp(name, "tile_length")==0)
       parms->tile_length  = atof(value);
 #endif //TILED_INITIAL_CONDITIONS
-
+    else if (strcmp(name, "stellarMass")==0)
+      parms->stellarMass = atof(value);
+    else if (strcmp(name, "stellarRadius")==0)
+      parms->stellarRadius = atof(value);
+    else if (strcmp(name, "perturberMass")==0)
+      parms->perturberMass = atof(value);
+    else if (strcmp(name, "polyN")==0)
+      parms->polyN = atof(value);
 #ifdef SET_MPI_GRID
     // Set the MPI Processes grid [n_proc_x, n_proc_y, n_proc_z]
     else if (strcmp(name, "n_proc_x")==0)

@@ -451,7 +451,21 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "n_fields", H5T_STD_I32BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_INT, &H.n_fields);
   status = H5Aclose(attribute_id);
+ 
+  #ifdef STARS
+  attribute_id = H5Acreate(file_id, "stellarMass", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.stellarMass);
+  status = H5Aclose(attribute_id);
   
+  attribute_id = H5Acreate(file_id, "stellarRadius", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.stellarRadius);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "polyN", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.polyN);
+  status = H5Aclose(attribute_id);
+  #endif
+
   #ifdef COSMOLOGY
   attribute_id = H5Acreate(file_id, "H0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Cosmo.H0);
