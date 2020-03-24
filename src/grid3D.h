@@ -1,6 +1,7 @@
 /*! \file grid3D.h
  *  \brief Declarations of the Grid3D class. */
 
+
 #ifndef GRID3D_H
 #define GRID3D_H
 
@@ -33,6 +34,10 @@
 
 #ifdef CPU_TIME
 #include "timing_functions.h"
+#endif
+
+#ifdef STARS
+#include "stars.h"
 #endif
 
 struct Rotation
@@ -291,7 +296,10 @@ class Grid3D
     // Object that contains data for cosmology
     Cosmology Cosmo;
     #endif
-    
+   
+    #ifdef STARS
+    Stellar Star;
+    #endif 
     #ifdef COOLING_GRACKLE
     // Object that contains data for Grackle cooling
     Cool_GK Cool;
@@ -597,7 +605,7 @@ class Grid3D
     void Zeldovich_Pancake( struct parameters P );
     
     // Initial Conditions for a Polytropic Star
-    void Polytropic_Star( struct parameters P );
+    void Polytropic_Star( struct parameters &P );
 
     // Relax the polytrope to achive hydrostatic equilibrium
     void Polytropic_Star_Relaxation(  struct parameters &P  );

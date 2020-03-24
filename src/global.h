@@ -217,6 +217,13 @@ struct parameters
   Real ddelta_dt;
   int flag_delta;
 #endif /*ROTATED_PROJECTION*/
+
+// Parameters for the stellar oscillation problem
+  Real stellarMass;
+  Real stellarRadius;
+  Real perturberMass;
+  Real polyN;
+  Real periBeta;
 #ifdef COSMOLOGY
   Real H0;
   Real Omega_M;
