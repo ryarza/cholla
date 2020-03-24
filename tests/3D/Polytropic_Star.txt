@@ -37,4 +37,4 @@ stellarRadius=6.957e10
 polyN=1.5
 
 # path to output directory
-outdir=/home/ryarza/Downloads/research/santacruz/multitidal/chollaTestRun/
+outdir=/data/groups/comp-astro/bruno/stars/polytrope/output_files/
