@@ -1,3 +1,5 @@
+#ifdef STARS
+
 #include "global.h"
 #include "grid3D.h"
 #include "io.h"
@@ -382,3 +384,5 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
 
   
 }
+
+#endif
