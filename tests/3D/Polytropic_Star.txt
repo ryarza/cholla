@@ -10,9 +10,9 @@ ny=256
 # number of grid cells in the z dimension
 nz=256
 # output time
-tout= 0
+tout= 17000
 # how often to output
-outstep=20
+outstep=100
 # value of gamma
 gamma=1.66666667
 # name of initial conditions
@@ -32,9 +32,9 @@ yu_bcnd=1
 zl_bcnd=1
 zu_bcnd=1
 
-stellarMass=2.e33
+stellarMass=1.989e33
 stellarRadius=6.957e10
 polyN=1.5
 
 # path to output directory
-outdir=/data/groups/comp-astro/bruno/stars/polytrope/output_files/
+outdir=/data/groups/ramirez-ruiz/rcastroy/chollaTestRun/

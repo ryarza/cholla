@@ -192,15 +192,15 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
-  Real density, pressure,  energy, dens_min;
+  Real density, pressure,  energy;
   Real vx, vy, vz, v2;
+  Real bkgndRho = 1.e-10;
   center_x = 0.;
   center_y = 0.;
   center_z = 0.;
   vx = 0.;
   vy = 0.;
   vz = 0.;
-  dens_min = 1e-10;
   // set the initial values of the conserved variables
   for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
     for (j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
@@ -211,7 +211,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
         density = Interpolate( n_points, r, R_vals, density_vals );
-        density = fmax( density, dens_min );
+        density = fmax( density,  bkgndRho);
         pressure = K * pow( density, (n_poly+1)/n_poly );
         // pressure = K * pow( dens_avrg, (n_poly-1)/n_poly ) / 100;
         
@@ -221,7 +221,6 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         C.momentum_x[id] = density*vx;
         C.momentum_y[id] = density*vy;
         C.momentum_z[id] = density*vz;
-	if (C.momentum_x[id] > 0. || C.momentum_y[id] > 0. || C.momentum_z[id]) chprintf("HMM");
         C.Energy[id] = energy;
 
         #ifdef DE
@@ -241,7 +240,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
 }
 
-Real Apply_Damping_Step( Grid3D &G, Real tdyn, Real tau1, Real tau2){
+Real Apply_Damping_Step( Grid3D &G, Real tdyn){
   
   Real max_speed = 0;
   
@@ -251,7 +250,8 @@ Real Apply_Damping_Step( Grid3D &G, Real tdyn, Real tau1, Real tau2){
   Real dt = G.H.dt;
   Real t = G.H.t;
 
-  Real tau;
+  Real relaxRate = ( t / 6.278 / tdyn ) * ( 1. - 0.9 ) + 0.9;
+  chprintf("Relax rate: %.5e", relaxRate);
 
   int i, j, k, id;
   for (k=0; k<G.Grav.nz_local; k++) {
@@ -271,18 +271,26 @@ Real Apply_Damping_Step( Grid3D &G, Real tdyn, Real tau1, Real tau2){
         E    = G.C.Energy[id];
         v2 = vx*vx + vy*vy + vz*vz;
         U = E - 0.5*dens*v2;
-        
+
         //Ohlmann+2018 relaxation scheme.
+	/*
 	if (t < 2. * tdyn) {
 	  tau = tau1;
 	}
 	else {
-		tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
+	  tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
 	}
 	vx -= vx_0 * dt / tau;
 	vy -= vy_0 * dt / tau;
 	vz -= vz_0 * dt / tau;
-        
+
+	*/
+
+//	James relaxation procedure
+	vx *= relaxRate;
+	vy *= relaxRate;
+	vy *= relaxRate;
+
         v2 = vx*vx + vy*vy + vz*vz;
         v = sqrt( v2 );
       if ( v > max_speed && dens > 1.e-0) max_speed = v;
@@ -323,15 +331,13 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
   int n_step = 0;
   
   bool converged = false;
-  double tdyn = 1681.43;//in seconds
-// Parameters of the relaxation
-  double tau1 = tdyn / 10.;
-  double tau2 = tdyn;
+  double tdyn = sqrt( pow(P.stellarRadius, 3.) / P.stellarMass / 6.674e-8);//in seconds
+  chprintf("Star dynamical time: %.5e", tdyn);
 
-  WriteData(*this, P, nfile);
-  nfile++;
+  WriteData(*this, P, P.nfile);
+  P.nfile++;
 
-  while( H.t < 10. * tdyn){
+  while( H.t < 6.278 * tdyn){
     
     // calculate the timestep
     set_dt(dti);
@@ -351,22 +357,16 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
     #endif
     
     //Include the damping terms in momentum and energy
-    if ( H.t < 5. * tdyn ){
-    max_speed = Apply_Damping_Step( *this , tdyn, tau1, tau2);
-    chprintf(" %f    %f   %f \n", max_speed, speed_threshold , H.t / ( 10. * tdyn ));
-    }
+    max_speed = Apply_Damping_Step( *this , tdyn);
 
     // Output
     if (n_step % int(P.outstep) == 0){
-      WriteData(*this, P, nfile);
-      nfile++;
+      WriteData(*this, P, P.nfile);
+      P.nfile++;
     }
 
     // set boundary conditions for next time step 
     Set_Boundary_Conditions_Grid(P);
-    
-    //Check if the Iterative method has converged
-    if ( max_speed < speed_threshold ) converged = true;
     
     //Exit the iteartions if converged
 //    if ( converged ) break;
@@ -377,7 +377,6 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
   //Restart the simulation time
   H.t = 0;
   Grav.INITIAL = true;
-  
   
   chprintf( " Finished Relaxation Iteration: %d  \n", n_step);
 

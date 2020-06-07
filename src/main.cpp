@@ -134,6 +134,8 @@ int main(int argc, char *argv[])
 
   //If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
   if (strcmp(P.init, "Polytropic_Star") == 0) G.Polytropic_Star_Relaxation( P );
+  nfile = P.nfile;
+  chprintf("nfile after relaxation: %i\n", P.nfile);
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {
