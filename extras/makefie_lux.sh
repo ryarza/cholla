@@ -43,7 +43,7 @@ CUDA = -DCUDA #-DCUDA_ERROR_CHECK
 
 ifdef MPI_FLAGS
   CC	= mpicc
-  CXX   = mpicxx
+  CXX   = mpic++
 
   #MPI_FLAGS += -DSLAB
   MPI_FLAGS += -DBLOCK
@@ -68,7 +68,7 @@ PRECISION = -DPRECISION=2
 OUTPUT = -DHDF5
 
 #Output all data every N_OUTPUT_COMPLETE snapshots ( This are Restart Files )
-N_OUTPUT_COMPLETE = -DN_OUTPUT_COMPLETE=10
+N_OUTPUT_COMPLETE = -DN_OUTPUT_COMPLETE=50
 
 # RECONSTRUCTION = -DPCM
 # RECONSTRUCTION = -DPLMP
@@ -119,15 +119,13 @@ CPU_TIME = -DCPU_TIME
 #INCLUDE GRAVITY
 GRAVITY = -DGRAVITY
 # POISSON_SOLVER = -DPFFT
-POISSON_SOLVER = -DCUFFT
+# POISSON_SOLVER = -DCUFFT
+POISSON_SOLVER = -DSOR
 GRAVITY_INT = -DGRAVITY_LONG_INTS
 GRAVITY_ENERGY_COUPLE = -DCOUPLE_GRAVITATIONAL_WORK
 # GRAVITY_ENERGY_COUPLE = -DCOUPLE_DELTA_E_KINETIC
 # OUTPUT_POTENTIAL = -DOUTPUT_POTENTIAL
 GRAVITY_GRADIENT = -DGRAVITY_5_POINTS_GRADIENT
-
-#Stellar Evolution 
-STARS = -DSTARS
 
 #Include Gravity From Particles PM
 # PARTICLES = -DPARTICLES
@@ -145,7 +143,8 @@ PARALLEL_OMP = -DPARALLEL_OMP
 N_OMP_THREADS = -DN_OMP_THREADS=20
 # # PRINT_OMP_DOMAIN = -DPRINT_OMP_DOMAIN
 
-#Cosmological simulation
+# 
+# #Cosmological simulation
 # COSMOLOGY = -DCOSMOLOGY
 
 #Use Grackle for cooling in cosmological simulatls o  ions
@@ -165,17 +164,17 @@ NVINCL = $(INCL) $(CUDA_INCL)
 LIBS   = -lm $(HDF5_LIBS) $(CUDA_LIBS)
 
 ifeq ($(POISSON_SOLVER),-DPFFT)
-FFTW_INCL = -I/home/brvillas/code/fftw-3.3.8/include
-FFTW_LIBS = -L/home/brvillas/code/fftw-3.3.8/lib -lfftw3
-PFFT_INCL = -I/home/brvillas/code/pfft/include
-PFFT_LIBS = -L/home/brvillas/code/pfft/lib  -lpfft  -lfftw3_mpi -lfftw3
+FFTW_INCL = -I/data/groups/comp-astro/bruno/code_mpi_local/fftw-3.3.8/include
+FFTW_LIBS = -L/data/groups/comp-astro/bruno/code_mpi_local/fftw-3.3.8/lib -lfftw3
+PFFT_INCL = -I/data/groups/comp-astro/bruno/code_mpi_local/pfft/include
+PFFT_LIBS = -L/data/groups/comp-astro/bruno/code_mpi_local/pfft/lib  -lpfft  -lfftw3_mpi -lfftw3
 INCL += $(FFTW_INCL) $(PFFT_INCL)
 LIBS += $(FFTW_LIBS) $(PFFT_LIBS)
 endif
 
 ifeq ($(POISSON_SOLVER),-DCUFFT)
-CUFFT_INCL = -I/cm/images/gpu-au-tf/cm/shared/apps/cuda10.1/toolkit/10.1.168/targets/x86_64-linux/include
-CUFFT_LIBS = -L/cm/images/gpu-au-tf/cm/shared/apps/cuda10.1/toolkit/10.1.168/targets/x86_64-linux/lib -lcufft
+CUFFT_INCL = -I/cm/shared/apps/cuda10.1/toolkit/current/include
+CUFFT_LIBS = -L/cm/shared/apps/cuda10.1/toolkit/current/targets/x86_64-linux/lib/stubs/ -lcufft
 INCL += $(CUFFT_INCL) 
 LIBS += $(CUFFT_LIBS) 
 endif
@@ -211,7 +210,7 @@ FLAGS_STARS = $(STARS)
 FLAGS = $(FLAGS_HYDRO) $(FLAGS_OMP) $(FLAGS_GRAVITY) $(FLAGS_PARTICLES) $(FLAGS_COSMO) $(FLAGS_COOLING) $(FLAGS_STARS)
 CFLAGS 	  = $(OPTIMIZE) $(FLAGS) $(MPI_FLAGS) $(OMP_FLAGS)
 CXXFLAGS  = $(OPTIMIZE) $(FLAGS) $(MPI_FLAGS) $(OMP_FLAGS)
-NVCCFLAGS = $(FLAGS) --fmad=false -ccbin=$(CC)
+NVCCFLAGS = $(FLAGS) --fmad=false -ccbin=$(CXX)
 
 
 %.o:	%.c
