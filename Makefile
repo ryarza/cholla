@@ -92,6 +92,9 @@ OMP_NUM_THREADS ?= 16
 DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
+#Stellar Simulation
+DFLAGS += -DSTARS
+
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY
 
