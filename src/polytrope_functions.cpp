@@ -342,6 +342,8 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
 
   while( H.t < 6.278 * tdyn){
     
+    chprintf("Relaxation n_step: %d \n", n_step + 1 );
+    
     // calculate the timestep
     set_dt(dti);
     
@@ -371,8 +373,11 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
     // set boundary conditions for next time step 
     Set_Boundary_Conditions_Grid(P);
     
+    chprintf("n_step: %d   sim time: %10.7f   sim timestep: %7.4e  \n\n", n_step, H.t, H.dt);
+    
     //Exit the iteartions if converged
 //    if ( converged ) break;
+
 
   }
 
