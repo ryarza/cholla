@@ -189,9 +189,6 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
   // if ( ( fabs( ( phi_new - phi_c ) ) > epsilon ) ) converged_d[0] = 0;
   
   
-  potential_d[tid_pot] = phi_new;
-  
-  
 }
 
 void Potential_SOR_3D::Poisson_iteration( int n_cells, int nx, int ny, int nz, int n_ghost_potential, Real dx, Real dy, Real dz, Real omega, Real epsilon, Real *density_d, Real *potential_d, bool *converged_h, bool *converged_d ){
