@@ -190,13 +190,14 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   for ( int i=0; i<n_points; i++){
     R_vals[i] = alpha * psi_vals[i];
     density_vals[i] = dens_central * pow( theta_vals[i], n_poly );
+    if ( theta_vals[i] < 0 ) density_vals[i] = 0;
   }
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
   Real density, pressure,  energy;
   Real vx, vy, vz, v2;
-  Real bkgndRho = 1.e-10;
+  Real bkgndRho = 1.e-6;
   center_x = 0.;
   center_y = 0.;
   center_z = 0.;
@@ -253,7 +254,7 @@ Real Apply_Damping_Step( Grid3D &G, Real tdyn){
   Real t = G.H.t;
 
   Real relaxRate = ( t / 6.278 / tdyn ) * ( 1. - 0.9 ) + 0.9;
-  chprintf("Relax rate: %.5e", relaxRate);
+  // chprintf("Relax rate: %.5e", relaxRate);
 
   int i, j, k, id;
   for (k=0; k<G.Grav.nz_local; k++) {
@@ -275,27 +276,27 @@ Real Apply_Damping_Step( Grid3D &G, Real tdyn){
         U = E - 0.5*dens*v2;
 
         //Ohlmann+2018 relaxation scheme.
-	/*
-	if (t < 2. * tdyn) {
-	  tau = tau1;
-	}
-	else {
-	  tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
-	}
-	vx -= vx_0 * dt / tau;
-	vy -= vy_0 * dt / tau;
-	vz -= vz_0 * dt / tau;
+      	/*
+      	if (t < 2. * tdyn) {
+      	  tau = tau1;
+      	}
+      	else {
+      	  tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
+      	}
+      	vx -= vx_0 * dt / tau;
+      	vy -= vy_0 * dt / tau;
+      	vz -= vz_0 * dt / tau;
+        */
 
-	*/
 
-//	James relaxation procedure
-	vx *= relaxRate;
-	vy *= relaxRate;
-	vy *= relaxRate;
+      	// James relaxation procedure
+      	vx *= relaxRate;
+      	vy *= relaxRate;
+      	vy *= relaxRate;
 
         v2 = vx*vx + vy*vy + vz*vz;
         v = sqrt( v2 );
-      if ( v > max_speed && dens > 1.e-0) max_speed = v;
+        if ( v > max_speed && dens > 1.e-0) max_speed = v;
         
         //Compute the energy with the updated kinetic energy
         E = U + 0.5*dens*v2;
