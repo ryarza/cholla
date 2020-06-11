@@ -110,7 +110,7 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
   
   Grav.Poisson_solver.Copy_Input_And_Initialize( Grav.F.density_h, Grav_Constant, dens_avrg, current_a );
 
-  Real epsilon = 1e-4;
+  Real epsilon = 1e-5;
   int max_iter = 10000000;
   int n_iter = 0;
 
