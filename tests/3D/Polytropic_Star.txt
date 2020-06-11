@@ -1,7 +1,6 @@
 #
 # Parameter File for the 3D Polytropic Star.
 #
-
 ######################################
 # number of grid cells in the x dimension
 nx=256
@@ -10,13 +9,16 @@ ny=256
 # number of grid cells in the z dimension
 nz=256
 # output time
-tout= 17000
+tout= 25251.5
 # how often to output
-outstep=100
+outstep=20
 # value of gamma
 gamma=1.66666667
 # name of initial conditions
 init=Polytropic_Star
+#init=Read_Grid
+#nfile=325
+#indir=/data/groups/ramirez-ruiz/rcastroy/chollaTestRunNewGrav/
 # domain properties
 xmin=-1.4e11
 ymin=-1.4e11
@@ -25,16 +27,14 @@ xlen=2.8e11
 ylen=2.8e11
 zlen=2.8e11
 # type of boundary conditions
-xl_bcnd=1
-xu_bcnd=1
-yl_bcnd=1
-yu_bcnd=1
-zl_bcnd=1
-zu_bcnd=1
-
+xl_bcnd=3
+xu_bcnd=3
+yl_bcnd=3
+yu_bcnd=3
+zl_bcnd=3
+zu_bcnd=3
 stellarMass=1.989e33
 stellarRadius=6.957e10
 polyN=1.5
-
 # path to output directory
-outdir=/data/groups/ramirez-ruiz/rcastroy/chollaTestRun/
+outdir=/data/groups/ramirez-ruiz/rcastroy/chollaTestRunNewGrav/
