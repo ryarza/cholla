@@ -100,7 +100,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   
   //Solve Lane–Emden equation for the polytrope 
-  int n_points = 100000;
+  int n_points = 1000000;
   Real *psi_vals =     new Real[n_points];
   Real *theta_vals =   new Real[n_points];
   Real *theta_deriv =  new Real[n_points];
@@ -109,8 +109,8 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   
   Real psi_min, psi_max, dpsi;
-  psi_min = 1e-11;
-  psi_max = 5;
+  psi_min = 1e-12;
+  psi_max = 3.65374;
   dpsi = ( psi_max - psi_min ) / n_points;
   for (int i=0; i<n_points; i++){
     psi_vals[i] = psi_min + (i+0.5)*dpsi;
@@ -195,15 +195,18 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
-  Real density, pressure,  energy;
+  Real density, pressure, energy;
   Real vx, vy, vz, v2;
-  Real bkgndRho = 1.e-6;
+  Real bkgndRho = 1.e-17;
   center_x = 0.;
   center_y = 0.;
   center_z = 0.;
   vx = 0.;
   vy = 0.;
   vz = 0.;
+
+  double mu = 1.;
+
   // set the initial values of the conserved variables
   for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
     for (j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
@@ -213,9 +216,14 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         // // get the centered cell positions at (i,j,k)
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
-        density = Interpolate( n_points, r, R_vals, density_vals );
-        density = fmax( density,  bkgndRho);
-        pressure = K * pow( density, (n_poly+1)/n_poly );
+	if ( r < R_star ){
+	        density = Interpolate( n_points, r, R_vals, density_vals );
+		pressure = K * pow( density, (n_poly+1)/n_poly );
+	}
+	else{
+		density  = bkgndRho;
+		pressure = 1.e0 * bkgndRho * KB / mu / MP;
+	}
         // pressure = K * pow( dens_avrg, (n_poly-1)/n_poly ) / 100;
         
         v2 = vx*vx + vy*vy + vz*vz;
