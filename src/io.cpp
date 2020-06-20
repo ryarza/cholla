@@ -23,7 +23,7 @@
 
 using namespace std;
 
-#define OUTPUT_ENERGY
+//#define OUTPUT_ENERGY
 #define OUTPUT_MOMENTUM
 
 /* function used to rotate points about an axis in 3D for the rotated projection output routine */
