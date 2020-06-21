@@ -135,7 +135,7 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   cm_pos_z = 0.5; 
   
   #ifdef STARS
-  M = Star.stellarMass;
+  M = Star.Mstar;
   cm_pos_x = 0.0;
   cm_pos_y = 0.0;
   cm_pos_z = 0.0;
