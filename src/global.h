@@ -230,8 +230,8 @@ struct parameters
 #endif /*ROTATED_PROJECTION*/
 
 // Parameters for the stellar oscillation problem
-  Real stellarMass;
-  Real stellarRadius;
+  Real Mstar;
+  Real Rstar;
   Real perturberMass;
   Real polyN;
   Real periBeta;

@@ -33,8 +33,8 @@ yl_bcnd=3
 yu_bcnd=3
 zl_bcnd=3
 zu_bcnd=3
-stellarMass=1.989e33
-stellarRadius=6.957e10
+Mstar=1.989e33
+Rstar=6.957e10
 polyN=1.5
 # path to output directory
 outdir=/data/groups/ramirez-ruiz/rcastroy/chollaTestRunNewGrav/

@@ -10,8 +10,8 @@
 class Stellar
 {
 public:
-	Real stellarMass;
-	Real stellarRadius;
+	Real Mstar;
+	Real Rstar;
 	Real perturberMass;
 	Real polyN;
 	Real periBeta;

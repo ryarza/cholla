@@ -84,17 +84,14 @@ Real Interpolate( int n, Real x, Real *R_vals, Real *density_vals ){
 }
 
 void Grid3D::Polytropic_Star( struct parameters &P ){
-  Star.stellarMass = P.stellarMass;
-  Star.stellarRadius = P.stellarRadius;
+  Star.Mstar = P.Mstar;
+  Star.Rstar = P.Rstar;
   Star.polyN = P.polyN;
 
-  Real M_star = P.stellarMass; //Msun in gr;  //Solar Mass
-  Real R_star = P.stellarRadius;  //Solar radius in cm
-  Real G = 6.67259e-8; // gravitational constant, cgs
   Real n_poly = P.polyN;
   
-  chprintf("Polytrope mass: %.3f \n", M_star);
-  chprintf("Polytrope radius: %.3f \n", R_star);
+  chprintf("Polytrope mass: %.3f \n", P.Mstar);
+  chprintf("Polytrope radius: %.3f \n", P.Rstar);
   chprintf( " Initializing Polytropic Star \n");
   chprintf( " Polytropic Index: %.1f  \n", n_poly );
   
@@ -174,17 +171,17 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
     
   
   //Convert to physical values
-  Real dens_avrg = ( 3 * M_star ) / ( 4 * M_PI * pow( R_star, 3) );
+  Real dens_avrg = ( 3 * P.Mstar ) / ( 4 * M_PI * pow( P.Rstar, 3) );
   Real beta = - ( psi_root / 3 / theta_deriv_root );
   Real dens_central = beta * dens_avrg;
-  Real pressure_central = G * M_star * M_star / pow( R_star, 4 ) / ( 4 * M_PI *( n_poly+1 ) * theta_deriv_root * theta_deriv_root );
+  Real pressure_central = G_CGS * P.Mstar * P.Mstar / pow( P.Rstar, 4 ) / ( 4 * M_PI *( n_poly+1 ) * theta_deriv_root * theta_deriv_root );
   Real K = pressure_central * pow( dens_central, -(n_poly+1)/n_poly );
-  Real alpha = sqrt( (n_poly + 1) * K / ( 4 * M_PI * G ) ) * pow( dens_central, (1-n_poly)/(2*n_poly) );
+  Real alpha = sqrt( (n_poly + 1) * K / ( 4 * M_PI * G_CGS ) ) * pow( dens_central, (1-n_poly)/(2*n_poly) );
   
   chprintf( " dens_central / dens_avrg: %f \n", dens_central / dens_avrg );
   chprintf( " pressure_central: %e \n", pressure_central );
   Real cs_center = sqrt(  pressure_central / dens_central * P.gamma );
-  chprintf ( " T cross: %f s\n ", R_star / cs_center); 
+  chprintf ( " T cross: %f s\n ", P.Rstar / cs_center); 
   // chprintf( " K: %f \n", K );
   // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){
@@ -196,6 +193,9 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
   Real density, pressure, energy;
+	#ifdef DE
+	Real gasEnergy;
+	#endif
   Real vx, vy, vz, v2;
   Real bkgndRho = 1.e-17;
   center_x = 0.;
@@ -204,8 +204,25 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   vx = 0.;
   vy = 0.;
   vz = 0.;
+	v2 = vx*vx + vy*vy + vz*vz;
 
-  double mu = 1.;
+//Mean dimensionless molecular weight
+  Real mu = 1.;
+
+//We must assign the mean value of the polytropic solution to the cell. To do so, we divide the cell into subcells, evaluate the solution at every subcell, then assign to the cell the average of the subcells. We sample values using a "np.linspace" from x-dx/2 to x+dx/2 but not including the endpoints, so that we use only values inside the cell.
+
+// Number of subcells in each dimension. The total number of subcells per cell is this number cubed
+	int nSubcells = 4;
+	Real totSubcells = pow(nSubcells, 3.);
+
+//These variables hold the value of x-dx/2 (lo) and x+dx/2 (hi)
+  Real xSubLo, xSubHi, ySubLo, ySubHi, zSubLo, zSubHi, dxSub, dySub, dzSub;
+
+//	Subcell properties
+	Real rhoSubcell, pressureSubcell, energySubcell;
+	#ifdef DE
+	Real gasEnergySubcell;
+	#endif
 
   // set the initial values of the conserved variables
   for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
@@ -216,18 +233,60 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         // // get the centered cell positions at (i,j,k)
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
-	if ( r < R_star ){
-	        density = Interpolate( n_points, r, R_vals, density_vals );
-		pressure = K * pow( density, (n_poly+1)/n_poly );
-	}
-	else{
-		density  = bkgndRho;
-		pressure = 1.e0 * bkgndRho * KB / mu / MP;
-	}
-        // pressure = K * pow( dens_avrg, (n_poly-1)/n_poly ) / 100;
+
+				if ( r < P.Rstar ){
+//				This variable will hold the value at the cell center
+					density = 0.;
+					pressure = 0.;
+					energy = 0.;
+					#ifdef DE
+					gasEnergy = 0.;
+					#endif
+
+//				Get the lower and upper limits of the linspace in every direction
+					xSubLo = x_pos - H.dx / 2.;
+					xSubHi = x_pos + H.dx / 2.;
+					ySubLo = y_pos - H.dy / 2.;
+					ySubHi = y_pos + H.dy / 2.;
+					zSubLo = z_pos - H.dz / 2.;
+					zSubHi = z_pos + H.dz / 2.;
+					dxSub  = ( xSubHi - xSubLo ) / ( nSubcells + 1. );
+					dySub  = ( ySubHi - ySubLo ) / ( nSubcells + 1. );
+					dzSub  = ( zSubHi - zSubLo ) / ( nSubcells + 1. );
+
+					for (int kk = 0; kk < nSubcells; kk++){
+						z_pos = zSubLo + ( kk + 1 ) * dzSub;
+						for (int jj = 0; jj < nSubcells; jj++){
+							y_pos = ySubLo + ( jj + 1 ) * dySub;
+							for (int ii = 0; ii < nSubcells; ii++){
+								x_pos = xSubLo + ( ii + 1 ) * dxSub;
+								r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
+
+								rhoSubcell      = Interpolate( n_points, r, R_vals, density_vals );
+								pressureSubcell = K * pow(rhoSubcell, 1. + 1. / P.polyN );
+								energySubcell   = pressureSubcell / ( P.gamma - 1. ) + 0.5 * rhoSubcell * v2;
+
+								density  += rhoSubcell / totSubcells;
+								pressure += pressureSubcell / totSubcells;
+								energy   += energySubcell / totSubcells;
+
+								#ifdef DE
+								gasEnergySubcell = pressureSubcell / ( P.gamma - 1. );
+								gasEnergy += gasEnergySubcell / totSubcells;
+								#endif
+
+							}
+						}
+					}
+				}
+
+				else{
+					density  = bkgndRho;
+					pressure = 1.e0 * bkgndRho * KB / mu / MP;
+					energy = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
+					gasEnergy = pressure / ( P.gamma - 1. );
+				}
         
-        v2 = vx*vx + vy*vy + vz*vz;
-        energy = pressure/(gama-1) + 0.5*density*v2;
         C.density[id] = density;
         C.momentum_x[id] = density*vx;
         C.momentum_y[id] = density*vy;
@@ -235,8 +294,9 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         C.Energy[id] = energy;
 
         #ifdef DE
-        C.GasEnergy[id] = pressure/(gama-1);
+        C.GasEnergy[id] = gasEnergy;
         #endif
+
       }
     }
   }
@@ -251,7 +311,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
 }
 
-Real Apply_Damping_Step( Grid3D &G, Real tdyn){
+void Apply_Damping_Step( Grid3D &G, Real tdyn){
   
   Real max_speed = 0;
   
@@ -325,9 +385,6 @@ Real Apply_Damping_Step( Grid3D &G, Real tdyn){
   max_speed_global = ReduceRealMax( max_speed );
   #endif
   
-  return max_speed_global;
-  
-  
 }
 
 
@@ -337,12 +394,10 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
   int nfile = 0;
   Real dti, max_speed, speed_threshold;
   
-  speed_threshold = 1e-3;
-  
   int n_step = 0;
   
   bool converged = false;
-  double tdyn = sqrt( pow(P.stellarRadius, 3.) / P.stellarMass / 6.674e-8);//in seconds
+  double tdyn = sqrt( pow(P.Rstar, 3.) / P.Mstar / G_CGS);//in seconds
   chprintf("Star dynamical time: %.5e", tdyn);
 
   WriteData(*this, P, P.nfile);
@@ -370,7 +425,7 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
     #endif
     
     //Include the damping terms in momentum and energy
-    max_speed = Apply_Damping_Step( *this , tdyn);
+    Apply_Damping_Step( *this , tdyn);
 
     // Output
     if (n_step % int(P.outstep) == 0){
