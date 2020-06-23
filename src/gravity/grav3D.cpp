@@ -79,6 +79,9 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   //Flag to transfer the Potential boundaries
   TRANSFER_POTENTIAL_BOUNDARIES = false;
   
+  // Flag to set the gravity boundariy flags
+  BC_FLAGS_SET = false;
+  
   AllocateMemory_CPU();
 
   Initialize_values_CPU();
@@ -109,21 +112,25 @@ void Grav3D::AllocateMemory_CPU(void)
   F.density_h    = (Real *) malloc(n_cells*sizeof(Real)); //array for the density
   F.potential_h  = (Real *) malloc(n_cells_potential*sizeof(Real));   //array for the potential at the n-th timestep
   F.potential_1_h  = (Real *) malloc(n_cells_potential*sizeof(Real)); //array for the potential at the (n-1)-th timestep
+  boundary_flags = (int *) malloc(6*sizeof(int)); // array for the gtravity boundary flags
   
   #ifdef GRAV_ISOLATED_BOUNDARY_X
-  F.pot_boundary_x0  = (Real *) malloc(N_GHOST_POTENTIAL*ny_total*nz_total*sizeof(Real)); //array for the potential isolated boundary
-  F.pot_boundary_x1  = (Real *) malloc(N_GHOST_POTENTIAL*ny_total*nz_total*sizeof(Real));
+  F.pot_boundary_x0  = (Real *) malloc(N_GHOST_POTENTIAL*ny_local*nz_local*sizeof(Real)); //array for the potential isolated boundary
+  F.pot_boundary_x1  = (Real *) malloc(N_GHOST_POTENTIAL*ny_local*nz_local*sizeof(Real));
   #endif
   #ifdef GRAV_ISOLATED_BOUNDARY_Y
-  F.pot_boundary_y0  = (Real *) malloc(N_GHOST_POTENTIAL*nx_total*nz_total*sizeof(Real)); //array for the potential isolated boundary
-  F.pot_boundary_y1  = (Real *) malloc(N_GHOST_POTENTIAL*nx_total*nz_total*sizeof(Real));
+  F.pot_boundary_y0  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*nz_local*sizeof(Real)); //array for the potential isolated boundary
+  F.pot_boundary_y1  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*nz_local*sizeof(Real));
   #endif
   #ifdef GRAV_ISOLATED_BOUNDARY_Z
-  F.pot_boundary_z0  = (Real *) malloc(N_GHOST_POTENTIAL*nx_total*ny_total*sizeof(Real)); //array for the potential isolated boundary
-  F.pot_boundary_z1  = (Real *) malloc(N_GHOST_POTENTIAL*nx_total*ny_total*sizeof(Real));
+  F.pot_boundary_z0  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*ny_local*sizeof(Real)); //array for the potential isolated boundary
+  F.pot_boundary_z1  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*ny_local*sizeof(Real));
   #endif
 }
 
+void Grav3D::Set_Boundary_Flags( int *flags ){
+  for (int i=0; i<6; i++) boundary_flags[i] = flags[i];
+}
 
 void Grav3D::Initialize_values_CPU(void){
 
@@ -143,6 +150,7 @@ void Grav3D::FreeMemory_CPU(void)
   free(F.density_h);
   free(F.potential_h);
   free(F.potential_1_h);
+  free( boundary_flags );  
 
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   free(F.pot_boundary_x0);

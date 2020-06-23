@@ -24,6 +24,11 @@ void Grid3D::Set_Boundaries_MPI(struct parameters P)
       Set_Boundaries_MPI_BLOCK(flags,P);
       break;
   }
+  
+  #ifdef GRAVITY
+  Grav.Set_Boundary_Flags( flags );
+  #endif
+  
 }
 
 
@@ -749,7 +754,7 @@ void Grid3D::Load_and_Send_MPI_Comm_Buffers_BLOCK(int dir, int *flags)
         buffer_length = Load_Gravity_Potential_To_Buffer( 0, 0, send_buffer_x0, 0 );
       }
       #ifdef SOR
-      if ( Grav.Poisson_solver.TRANSFER_POISSON_BOUNDARIES )  buffer_length = Load_Poisson_Boundary_To_Buffer( 0, 0, send_buffer_z0 );
+      if ( Grav.Poisson_solver.TRANSFER_POISSON_BOUNDARIES )  buffer_length = Load_Poisson_Boundary_To_Buffer( 0, 0, send_buffer_x0 );
       #endif //SOR
       #endif //GRAVITY
       
