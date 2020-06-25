@@ -48,8 +48,8 @@ typedef double Real;
 #define LOG_FILE_NAME "run_output.log"
 
 //Conserved Floor Values
-#define TEMP_FLOOR 1e-15
-#define DENS_FLOOR 1e-20
+#define TEMP_FLOOR 1e0
+#define DENS_FLOOR 1e-18
 
 //Parameter for Enzo dual Energy Condition
 #define DE_ETA_1 0.001 //Ratio of U to E for wich  Inetrnal Energy is used to compute the Pressure

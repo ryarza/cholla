@@ -97,7 +97,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   
   //Solve Lane–Emden equation for the polytrope 
-  int n_points = 1000000;
+  int n_points = 100000000;
   Real *psi_vals =     new Real[n_points];
   Real *theta_vals =   new Real[n_points];
   Real *theta_deriv =  new Real[n_points];
@@ -106,7 +106,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   
   
   Real psi_min, psi_max, dpsi;
-  psi_min = 1e-12;
+  psi_min = 1e-15;
   psi_max = 3.65374;
   dpsi = ( psi_max - psi_min ) / n_points;
   for (int i=0; i<n_points; i++){
@@ -212,7 +212,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 //We must assign the mean value of the polytropic solution to the cell. To do so, we divide the cell into subcells, evaluate the solution at every subcell, then assign to the cell the average of the subcells. We sample values using a "np.linspace" from x-dx/2 to x+dx/2 but not including the endpoints, so that we use only values inside the cell.
 
 // Number of subcells in each dimension. The total number of subcells per cell is this number cubed
-	int nSubcells = 4;
+	int nSubcells = 5;
 	Real totSubcells = pow(nSubcells, 3.);
 
 //These variables hold the value of x-dx/2 (lo) and x+dx/2 (hi)
@@ -250,16 +250,16 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 					ySubHi = y_pos + H.dy / 2.;
 					zSubLo = z_pos - H.dz / 2.;
 					zSubHi = z_pos + H.dz / 2.;
-					dxSub  = ( xSubHi - xSubLo ) / ( nSubcells + 1. );
-					dySub  = ( ySubHi - ySubLo ) / ( nSubcells + 1. );
-					dzSub  = ( zSubHi - zSubLo ) / ( nSubcells + 1. );
+					dxSub  = ( xSubHi - xSubLo ) / nSubcells;
+					dySub  = ( ySubHi - ySubLo ) / nSubcells;
+					dzSub  = ( zSubHi - zSubLo ) / nSubcells;
 
 					for (int kk = 0; kk < nSubcells; kk++){
-						z_pos = zSubLo + ( kk + 1 ) * dzSub;
+						z_pos = zSubLo + ( kk + 0.5 ) * dzSub;
 						for (int jj = 0; jj < nSubcells; jj++){
-							y_pos = ySubLo + ( jj + 1 ) * dySub;
+							y_pos = ySubLo + ( jj + 0.5 ) * dySub;
 							for (int ii = 0; ii < nSubcells; ii++){
-								x_pos = xSubLo + ( ii + 1 ) * dxSub;
+								x_pos = xSubLo + ( ii + 0.5 ) * dxSub;
 								r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
 
 								rhoSubcell      = Interpolate( n_points, r, R_vals, density_vals );
