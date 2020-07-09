@@ -132,9 +132,9 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   
   Real M, cm_pos_x, cm_pos_y, cm_pos_z, pos_x, pos_y, pos_z, r, delta_x, delta_y, delta_z;
   M = 0.1005;
-  cm_pos_x = 0.5;
-  cm_pos_y = 0.5;
-  cm_pos_z = 0.5; 
+  cm_pos_x = 0.;
+  cm_pos_y = 0.;
+  cm_pos_z = 0.; 
   
   #ifdef STARS
   M = Star.Mstar;
@@ -177,8 +177,15 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         delta_y = pos_y - cm_pos_y;
         delta_z = pos_z - cm_pos_z;
         r = sqrt( ( delta_x * delta_x ) + ( delta_y * delta_y ) + ( delta_z * delta_z ) );
-        
+
+				#ifdef STARS
         pot_val = - Grav.Gconst * M / r;
+				#endif        
+
+				#ifdef POISSON_TEST
+				pot_val = - 64. * M_PI * Grav.Gconst / 315. / r;
+				#endif
+
         pot_boundary[id] = pot_val;
                         
       }

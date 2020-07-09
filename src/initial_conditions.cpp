@@ -17,6 +17,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+//#include <gsl/gsl_sf_legendre.h>
 
 using namespace std;
 
@@ -76,7 +77,9 @@ void Grid3D::Set_Initial_Conditions(parameters P) {
   } else if (strcmp(P.init, "Polytropic_Star")==0) {
     Polytropic_Star(P);   
   #endif
-  } else {
+  } else if (strcmp(P.init, "poissonTest") == 0) {
+			poissonTest(P);
+	}	else {
     chprintf ("ABORT: %s: Unknown initial conditions!\n", P.init);
     chexit(-1);
   }
@@ -1253,11 +1256,56 @@ void Grid3D::Zeldovich_Pancake( struct parameters P ){
   
 }
 
+void Grid3D::poissonTest( struct parameters P ){
 
+	Real x, y, z, r, vx, vy, vz, v2, mu, temperature, density, pressure;
 
+	mu = 1.;
+	temperature = 1.;
 
+	#ifdef DE
+  Real gasEnergy;
+  #endif
 
+  vx = 0.;
+  vy = 0.;
+  vz = 0.;
+  v2 = vx*vx + vy*vy + vz*vz;
 
+	int id;
+//	chprintf("%d\n", H.nz);
+  for (int k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
+//		Get_Position(0, 0, k, &x, &y, &z);
+//		chprintf("%d, %.15e\n", k, z);
+    for (int j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
+      for (int i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
+        id = i + j*H.nx + k*H.nx*H.ny;
 
+        // // get the centered cell positions at (i,j,k)
+        Get_Position(i, j, k, &x, &y, &z);
+        r = sqrt( x * x + y * y + z * z );
 
+//			Roseanne's density field
+				if ( r < 1. ){
+//					density = pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(0, x / r);
+					density = pow(1. - r * r, 3.) * 1.;
+				}
+				else{
+					density = 0.;
+				}
 
+        C.density[id] = density;
+        pressure = temperature * density * KB / mu / MP;
+        C.momentum_x[id] = density * vx;
+        C.momentum_y[id] = density * vy;
+        C.momentum_z[id] = density * vz;
+        C.Energy[id] = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
+
+        #ifdef DE
+        C.GasEnergy[id] = pressure / ( P.gamma - 1. );
+        #endif
+
+			}
+		}
+	}
+}

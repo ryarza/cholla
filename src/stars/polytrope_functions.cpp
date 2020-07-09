@@ -1,8 +1,8 @@
 #ifdef STARS
 
-#include "global.h"
-#include "grid3D.h"
-#include "io.h"
+#include "../global.h"
+#include "../grid3D.h"
+#include "../io.h"
 #include <math.h>  
 #include <vector> 
 

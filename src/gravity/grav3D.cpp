@@ -67,11 +67,11 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
 
   //Set the Gravitational Constant ( units must be consistent )
   Gconst = GN;
-  if (strcmp(P->init, "Spherical_Overdensity_3D")==0){
+  if (strcmp(P->init, "Spherical_Overdensity_3D")==0 || strcmp(P->init, "poissonTest") == 0){
     Gconst = 1;
     chprintf("WARNING: Using Gravitational Constant G=1.\n");
   }
-  
+ 
   #ifdef STARS
   Gconst = G_CGS;
   chprintf("WARNING: Using Gravitational Constant in cgs units.\n");

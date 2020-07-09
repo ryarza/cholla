@@ -10,6 +10,8 @@
 #include <gsl/gsl_spline2d.h>
 #endif
 
+//#include <gsl/gsl_sf.h>
+
 #if PRECISION == 1
 #ifndef FLOAT_TYPEDEF_DEFINED
 typedef float Real;

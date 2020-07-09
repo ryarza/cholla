@@ -37,7 +37,7 @@
 #endif
 
 #ifdef STARS
-#include "stars.h"
+#include "stars/stars.h"
 #endif
 
 struct Rotation
@@ -740,7 +740,14 @@ class Grid3D
   void Update_Internal_Energy();
   void Do_Cooling_Step_Grackle();
   #endif
-  
+
+	#ifdef STARS
+	void AccBh(Real posBhx, Real posBhy, Real posBhz, Real *accBhx, Real *accBhy, Real *accBhz);
+	#endif
+
+	#ifdef POISSON_TEST
+	void poissonTest( struct parameters P );
+	#endif  
 
 };
 

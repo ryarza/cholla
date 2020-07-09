@@ -1,5 +1,5 @@
 
-DIRS := src src/gravity src/particles src/cosmology src/cooling
+DIRS := src src/gravity src/particles src/cosmology src/cooling src/stars
 ifeq ($(findstring -DPARIS,$(POISSON_SOLVER)),-DPARIS)
   DIRS += src/gravity/paris
 endif
@@ -95,7 +95,7 @@ DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
 #Stellar Simulation
-DFLAGS += -DSTARS
+#DFLAGS += -DSTARS
 
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY
@@ -103,6 +103,8 @@ DFLAGS += -DSTARS
 # Use Grackle for cooling in cosmological simulations
 # DFLAGS += -DCOOLING_GRACKLE -DCONFIG_BFLOAT_8 -DOUTPUT_TEMPERATURE -DOUTPUT_CHEMISTRY -DSCALAR -DN_OMP_THREADS_GRACKLE=20
 
+# Test Poisson solver
+DFLAGS += -DPOISSON_TEST
 
 SYSTEM = "Lux"
 
