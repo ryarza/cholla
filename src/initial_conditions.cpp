@@ -1273,10 +1273,7 @@ void Grid3D::poissonTest( struct parameters P ){
   v2 = vx*vx + vy*vy + vz*vz;
 
 	int id;
-//	chprintf("%d\n", H.nz);
   for (int k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
-//		Get_Position(0, 0, k, &x, &y, &z);
-//		chprintf("%d, %.15e\n", k, z);
     for (int j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
       for (int i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
         id = i + j*H.nx + k*H.nx*H.ny;
@@ -1289,9 +1286,11 @@ void Grid3D::poissonTest( struct parameters P ){
 				if ( r < 1. ){
 //					density = pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(0, x / r);
 					density = pow(1. - r * r, 3.) * 1.;
+					C.analyticalPotential[id] = - M_PI * ( 35. * pow(r, 8) - 180. * pow(r, 6.) + 378. * pow(r, 4.) - 420. * r * r + 315. ) / 630.;
 				}
 				else{
 					density = 0.;
+					C.analyticalPotential[id] = - 64. * M_PI / 315. / r;
 				}
 
         C.density[id] = density;

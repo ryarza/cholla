@@ -266,10 +266,16 @@ void Grid3D::AllocateMemory(void)
   #ifdef DE
   C.GasEnergy = &(buffer0[(H.n_fields-1)*H.n_cells]);
   #endif
+
   
   #if defined( GRAVITY ) 
   C.Grav_potential = (Real *) malloc(H.n_cells*sizeof(Real));
-  #else
+	
+	#ifdef POISSON_TEST
+	C.analyticalPotential = (Real *) malloc(H.n_cells * sizeof(Real));
+	#endif
+  
+	#else
   C.Grav_potential = NULL;
   #endif
   

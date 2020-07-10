@@ -362,7 +362,11 @@ class Grid3D
 
       /*! \var momentum_z 
        *  \brief Array containing the momentum in the z direction of each cell in the grid at the beginning of the timestep */
-      Real *momentum_z_0;			
+      Real *momentum_z_0;
+
+			#ifdef POISSON_TEST
+			Real *analyticalPotential;
+			#endif
 
       
     } C;
