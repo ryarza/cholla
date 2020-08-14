@@ -671,6 +671,7 @@ Real Grid3D::Update_Hydro_Grid( ){
   #endif //CPU_TIME
   
   #ifdef GRAVITY
+
   // Extrapolate gravitational potential for hydro step
   Extrapolate_Grav_Potential();
   #endif

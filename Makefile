@@ -1,5 +1,5 @@
 
-DIRS := src src/gravity src/particles src/cosmology src/cooling src/stars
+DIRS := src src/gravity src/particles src/cosmology src/cooling src/tides
 ifeq ($(findstring -DPARIS,$(POISSON_SOLVER)),-DPARIS)
   DIRS += src/gravity/paris
 endif
@@ -20,6 +20,8 @@ DFLAGS += -DMPI_CHOLLA -DBLOCK
 
 #DFLAGS += -DPRECISION=1
 DFLAGS += -DPRECISION=2
+
+DFLAGS += -DH_CORRECTION
 
 # Output
 #DFLAGS += -DBINARY
@@ -42,10 +44,11 @@ DFLAGS += -DHLLC
 
 # Integrator
 DFLAGS += -DVL
+#DFLAGS += -DCTU
 # DFLAGS += -DSIMPLE
 
 # Dual-Energy Formalism
-DFLAGS += -DDE
+#DFLAGS += -DDE
 
 # Apply a minimum value to conserved values
 DFLAGS += -DDENSITY_FLOOR
@@ -77,7 +80,7 @@ DFLAGS += -DCOUPLE_GRAVITATIONAL_WORK
 #DFLAGS += -DCOUPLE_DELTA_E_KINETIC
 DFLAGS += -DOUTPUT_POTENTIAL
 DFLAGS += -DGRAVITY_5_POINTS_GRADIENT
-POISSON_SOLVER ?= -DPFFT
+#POISSON_SOLVER ?= -DPFFT
 DFLAGS += $(POISSON_SOLVER)
 
 # Include gravity from particles PM
@@ -94,8 +97,11 @@ OMP_NUM_THREADS ?= 16
 DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
-#Stellar Simulation
-#DFLAGS += -DSTARS
+#Stellar simulation
+DFLAGS += -DTIDES
+
+# Test Poisson solver
+#DFLAGS += -DPOISSON_TEST
 
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY
@@ -103,11 +109,7 @@ DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 # Use Grackle for cooling in cosmological simulations
 # DFLAGS += -DCOOLING_GRACKLE -DCONFIG_BFLOAT_8 -DOUTPUT_TEMPERATURE -DOUTPUT_CHEMISTRY -DSCALAR -DN_OMP_THREADS_GRACKLE=20
 
-# Test Poisson solver
-DFLAGS += -DPOISSON_TEST
-
 SYSTEM = "Lux"
-
 
 ifdef HIP_PLATFORM
   DFLAGS += -DO_HIP
@@ -215,7 +217,8 @@ ifeq ($(findstring -DCOOLING_GRACKLE,$(DFLAGS)),-DCOOLING_GRACKLE)
   LIBS += -L$(GRAKLE_HOME)/lib -lgrackle 
 endif
 
-
+INCL += -I/cm/shared/apps/gsl/2.6/include/gsl
+LIBS += -L/cm/shared/apps/gsl/2.6/lib -lgsl -lgslcblas
 
 .SUFFIXES: .c .cpp .cu .o
 

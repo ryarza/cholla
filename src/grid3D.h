@@ -36,8 +36,8 @@
 #include "timing_functions.h"
 #endif
 
-#ifdef STARS
-#include "stars/stars.h"
+#ifdef TIDES
+#include "tides/tides.h"
 #endif
 
 struct Rotation
@@ -297,8 +297,8 @@ class Grid3D
     Cosmology Cosmo;
     #endif
    
-    #ifdef STARS
-    Stellar Star;
+    #ifdef TIDES
+    Star S;
     #endif 
     #ifdef COOLING_GRACKLE
     // Object that contains data for Grackle cooling
@@ -745,13 +745,15 @@ class Grid3D
   void Do_Cooling_Step_Grackle();
   #endif
 
-	#ifdef STARS
+	#ifdef TIDES
 	void AccBh(Real posBhx, Real posBhy, Real posBhz, Real *accBhx, Real *accBhy, Real *accBhz);
+	void damp();
+	void updateCOM();
 	#endif
 
 	#ifdef POISSON_TEST
 	void poissonTest( struct parameters P );
-	#endif  
+	#endif
 
 };
 

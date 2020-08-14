@@ -131,12 +131,12 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
   Grav.Poisson_solver.Set_Isolated_Boundary_Conditions( Grav.boundary_flags, P );
 
 
-	#ifdef POISSON_TEST
+	#if defined POISSON_TEST || defined TIDES
   Real epsilon = 1.e-10;
 	#else
 	Real epsilon = 1.e-4;
 	#endif
-	chprintf("SOR convergence epsilon: %.5e", epsilon);
+//	chprintf("SOR convergence epsilon: %.5e", epsilon);
   int max_iter = 10000000;
   int n_iter = 0;
 

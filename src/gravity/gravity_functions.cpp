@@ -481,6 +481,7 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
   int nGHST = n_ghost_grid - N_GHOST_POTENTIAL;
   Real pot_now, pot_prev, pot_extrp;
   int k, j, i, id_pot, id_grid;
+	Real posx, posy, posz;
   for ( k=g_start; k<g_end; k++ ){
     for ( j=0; j<ny_pot; j++ ){
       for ( i=0; i<nx_pot; i++ ){
@@ -493,8 +494,19 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
           pot_prev = Grav.F.potential_1_h[id_pot]; //Potential at the (n-1)-th timestep ( previous step )
           //Compute the extrapolated potential from phi_n-1 and phi_n
           pot_extrp = pot_now  + 0.5 * Grav.dt_now * ( pot_now - pot_prev  ) / Grav.dt_prev;
+
         }
         
+				#ifdef TIDES
+//			Add the extrapolated tidal potential, but only if the relaxation has ended!
+				if ( S.relaxed == 1 ){
+					Get_Position(i+nGHST, j+nGHST, k+nGHST, &posx, &posy, &posz);
+					pot_extrp += S.getTidalPotential(posx, posy, posz, S.extCij, S.extCijk, S.extCijkl);
+//					chprintf("Added extrapolated tidal potential\n");
+				}
+				#endif//TIDES
+
+
         #ifdef COSMOLOGY
         //For cosmological simulation the potential is transformrd to 'comuving coordinates' 
         pot_extrp *= Cosmo.current_a * Cosmo.current_a / Cosmo.phi_0_gas;

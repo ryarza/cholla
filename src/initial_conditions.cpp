@@ -17,7 +17,10 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
-//#include <gsl/gsl_sf_legendre.h>
+
+#ifdef POISSON_TEST
+#include <gsl/gsl_sf_legendre.h>
+#endif//POISSON_TEST
 
 using namespace std;
 
@@ -73,13 +76,21 @@ void Grid3D::Set_Initial_Conditions(parameters P) {
     Uniform_Grid();  
   } else if (strcmp(P.init, "Zeldovich_Pancake")==0) {
     Zeldovich_Pancake(P);
-  #ifdef STARS      
-  } else if (strcmp(P.init, "Polytropic_Star")==0) {
-    Polytropic_Star(P);   
-  #endif
-  } else if (strcmp(P.init, "poissonTest") == 0) {
+	}
+
+	#ifdef TIDES
+  else if (strcmp(P.init, "Polytropic_Star")==0) {
+    Polytropic_Star(P);
+	}
+  #endif//TIDES
+
+	#ifdef POISSON_TEST
+  else if (strcmp(P.init, "poissonTest") == 0) {
 			poissonTest(P);
-	}	else {
+	}
+	#endif
+	
+	else {
     chprintf ("ABORT: %s: Unknown initial conditions!\n", P.init);
     chexit(-1);
   }
@@ -1256,21 +1267,24 @@ void Grid3D::Zeldovich_Pancake( struct parameters P ){
   
 }
 
+#ifdef POISSON_TEST
 void Grid3D::poissonTest( struct parameters P ){
 
-	Real x, y, z, r, vx, vy, vz, v2, mu, temperature, density, pressure;
+	Real x, y, z, r, vx, vy, vz, v2, mu, temperature, density, pressure, legendreP;
 
 	mu = 1.;
 	temperature = 1.;
 
 	#ifdef DE
   Real gasEnergy;
-  #endif
+  #endif//DE
 
   vx = 0.;
   vy = 0.;
   vz = 0.;
   v2 = vx*vx + vy*vy + vz*vz;
+
+	Real coords[3];
 
 	int id;
   for (int k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
@@ -1278,22 +1292,34 @@ void Grid3D::poissonTest( struct parameters P ){
       for (int i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
         id = i + j*H.nx + k*H.nx*H.ny;
 
-        // // get the centered cell positions at (i,j,k)
+//			Cell-centered positions at (i,j,k)
         Get_Position(i, j, k, &x, &y, &z);
         r = sqrt( x * x + y * y + z * z );
+				coords[0] = x;
+				coords[1] = y;
+				coords[2] = z;
+
+				C.density[id] = 0.;
+				C.analyticalPotential[id] = 0.;
 
 //			Roseanne's density field
 				if ( r < 1. ){
-//					density = pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(0, x / r);
-					density = pow(1. - r * r, 3.) * 1.;
-					C.analyticalPotential[id] = - M_PI * ( 35. * pow(r, 8) - 180. * pow(r, 6.) + 378. * pow(r, 4.) - 420. * r * r + 315. ) / 630.;
+					for (int l = 0; l < 6; l++){
+						C.density[id] += P.c[l] * pow(r, l) * pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r));
+						C.analyticalPotential[id] += P.c[l] * M_PI * ( - 0.5 * pow(r, l + 8.) / ( 2. * l + 9. )
+																												 + 2.  * pow(r, l + 6.) / ( 2. * l + 7. )
+																												 - 3.  * pow(r, l + 4.) / ( 2. * l + 5. )
+																												 + 2.  * pow(r, l + 2.) / ( 2. * l + 3. )
+																												 - 0.5 * pow(r, l     ) / ( 2. * l + 1. )
+																											 ) * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r));
+					}
 				}
 				else{
-					density = 0.;
-					C.analyticalPotential[id] = - 64. * M_PI / 315. / r;
+					for ( int l = 0; l < 6; l++){
+						C.analyticalPotential[id] += - P.c[l] * 64. * M_PI * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r)) * 3. * gsl_sf_doublefact(2 * l - 1) / gsl_sf_doublefact(2 * l + 9);
+					}
 				}
 
-        C.density[id] = density;
         pressure = temperature * density * KB / mu / MP;
         C.momentum_x[id] = density * vx;
         C.momentum_y[id] = density * vy;
@@ -1302,9 +1328,10 @@ void Grid3D::poissonTest( struct parameters P ){
 
         #ifdef DE
         C.GasEnergy[id] = pressure / ( P.gamma - 1. );
-        #endif
+        #endif//DE
 
 			}
 		}
 	}
 }
+#endif//POISSON_TEST

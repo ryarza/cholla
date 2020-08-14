@@ -43,7 +43,7 @@ void Grid3D::Set_Potential_Boundaries_Isolated( int direction, int side, int *fl
     if ( side == 1 ) pot_boundary = Grav.F.pot_boundary_x1;
   }
   #endif
-  #ifdef GRAV_ISOLATED_BOUNDARY_Z
+  #ifdef GRAV_ISOLATED_BOUNDARY_Y
   if ( direction == 1 ){
     n_i = Grav.nx_local;
     n_j = Grav.nz_local;
@@ -111,7 +111,7 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
     if ( side == 1 ) pot_boundary = Grav.F.pot_boundary_x1;
   }
   #endif
-  #ifdef GRAV_ISOLATED_BOUNDARY_Z
+  #ifdef GRAV_ISOLATED_BOUNDARY_Y
   if ( direction == 1 ){
     domain_l = Grav.yMin;
     n_i = Grav.nx_local;
@@ -136,12 +136,12 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   cm_pos_y = 0.;
   cm_pos_z = 0.; 
   
-  #ifdef STARS
-  M = Star.Mstar;
+  #ifdef TIDES
+  M = S.Mstar;
   cm_pos_x = 0.0;
   cm_pos_y = 0.0;
   cm_pos_z = 0.0;
-  #endif
+  #endif//TIDES
   
   int i, j, k, id;
   Real pot_val;
@@ -153,21 +153,24 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         id = i + j*n_i + k*n_i*n_j; 
         
         if ( direction == 0 ){
-          pos_x = Grav.xMin - ( nGHST + k + 0.5 ) * Grav.dx;
+//          pos_x = Grav.xMin - ( nGHST + k + 0.5 ) * Grav.dx;
+					pos_x = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
           if ( side == 1 ) pos_x += Lx_local + nGHST*Grav.dx;
           pos_y = Grav.yMin + ( i + 0.5 )* Grav.dy;
           pos_z = Grav.zMin + ( j + 0.5 )* Grav.dz;
         }
         
         if ( direction == 1 ){
-          pos_y = Grav.yMin - ( nGHST + k + 0.5 ) * Grav.dy;
+//          pos_y = Grav.yMin - ( nGHST + k + 0.5 ) * Grav.dy;
+					pos_y = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
           if ( side == 1 ) pos_y += Ly_local + nGHST*Grav.dy;
           pos_x = Grav.xMin + ( i + 0.5 )* Grav.dx;
           pos_z = Grav.zMin + ( j + 0.5 )* Grav.dz;
         } 
           
         if ( direction == 2 ){
-          pos_z = Grav.zMin - ( nGHST + k + 0.5 ) * Grav.dz;
+//          pos_z = Grav.zMin - ( nGHST + k + 0.5 ) * Grav.dz;
+					pos_z = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
           if ( side == 1 ) pos_z += Lz_local + nGHST*Grav.dz;
           pos_x = Grav.xMin + ( i + 0.5 )* Grav.dx;
           pos_y = Grav.yMin + ( j + 0.5 )* Grav.dy;
@@ -178,9 +181,9 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         delta_z = pos_z - cm_pos_z;
         r = sqrt( ( delta_x * delta_x ) + ( delta_y * delta_y ) + ( delta_z * delta_z ) );
 
-				#ifdef STARS
+				#ifdef TIDES
         pot_val = - Grav.Gconst * M / r;
-				#endif        
+				#endif//TIDES
 
 				#ifdef POISSON_TEST
 				pot_val = - 64. * M_PI * Grav.Gconst / 315. / r;

@@ -263,14 +263,50 @@ parms->scale_outputs_file[0] = '\0';
     else if (strcmp(name, "tile_length")==0)
       parms->tile_length  = atof(value);
 #endif //TILED_INITIAL_CONDITIONS
+#ifdef TIDES
     else if (strcmp(name, "Mstar")==0)
       parms->Mstar = atof(value);
     else if (strcmp(name, "Rstar")==0)
       parms->Rstar = atof(value);
-    else if (strcmp(name, "perturberMass")==0)
-      parms->perturberMass = atof(value);
+    else if (strcmp(name, "Mbh")==0)
+      parms->Mbh = atof(value);
     else if (strcmp(name, "polyN")==0)
       parms->polyN = atof(value);
+		else if (strcmp(name, "rprt")==0)
+			parms->rprt = atof(value);
+		else if (strcmp(name, "tRelaxtDyn")==0)
+			parms->tRelaxtDyn = atof(value);
+		else if (strcmp(name, "r0rt") == 0)
+			parms->r0rt = atof(value);
+#endif
+
+#ifdef POISSON_TEST
+		else if (strcmp(name, "c0")==0)
+			parms->c[0] = atof(value);
+		else if (strcmp(name, "c1")==0)
+			parms->c[1] = atof(value);
+		else if (strcmp(name, "c2")==0)
+			parms->c[2] = atof(value);
+		else if (strcmp(name, "c3")==0)
+			parms->c[3] = atof(value);
+		else if (strcmp(name, "c4")==0)
+			parms->c[4] = atof(value);
+		else if (strcmp(name, "c5")==0)
+			parms->c[5] = atof(value);
+		else if (strcmp(name, "d0")==0)
+			parms->d[0] = atof(value);
+		else if (strcmp(name, "d1")==0)
+			parms->d[1] = atof(value);
+		else if (strcmp(name, "d2")==0)
+			parms->d[2] = atof(value);
+		else if (strcmp(name, "d3")==0)
+			parms->d[3] = atof(value);
+		else if (strcmp(name, "d4")==0)
+			parms->d[4] = atof(value);
+		else if (strcmp(name, "d5")==0)
+			parms->d[5] = atof(value);
+#endif//POISSON_TEST
+
 #ifdef SET_MPI_GRID
     // Set the MPI Processes grid [n_proc_x, n_proc_y, n_proc_z]
     else if (strcmp(name, "n_proc_x")==0)

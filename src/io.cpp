@@ -453,19 +453,55 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   status = H5Awrite(attribute_id, H5T_NATIVE_INT, &H.n_fields);
   status = H5Aclose(attribute_id);
  
-  #ifdef STARS
+  #ifdef TIDES
   attribute_id = H5Acreate(file_id, "Mstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.Mstar);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Mstar);
   status = H5Aclose(attribute_id);
   
   attribute_id = H5Acreate(file_id, "Rstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.Rstar);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Rstar);
   status = H5Aclose(attribute_id);
 
   attribute_id = H5Acreate(file_id, "polyN", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
-  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &Star.polyN);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.polyN);
   status = H5Aclose(attribute_id);
-  #endif
+
+  attribute_id = H5Acreate(file_id, "Mbh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Mbh);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "eta0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.eta0);
+  status = H5Aclose(attribute_id);
+	
+  attribute_id = H5Acreate(file_id, "eta", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.eta);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "t0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.t0);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "r0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.r0);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "rp", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.rp);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "tdynStar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.tdynStar);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "E0star", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.E0star);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "Mbox", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Mbox);
+  status = H5Aclose(attribute_id);
+  #endif//TIDES
 
   #ifdef COSMOLOGY
   attribute_id = H5Acreate(file_id, "H0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
@@ -557,7 +593,46 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "dx", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, Real_data);
   status = H5Aclose(attribute_id);
-  
+
+	#ifdef TIDES
+
+  attribute_id = H5Acreate(file_id, "posFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posFrame);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "velFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velFrame);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "accFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accFrame);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "posBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posBh);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "velBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velBh);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "accBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accBh);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "posSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posSt);
+  status = H5Aclose(attribute_id);
+
+  attribute_id = H5Acreate(file_id, "velSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velSt);
+  status = H5Aclose(attribute_id);
+
+//  attribute_id = H5Acreate(file_id, "accSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+//  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accSt);
+//  status = H5Aclose(attribute_id);
+	#endif//TIDES
+ 
   // Close the dataspace
   status = H5Sclose(dataspace_id);
 

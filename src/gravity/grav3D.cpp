@@ -72,10 +72,10 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
     chprintf("WARNING: Using Gravitational Constant G=1.\n");
   }
  
-  #ifdef STARS
+  #ifdef TIDES
   Gconst = G_CGS;
   chprintf("WARNING: Using Gravitational Constant in cgs units.\n");
-  #endif
+  #endif//TIDES
   
   //Flag to transfer the Potential boundaries
   TRANSFER_POTENTIAL_BOUNDARIES = false;

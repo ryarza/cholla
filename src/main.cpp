@@ -73,7 +73,6 @@ int main(int argc, char *argv[])
   G.Initialize(&P);
   chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
 
-
   // Set initial conditions and calculate first dt
   chprintf("Setting initial conditions...\n");
   G.Set_Initial_Conditions(P);
@@ -84,6 +83,12 @@ int main(int argc, char *argv[])
     outtime += G.H.t;
     nfile = P.nfile*P.nfull;
   }
+
+	#ifdef TIDES
+	G.S.initialize(P, G.H.t, G.H.dt);
+//	chprintf("About to update COM\n");
+	G.updateCOM();
+	#endif
   
   #ifdef DE
   chprintf("\nUsing Dual Energy Formalism:\n eta_1: %0.3f   eta_2: %0.4f\n", DE_ETA_1, DE_ETA_2 );
@@ -132,10 +137,10 @@ int main(int argc, char *argv[])
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
-  #ifdef STARS
+  #ifdef TIDES
   //If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
   P.nfile = nfile;
-  if (strcmp(P.init, "Polytropic_Star") == 0) G.Polytropic_Star_Relaxation( P );
+  if (strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0.) G.Polytropic_Star_Relaxation( P );
   nfile = P.nfile;
   chprintf("nfile after relaxation: %i\n", P.nfile);
   #endif
@@ -149,6 +154,18 @@ int main(int argc, char *argv[])
   // add one to the output file count
   nfile++;
   #endif //OUTPUT
+
+	#ifdef POISSON_TEST
+	chprintf("Poisson equation solved. Exiting now...");
+  G.Reset();
+
+  #ifdef MPI_CHOLLA
+  MPI_Finalize();
+  #endif//MPI_CHOLLA
+
+	return 0;
+	#endif//POISSON_TEST
+
   // increment the next output time
   outtime += P.outstep;
 
@@ -185,12 +202,21 @@ int main(int argc, char *argv[])
     G.Transfer_Particles_Boundaries(P); 
     #endif
     
+		#ifdef TIDES
+		G.S.update(G.H.t, G.H.dt);
+		G.updateCOM();
+		#endif
+
     // Advance the grid by one timestep
     dti = G.Update_Hydro_Grid();
-    
+
+		#ifdef TIDES
+//	Damp very low densities by a constant factor
+		G.damp();
+		#endif//TIDES
+
     // update the simulation time ( t += dt )
     G.Update_Time();
-    
         
     #ifdef GRAVITY
     //Compute Gravitational potential for next step
@@ -227,7 +253,8 @@ int main(int argc, char *argv[])
     #endif
     
     // if ( P.n_steps_output > 0 && G.H.n_step % P.n_steps_output == 0) G.H.Output_Now = true;
-    
+  
+  
     if (G.H.t == outtime || G.H.Output_Now )
     {
       #ifdef OUTPUT

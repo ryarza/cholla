@@ -232,11 +232,21 @@ struct parameters
 #endif /*ROTATED_PROJECTION*/
 
 // Parameters for the stellar oscillation problem
+#ifdef TIDES
   Real Mstar;
   Real Rstar;
-  Real perturberMass;
+  Real Mbh;
+	Real tRelaxtDyn;
   Real polyN;
-  Real periBeta;
+	Real rprt;
+	Real r0rt;
+#endif//TIDES
+
+#ifdef POISSON_TEST
+	Real c[6];
+	int d[6];
+#endif
+
 #ifdef COSMOLOGY
   Real H0;
   Real Omega_M;
