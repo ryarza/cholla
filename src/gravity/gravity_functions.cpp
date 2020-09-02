@@ -496,7 +496,8 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
           pot_extrp = pot_now  + 0.5 * Grav.dt_now * ( pot_now - pot_prev  ) / Grav.dt_prev;
 
         }
-        
+
+/*      
 				#ifdef TIDES
 //			Add the extrapolated tidal potential, but only if the relaxation has ended!
 				if ( S.relaxed == 1 ){
@@ -505,7 +506,7 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
 //					chprintf("Added extrapolated tidal potential\n");
 				}
 				#endif//TIDES
-
+*/
 
         #ifdef COSMOLOGY
         //For cosmological simulation the potential is transformrd to 'comuving coordinates' 

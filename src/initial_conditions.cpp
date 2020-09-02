@@ -1316,7 +1316,7 @@ void Grid3D::poissonTest( struct parameters P ){
 				}
 				else{
 					for ( int l = 0; l < 6; l++){
-						C.analyticalPotential[id] += - P.c[l] * 64. * M_PI * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r)) * 3. * gsl_sf_doublefact(2 * l - 1) / gsl_sf_doublefact(2 * l + 9);
+						C.analyticalPotential[id] += - P.c[l] * 64. * M_PI * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r)) * 3. / ( 2 * l + 9 ) / ( 2 * l + 7 ) / ( 2 * l + 5 ) / ( 2 * l + 3 ) / ( 2 * l + 1 ) / pow(r, l + 1.);
 					}
 				}
 

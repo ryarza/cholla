@@ -32,6 +32,9 @@ void Star::initialize(struct parameters &P, Real t, Real dt){
 //Mass ratio
 	q = Mbh / Mstar;
 
+//Reduced mass
+	mu = Mbh * Mstar / ( Mbh + Mstar );
+
 //Tidal radius
 	rt = Rstar * pow(q, 1./3.);
 
@@ -40,7 +43,6 @@ void Star::initialize(struct parameters &P, Real t, Real dt){
 
 //Initial eta
 	eta0 = - sqrt(P.r0rt / P.rprt - 1.);
-	chprintf("eta0 = %.20e\n", eta0);
 
 //Initial distance
 	r0 = P.r0rt * rt;
@@ -55,20 +57,16 @@ void Star::initialize(struct parameters &P, Real t, Real dt){
 
 	chprintf("  Dynamical time of the star : %.5e\n", tdynStar);
 	chprintf("  Dynamical time of the orbit: %.5e\n", tdynOrb );
-//	chprintf("  Initial eta                : %.5e\n", eta0    );
+	chprintf("  Initial eta                : %.5e\n", eta0    );
 
 // Total energy of the star
 	E0star = ( G_CGS * Mstar * Mstar / Rstar ) * ( 3. / ( polyN - 5. ) + 1. / ( 5. - polyN ) / ( P.gamma - 1. ) );
 
-
 //Relaxation time
 	tRelax = P.tRelaxtDyn * tdynStar;
 
-//  chprintf("Updating S object...\n");
 	update(t, dt);
-	E0orb = getEorb();
-
-//  chprintf("Done with S object for now.\n");
+//	E0orb = getEorb();
 
 }
 

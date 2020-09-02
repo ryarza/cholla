@@ -25,8 +25,6 @@ void Grid3D::updateCOM(){
 	Real totrho;
 	#endif
 
-//	chprintf("In updateCOM!\n");
-
 	Real rho;
 	int i, j, k, id;
 
@@ -55,17 +53,13 @@ void Grid3D::updateCOM(){
 	}
 
   #ifdef MPI_CHOLLA
-//	chprintf("About to reduce rho\n");
 	totrho = ReduceRealSum(totrhoTemp);
-//	chprintf("total density: %.5e\n", totrho);
 	S.Mbox = totrho * H.dx * H.dy * H.dz;
 
-//	chprintf("About to reduce position of the star\n");
   S.posSt[0] = ReduceRealSum(posxStTemp) / totrho;
   S.posSt[1] = ReduceRealSum(posyStTemp) / totrho;
   S.posSt[2] = ReduceRealSum(poszStTemp) / totrho;
 
-//	chprintf("About to reduce velocity of the star\n");
 	S.velSt[0] = ReduceRealSum(velxStTemp) / totrho;
 	S.velSt[1] = ReduceRealSum(velyStTemp) / totrho;
 	S.velSt[2] = ReduceRealSum(velzStTemp) / totrho;
@@ -102,22 +96,9 @@ void Star::update(Real t, Real dt){
 // Important: first do frames, then tidal tensors since they depend on the frames!
 	eta = geteta(tOrb);
 	updateFrameCoords (tOrb, dt);
-//	chprintf("Updated frame coords");
 	updateBhCoords    (tOrb, dt);
-//	chprintf("Updated bh coords");
 	updateTidalTensors(tOrb, dt);
-//	chprintf("Updated tidal tensors");
 
-	chprintf("eta = %.20e\n", eta);
-	chprintf("posFrame = %.20e, %.20e, %.20e\n", posFrame[0], posFrame[1], posFrame[2]);
-	chprintf("velFrame = %.20e, %.20e, %.20e\n", velFrame[0], velFrame[1], velFrame[2]);
-	chprintf("posBh    = %.20e, %.20e, %.20e\n", posBh[0], posBh[1], posBh[2]);
-	chprintf("velBh    = %.20e, %.20e, %.20e\n", velBh[0], velBh[1], velBh[2]);
-
-	Eorb = getEorb();
-	DEoE = ( Eorb - E0orb ) / E0star;
-
-	chprintf("Delta E over E: %.15e\n", DEoE);
 }
 
 Real Star::getEorb(){
@@ -128,7 +109,6 @@ Real Star::getEorb(){
 
 }
 
-// Returns the orbital parameter eta as a function of time
 Real Star::geteta(Real t){
 
 	Real num;

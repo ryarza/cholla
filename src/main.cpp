@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
+/*
   #ifdef TIDES
   //If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
   P.nfile = nfile;
@@ -144,6 +145,7 @@ int main(int argc, char *argv[])
   nfile = P.nfile;
   chprintf("nfile after relaxation: %i\n", P.nfile);
   #endif
+*/
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {
@@ -156,7 +158,10 @@ int main(int argc, char *argv[])
   #endif //OUTPUT
 
 	#ifdef POISSON_TEST
-	chprintf("Poisson equation solved. Exiting now...");
+	#ifdef MPI_CHOLLA
+	MPI_Barrier(world);
+	#endif//MPI_CHOLLA
+	chprintf("Poisson equation solved. Exiting now...\n");
   G.Reset();
 
   #ifdef MPI_CHOLLA

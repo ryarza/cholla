@@ -118,6 +118,7 @@ void Grid3D::Initialize(struct parameters *P)
 
   // Set the CFL coefficient (a global variable)
   C_cfl = 0.3;
+	C_cfl /= 5.;
 
 #ifndef MPI_CHOLLA
 

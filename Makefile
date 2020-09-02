@@ -43,9 +43,9 @@ DFLAGS += -DPPMP
 DFLAGS += -DHLLC
 
 # Integrator
-DFLAGS += -DVL
+#DFLAGS += -DVL
 #DFLAGS += -DCTU
-# DFLAGS += -DSIMPLE
+DFLAGS += -DSIMPLE
 
 # Dual-Energy Formalism
 #DFLAGS += -DDE
