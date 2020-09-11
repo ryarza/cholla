@@ -4,6 +4,11 @@
 #include<stdio.h>
 #include"../global.h"
 
+#if defined TIDES || defined POISSON_TEST
+#include <complex>
+#endif//TIDES
+
+
 #ifdef PFFT
 #include"potential_PFFT_3D.h"
 #endif
@@ -107,7 +112,14 @@ class Grav3D
 
   #ifdef SOR
   Potential_SOR_3D Poisson_solver;
-  #endif
+
+	#if defined TIDES || defined POISSON_TEST
+	std::complex<Real> **Q;
+	Real center[3];
+	int lmaxBoundaries;
+	#endif//TIDES
+
+  #endif//SOR
 
   #ifdef PARIS
   #if (defined(PFFT) || defined(CUFFT) || defined(SOR))
@@ -169,6 +181,10 @@ class Grav3D
   void Copy_Isolated_Boundary_To_GPU_buffer( Real *isolated_boundary_h, Real *isolated_boundary_d, int boundary_size );
   void Copy_Isolated_Boundaries_To_GPU( struct parameters *P );
   #endif
+
+	#if defined TIDES || defined POISSON_TEST
+	std::complex<Real> Y(int l, int m, Real theta, Real phi);
+	#endif
 
 };
 

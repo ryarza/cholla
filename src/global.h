@@ -247,6 +247,10 @@ struct parameters
 	int d[6];
 #endif
 
+#if defined POISSON_TEST || defined TIDES
+	int lmaxBoundaries;
+#endif
+
 #ifdef COSMOLOGY
   Real H0;
   Real Omega_M;

@@ -98,10 +98,10 @@ DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
 #Stellar simulation
-DFLAGS += -DTIDES
+#DFLAGS += -DTIDES
 
 # Test Poisson solver
-#DFLAGS += -DPOISSON_TEST
+DFLAGS += -DPOISSON_TEST
 
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY

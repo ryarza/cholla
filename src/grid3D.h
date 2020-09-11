@@ -755,6 +755,10 @@ class Grid3D
 	void poissonTest( struct parameters P );
 	#endif
 
+	#if defined TIDES || POISSON_TEST
+	void getMoments();
+	#endif
+
 };
 
 

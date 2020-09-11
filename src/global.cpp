@@ -307,6 +307,11 @@ parms->scale_outputs_file[0] = '\0';
 			parms->d[5] = atof(value);
 #endif//POISSON_TEST
 
+#if defined TIDES || defined POISSON_TEST
+		else if (strcmp(name, "lmaxBoundaries")==0)
+			parms->lmaxBoundaries = atoi(value);
+#endif
+
 #ifdef SET_MPI_GRID
     // Set the MPI Processes grid [n_proc_x, n_proc_y, n_proc_z]
     else if (strcmp(name, "n_proc_x")==0)

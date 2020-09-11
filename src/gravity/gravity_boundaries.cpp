@@ -6,6 +6,12 @@
 #include "../grid3D.h"
 #include "grav3D.h"
 
+#if defined TIDES || defined POISSON_TEST
+//#include "../tides/special.h"
+#include "complex"
+#include "../error_handling.h"
+#endif//TIDES || POISSON_TEST
+
 #if defined (GRAV_ISOLATED_BOUNDARY_X) || defined (GRAV_ISOLATED_BOUNDARY_Y) || defined(GRAV_ISOLATED_BOUNDARY_Z)
 
 void Grid3D::Compute_Potential_Boundaries_Isolated( int dir ){
@@ -76,7 +82,7 @@ void Grid3D::Set_Potential_Boundaries_Isolated( int direction, int side, int *fl
           if ( side == 0 ) id_grid = (i+nGHST) + (k)*nx_g                + (j+nGHST)*nx_g*ny_g;
           if ( side == 1 ) id_grid = (i+nGHST) + (k+ny_local+nGHST)*nx_g + (j+nGHST)*nx_g*ny_g; 
         }
-        if ( direction == 1 ){
+        if ( direction == 2 ){
           if ( side == 0 ) id_grid = (i+nGHST) + (j+nGHST)*nx_g + (k)*nx_g*ny_g;
           if ( side == 1 ) id_grid = (i+nGHST) + (j+nGHST)*nx_g + (k+nz_local+nGHST)*nx_g*ny_g; 
         }
@@ -99,8 +105,6 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   Lx_local = Grav.nx_local * Grav.dx;
   Ly_local = Grav.ny_local * Grav.dy;
   Lz_local = Grav.nz_local * Grav.dz;
-  
-  
   
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   if ( direction == 0 ){
@@ -129,21 +133,21 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
     if ( side == 1 ) pot_boundary = Grav.F.pot_boundary_z1;
   }
   #endif  
-  
+
+/*
   Real M, cm_pos_x, cm_pos_y, cm_pos_z, pos_x, pos_y, pos_z, r, delta_x, delta_y, delta_z;
   M = 0.1005;
   cm_pos_x = 0.;
   cm_pos_y = 0.;
   cm_pos_z = 0.; 
-  
-  #ifdef TIDES
-  M = S.Mstar;
-  cm_pos_x = 0.0;
-  cm_pos_y = 0.0;
-  cm_pos_z = 0.0;
-  #endif//TIDES
-  
+*/
+
   int i, j, k, id;
+	Real pos[3], r;
+	#if defined TIDES || defined POISSON_TEST
+	std::complex<Real> potC;
+	Real phi, theta;
+	#endif
   Real pot_val;
   
   for ( k=0; k<nGHST; k++ ){
@@ -154,40 +158,60 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         
         if ( direction == 0 ){
 //          pos_x = Grav.xMin - ( nGHST + k + 0.5 ) * Grav.dx;
-					pos_x = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
-          if ( side == 1 ) pos_x += Lx_local + nGHST*Grav.dx;
-          pos_y = Grav.yMin + ( i + 0.5 )* Grav.dy;
-          pos_z = Grav.zMin + ( j + 0.5 )* Grav.dz;
+					pos[0] = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
+          if ( side == 1 ) pos[0] += Lx_local + nGHST*Grav.dx;
+          pos[1] = Grav.yMin + ( i + 0.5 )* Grav.dy;
+          pos[2] = Grav.zMin + ( j + 0.5 )* Grav.dz;
         }
         
         if ( direction == 1 ){
 //          pos_y = Grav.yMin - ( nGHST + k + 0.5 ) * Grav.dy;
-					pos_y = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
-          if ( side == 1 ) pos_y += Ly_local + nGHST*Grav.dy;
-          pos_x = Grav.xMin + ( i + 0.5 )* Grav.dx;
-          pos_z = Grav.zMin + ( j + 0.5 )* Grav.dz;
+					pos[1] = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
+          if ( side == 1 ) pos[1] += Ly_local + nGHST*Grav.dy;
+          pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
+          pos[2] = Grav.zMin + ( j + 0.5 )* Grav.dz;
         } 
           
         if ( direction == 2 ){
 //          pos_z = Grav.zMin - ( nGHST + k + 0.5 ) * Grav.dz;
-					pos_z = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
-          if ( side == 1 ) pos_z += Lz_local + nGHST*Grav.dz;
-          pos_x = Grav.xMin + ( i + 0.5 )* Grav.dx;
-          pos_y = Grav.yMin + ( j + 0.5 )* Grav.dy;
+					pos[2] = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
+          if ( side == 1 ) pos[2] += Lz_local + nGHST*Grav.dz;
+          pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
+          pos[1] = Grav.yMin + ( j + 0.5 )* Grav.dy;
         }
-         
-        delta_x = pos_x - cm_pos_x;
-        delta_y = pos_y - cm_pos_y;
-        delta_z = pos_z - cm_pos_z;
-        r = sqrt( ( delta_x * delta_x ) + ( delta_y * delta_y ) + ( delta_z * delta_z ) );
 
-				#ifdef TIDES
-        pot_val = - Grav.Gconst * M / r;
-				#endif//TIDES
-
-				#ifdef POISSON_TEST
-				pot_val = - 64. * M_PI * Grav.Gconst / 315. / r;
+				#if defined TIDES || defined POISSON_TEST
+//			Shift positions to with respect to the center of the expansion
+				for ( int ii = 0; ii < 3; ii++ ) pos[ii] -= Grav.center[ii];
+				r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
+				phi = atan2(pos[1], pos[0]);
+				theta = acos( pos[2] / r );
 				#endif
+
+/*
+        delta_x = pos[0] - cm_pos_x;
+        delta_y = pos[1] - cm_pos_y;
+        delta_z = pos[2] - cm_pos_z;
+        r = sqrt( ( delta_x * delta_x ) + ( delta_y * delta_y ) + ( delta_z * delta_z ) );
+*/
+
+				#if defined TIDES || defined POISSON_TEST
+				potC = 0.;
+
+				for ( int l = 0; l < Grav.lmaxBoundaries + 1; l++ ){
+					for ( int m = -l; m < l + 1; m++ ){
+						potC -= 4. * M_PI * pow(r, - l - 1.) * Grav.Q[l][l+m] * Grav.Y(l, m, theta, phi) / ( 2. * l + 1. );
+					}
+				}
+
+				if ( fabs(imag(potC)) > 1.e-15 * fabs(real(potC)) ) {
+					printf("Potential is complex, exiting!\n");
+					chexit(-1);
+				}
+				else{
+					pot_val = real(potC);
+				}
+				#endif//TIDES || POISSON_TEST
 
         pot_boundary[id] = pot_val;
                         

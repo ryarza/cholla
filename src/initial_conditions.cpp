@@ -1305,18 +1305,18 @@ void Grid3D::poissonTest( struct parameters P ){
 //			Roseanne's density field
 				if ( r < 1. ){
 					for (int l = 0; l < 6; l++){
-						C.density[id] += P.c[l] * pow(r, l) * pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r));
+						C.density[id] += P.c[l] * pow(r, l) * pow(1. - r * r, 3.) * gsl_sf_legendre_Pl(l, coords[P.d[l]] / r);
 						C.analyticalPotential[id] += P.c[l] * M_PI * ( - 0.5 * pow(r, l + 8.) / ( 2. * l + 9. )
 																												 + 2.  * pow(r, l + 6.) / ( 2. * l + 7. )
 																												 - 3.  * pow(r, l + 4.) / ( 2. * l + 5. )
 																												 + 2.  * pow(r, l + 2.) / ( 2. * l + 3. )
 																												 - 0.5 * pow(r, l     ) / ( 2. * l + 1. )
-																											 ) * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r));
+																											 ) * gsl_sf_legendre_Pl(l, coords[P.d[l]] / r);
 					}
 				}
 				else{
 					for ( int l = 0; l < 6; l++){
-						C.analyticalPotential[id] += - P.c[l] * 64. * M_PI * gsl_sf_legendre_Pl(l, cos(coords[P.d[l]] / r)) * 3. / ( 2 * l + 9 ) / ( 2 * l + 7 ) / ( 2 * l + 5 ) / ( 2 * l + 3 ) / ( 2 * l + 1 ) / pow(r, l + 1.);
+						C.analyticalPotential[id] += - P.c[l] * 64. * M_PI * gsl_sf_legendre_Pl(l, coords[P.d[l]] / r) * 3. / ( 2 * l + 9 ) / ( 2 * l + 7 ) / ( 2 * l + 5 ) / ( 2 * l + 3 ) / ( 2 * l + 1 ) / pow(r, l + 1.);
 					}
 				}
 

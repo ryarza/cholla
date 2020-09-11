@@ -11,6 +11,10 @@
 #include "fftw3-mpi.h"
 #endif /*FFTW*/
 
+#if defined TIDES || defined POISSON_TEST
+#include "complex"
+#endif
+
 /*Global MPI Variables*/
 extern int procID; /*process rank*/
 extern int nproc;  /*number of processes in global comm*/
@@ -150,6 +154,9 @@ Real ReduceRealAvg(Real x);
 
 /* MPI reduction wrapper for sum(Real)*/
 Real ReduceRealSum(Real x);
+
+/* MPI reduction wrapper for sum(Complex)*/
+std::complex<Real> ReduceComplexSum(std::complex<Real> x);
 
 #ifdef PARTICLES
 /* MPI reduction wrapper for sum(part_int)*/

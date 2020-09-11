@@ -9,6 +9,10 @@
 #include "MPI_Comm_node.h"
 #include <iostream>
 
+#if defined TIDES || defined POISSON_TEST
+#include "complex"
+#endif
+
 /*Global MPI Variables*/
 int procID; /*process rank*/
 int nproc;  /*number of processes in global comm*/
@@ -21,10 +25,12 @@ MPI_Comm world; /*global communicator*/
 MPI_Comm node;  /*global communicator*/
 
 MPI_Datatype MPI_CHREAL; /*set equal to MPI_FLOAT or MPI_DOUBLE*/
+MPI_Datatype MPI_CHCOMPLEX;
 
 #ifdef PARTICLES
 MPI_Datatype MPI_PART_INT; /*set equal to MPI_INT or MPI_LONG*/
 #endif
+
 
 //MPI_Requests for nonblocking comm
 MPI_Request *send_request;
@@ -153,7 +159,14 @@ void InitializeChollaMPI(int *pargc, char **pargv[])
   #if PRECISION == 2
   MPI_CHREAL = MPI_DOUBLE;
   #endif /*PRECISION*/
-  
+ 
+	#if PRECISION == 1
+	MPI_CHCOMPLEX = MPI_COMPLEX;
+	#endif
+	#if PRECISION == 2
+	MPI_CHCOMPLEX = MPI_DOUBLE_COMPLEX;
+	#endif
+ 
   #ifdef PARTICLES
   #ifdef PARTICLES_LONG_INTS
   MPI_PART_INT = MPI_LONG;
@@ -748,6 +761,18 @@ Real ReduceRealSum(Real x)
 
 	MPI_Allreduce(&in, &out, 1, MPI_CHREAL, MPI_SUM, world);
 	y = (Real) out;
+
+	return y;
+}
+
+std::complex<Real> ReduceComplexSum(std::complex<Real> x){
+	std::complex<Real> in = x;
+	std::complex<Real> out;
+	std::complex<Real> y;
+
+	MPI_Allreduce(&in, &out, 1, MPI_CHCOMPLEX, MPI_SUM, world);
+
+	y = (std::complex<Real>) out;
 
 	return y;
 }

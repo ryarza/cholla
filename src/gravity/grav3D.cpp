@@ -13,9 +13,23 @@
 #include "../parallel_omp.h"
 #endif
 
-
+#if defined TIDES || defined POISSON_TEST
+#include "complex"
+#endif
 
 Grav3D::Grav3D( void ){}
+
+#if defined TIDES || defined POISSON_TEST
+std::complex<Real> Grav3D::Y(int l, int m, Real theta, Real phi){
+  const std::complex<Real> I(0.0,1.0);
+  if ( m < 0 ){
+    return pow(-1., -m) * conj(Y(l, -m, theta, phi));
+  }
+  else{
+    return gsl_sf_legendre_sphPlm(l, m, cos(theta)) * std::exp(I * ( phi * m));
+  }
+}
+#endif
 
 void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P )
 {
@@ -51,7 +65,7 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   n_cells_potential = ( nx_local + 2*N_GHOST_POTENTIAL ) * ( ny_local + 2*N_GHOST_POTENTIAL ) * ( nz_local + 2*N_GHOST_POTENTIAL );
 
   //Set Initial and dt used for the extrapolation of the potential;
-  //The first timestep the potetential in not extrapolated ( INITIAL = TRUE )
+  //The first timestep the potential in not extrapolated ( INITIAL = TRUE )
   INITIAL = true;
   dt_prev = 0;
   dt_now = 0;
@@ -67,15 +81,28 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
 
   //Set the Gravitational Constant ( units must be consistent )
   Gconst = GN;
-  if (strcmp(P->init, "Spherical_Overdensity_3D")==0 || strcmp(P->init, "poissonTest") == 0){
+  if (strcmp(P->init, "Spherical_Overdensity_3D")==0){
     Gconst = 1;
     chprintf("WARNING: Using Gravitational Constant G=1.\n");
   }
+
+	#ifdef POISSON_TEST
+	Gconst = 1;
+	chprintf("WARNING: Using Gravitational Constant G=1.\n");
+	#endif
  
   #ifdef TIDES
   Gconst = G_CGS;
   chprintf("WARNING: Using Gravitational Constant in cgs units.\n");
   #endif//TIDES
+
+	#if defined TIDES || defined POISSON_TEST
+	Q = ( std::complex<Real> **) malloc((P->lmaxBoundaries + 1) * sizeof(std::complex<Real> *));
+	for ( int l = 0; l < P->lmaxBoundaries + 1; l++ ){
+		Q[l] = ( std::complex<Real> *) malloc((2*l+1)*sizeof(std::complex<Real>));
+	}
+	lmaxBoundaries = P->lmaxBoundaries;
+	#endif
   
   //Flag to transfer the Potential boundaries
   TRANSFER_POTENTIAL_BOUNDARIES = false;

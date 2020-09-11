@@ -353,6 +353,11 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
     // #endif
     Grav.BC_FLAGS_SET = true;
   }
+
+	#if defined TIDES || defined POISSON_TEST
+//	Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
+	getMoments();
+	#endif//TIDES
   
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   if ( Grav.boundary_flags[0] == 3 ) Compute_Potential_Boundaries_Isolated(0);
@@ -369,7 +374,6 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
   if ( Grav.boundary_flags[5] == 3 ) Compute_Potential_Boundaries_Isolated(5);
   // chprintf("Isolated Z\n");
   #endif
-  
   
   //Solve Poisson Equation to compute the potential
   //Poisson Equation: laplacian( phi ) = 4 * pi * G / scale_factor * ( dens - dens_average )
