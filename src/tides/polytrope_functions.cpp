@@ -93,11 +93,10 @@ Real Interpolate( int n, int rootIdx, Real xi, Real *xiVals, Real *thetaVals, Re
 }
 
 void Grid3D::Polytropic_Star( struct parameters &P ){
- 
-  chprintf("	Polytrope mass: %.5e g\n", P.Mstar);
-  chprintf("	Polytrope radius: %.5e cm\n", P.Rstar);
-  chprintf("	Polytropic index: %.1f\n", P.polyN );
-  
+
+	S.initialize(P, H.t, H.dt, H.nx, H.ny, H.nz);
+	chprintf("	Lane-Emden solver:\n");
+
   //Solve Lane–Emden equation for the polytrope 
 //  int n_points = 500000000;
 	int n_points = 10000000;
@@ -181,7 +180,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 
 //	Linear interpolation estimate of the root
 	Real xi_root = ( xi_vals[root_indx + 1] * theta_vals[root_indx] - xi_vals[root_indx] * theta_vals[root_indx + 1] ) / ( theta_vals[root_indx] - theta_vals[root_indx + 1]  );
-  chprintf( "  Root at xi = %.5e. Theta values before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
+  chprintf( "		Root at xi = %.5e. Theta values before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
   
 //	Linear extrapolation estimate of the derivative evaluated at the root
   Real theta_deriv_root = xi_vals[root_indx + 1] * theta_vals[root_indx] * ( theta_deriv[root_indx - 1] - theta_deriv[root_indx] );
@@ -189,7 +188,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 	theta_deriv_root += xi_vals[root_indx] * ( theta_vals[root_indx + 1] * theta_deriv[root_indx] - theta_vals[root_indx] * theta_deriv[root_indx - 1] );
 	theta_deriv_root /= ( xi_vals[root_indx - 1] - xi_vals[root_indx] ) * ( theta_vals[root_indx] - theta_vals[root_indx  + 1] );
   
-  chprintf( "  d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
+  chprintf( "		d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
   
   //Convert to physical values
   Real dens_avrg = ( 3 * P.Mstar ) / ( 4 * M_PI * pow( P.Rstar, 3) );
@@ -199,10 +198,10 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   Real K = pressure_central * pow( dens_central, -(P.polyN+1)/P.polyN );
   Real alpha = sqrt( (P.polyN + 1) * K / ( 4 * M_PI * G_CGS ) ) * pow( dens_central, (1.-P.polyN)/(2*P.polyN) );
   
-  chprintf( "  dens_central / dens_avrg: %f\n", dens_central / dens_avrg );
-  chprintf( "  pressure_central: %.5e erg/cm^3\n", pressure_central );
+  chprintf( "		rho_c / rho_av: %.5e g/cm^3\n", dens_central / dens_avrg );
+  chprintf( "		p_c           : %.5e erg/cm^3\n", pressure_central );
   Real cs_center = sqrt(  pressure_central / dens_central * P.gamma );
-  chprintf( "  Sound crossing time: %.5e s\n ", P.Rstar / cs_center); 
+  chprintf( "		t_cross       : %.5e s\n ", P.Rstar / cs_center); 
   // chprintf( " K: %f \n", K );
   // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){
@@ -217,11 +216,6 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 	#ifdef DE
 	Real gasEnergy;
 	#endif
-
-  Real bkgndRho = 1.e-11;
-	Real bkgndTmp = 1.e3;
-//Mean dimensionless molecular weight
-  Real mu = 1.;
 
   center_x = 0.;
   center_y = 0.;
@@ -295,8 +289,8 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 									energySubcell   = pressureSubcell / ( P.gamma - 1. ) + 0.5 * rhoSubcell * v2;
 								}
 								else{
-									rhoSubcell      = bkgndRho;
-									pressureSubcell = bkgndTmp * bkgndRho * KB / mu / MP;
+									rhoSubcell      = P.rhoAmb;
+									pressureSubcell = P.pAmb;
 									energySubcell   = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
 								}
 
@@ -315,20 +309,20 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 				}
 
 				else{
-					density  = bkgndRho;
-					pressure = bkgndTmp * bkgndRho * KB / mu / MP;
+					density  = P.rhoAmb;
+					pressure = P.pAmb;
 					energy = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
 					#ifdef DE
 					gasEnergy = pressure / ( P.gamma - 1. );
 					#endif
 				}
 
+
         C.density[id] = density;
         C.momentum_x[id] = density*vx;
         C.momentum_y[id] = density*vy;
         C.momentum_z[id] = density*vz;
         C.Energy[id] = energy;
-//				chprintf("x = %.5e, y = %.5e, z = %.5e, rho = %.5e\n", x_pos, y_pos, z_pos, C.density[id]);
 
         #ifdef DE
         C.GasEnergy[id] = gasEnergy;
@@ -350,7 +344,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 
 void Grid3D::damp(){
   
-  Real dens, vx, vy, vz, v2, v, E, U;
+  Real dens, vx, vy, vz, v2, E, U;
   Real dens_0, vx_0, vy_0, vz_0;
   
   Real dt = H.dt;
@@ -366,11 +360,11 @@ void Grid3D::damp(){
 	Real relaxRate;
 	if ( t <= S.tRelax ){
 //	This relaxRate will apply only during the relaxation procedure to all cells
-  	relaxRate = ( t / S.tRelax ) * ( 1. - 0.9 ) + 0.9;
+  	relaxRate = ( t / S.tRelax ) * ( 1. - S.relaxRate0 ) + S.relaxRate0;
 	}
 	else{
 //	This relaxRate will apply only after the relaxation procedure, and only to cells with low densities
-		relaxRate = 0.99;
+		relaxRate = S.relaxRateBkgnd;
 	}
 
   int i, j, k, id;
@@ -415,7 +409,7 @@ void Grid3D::damp(){
 				}
 
 				v2 = vx*vx + vy*vy + vz*vz;
-				v = sqrt( v2 );
+//				v = sqrt( v2 );
 
 //			Compute the energy with the updated kinetic energy
 				E = U + 0.5*dens*v2;
@@ -454,46 +448,43 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
   WriteData(*this, P, P.nfile);
   P.nfile++;
 
-		while (H.t < S.tRelax ){
-    
-			chprintf(" Relaxation n_step: %d\n", n_step + 1 );
+	while (H.t < S.tRelax ){
 	
+		chprintf(" Relaxation n_step: %d\n", n_step + 0 );
 
-			S.update(H.t, H.dt);
-			updateCOM();
-			// calculate the timestep
-			set_dt(dti);
-			
-			// Advance the grid by one timestep
-			dti = Update_Hydro_Grid();
-			
-			// update the simulation time ( t += dt )
-			Update_Time();
-			
-			// add one to the timestep count
-			n_step++;
-			
-			#ifdef GRAVITY
-			//Compute Gravitational potential for next step
-			Compute_Gravitational_Potential( &P);
-			#endif
-			
-			//Include the damping terms in momentum and energy
-			damp();
+		S.update(H.t, H.dt);
+		updateCOM();
+		// calculate the timestep
+		set_dt(dti);
+		
+		// Advance the grid by one timestep
+		dti = Update_Hydro_Grid();
+		
+		// update the simulation time ( t += dt )
+		Update_Time();
+		
+		// add one to the timestep count
+		n_step++;
+		
+		#ifdef GRAVITY
+		//Compute Gravitational potential for next step
+		Compute_Gravitational_Potential( &P);
+		#endif
+		
+		//Include the damping terms in momentum and energy
+		damp();
 
-			// Output
-			if (n_step % int(P.outstep) == 0){
-				WriteData(*this, P, P.nfile);
-				P.nfile++;
-			}
+//	TODO: Change from number of steps to time so that it's consistent with the rest of the code
+		// Output
+		if (n_step % int(P.outstep) == 0){
+			WriteData(*this, P, P.nfile);
+			P.nfile++;
+		}
 
-			// set boundary conditions for next time step 
-			Set_Boundary_Conditions_Grid(P);
-			
-			chprintf("n_step: %d  sim time: %10.7f  sim timestep: %7.4e  \n\n", n_step, H.t, H.dt);
-			
-			//Exit the iteartions if converged
-	//    if ( converged ) break;
+		// set boundary conditions for next time step 
+		Set_Boundary_Conditions_Grid(P);
+		
+		chprintf("n_step: %d  sim time: %10.7f  sim timestep: %7.4e  \n\n", n_step, H.t, H.dt);
 
   }
 

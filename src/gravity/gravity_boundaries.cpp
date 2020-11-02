@@ -6,12 +6,6 @@
 #include "../grid3D.h"
 #include "grav3D.h"
 
-#if defined TIDES || defined POISSON_TEST
-//#include "../tides/special.h"
-#include "complex"
-#include "../error_handling.h"
-#endif//TIDES || POISSON_TEST
-
 #if defined (GRAV_ISOLATED_BOUNDARY_X) || defined (GRAV_ISOLATED_BOUNDARY_Y) || defined(GRAV_ISOLATED_BOUNDARY_Z)
 
 void Grid3D::Compute_Potential_Boundaries_Isolated( int dir ){
@@ -134,21 +128,11 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   }
   #endif  
 
-/*
-  Real M, cm_pos_x, cm_pos_y, cm_pos_z, pos_x, pos_y, pos_z, r, delta_x, delta_y, delta_z;
-  M = 0.1005;
-  cm_pos_x = 0.;
-  cm_pos_y = 0.;
-  cm_pos_z = 0.; 
-*/
-
   int i, j, k, id;
-	Real pos[3], r;
+	Real pos[3], r, pot_val;
 	#if defined TIDES || defined POISSON_TEST
-	std::complex<Real> potC;
-	Real phi, theta;
+	Real phi, theta, Ylmfac, lfac;
 	#endif
-  Real pot_val;
   
   for ( k=0; k<nGHST; k++ ){
     for ( i=0; i<n_i; i++ ){
@@ -157,7 +141,6 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         id = i + j*n_i + k*n_i*n_j; 
         
         if ( direction == 0 ){
-//          pos_x = Grav.xMin - ( nGHST + k + 0.5 ) * Grav.dx;
 					pos[0] = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
           if ( side == 1 ) pos[0] += Lx_local + nGHST*Grav.dx;
           pos[1] = Grav.yMin + ( i + 0.5 )* Grav.dy;
@@ -165,7 +148,6 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         }
         
         if ( direction == 1 ){
-//          pos_y = Grav.yMin - ( nGHST + k + 0.5 ) * Grav.dy;
 					pos[1] = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
           if ( side == 1 ) pos[1] += Ly_local + nGHST*Grav.dy;
           pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
@@ -173,51 +155,47 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         } 
           
         if ( direction == 2 ){
-//          pos_z = Grav.zMin - ( nGHST + k + 0.5 ) * Grav.dz;
 					pos[2] = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
           if ( side == 1 ) pos[2] += Lz_local + nGHST*Grav.dz;
           pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
           pos[1] = Grav.yMin + ( j + 0.5 )* Grav.dy;
         }
 
-				#if defined TIDES || defined POISSON_TEST
+				#if defined POISSON_TEST || defined TIDES
+				Real legP[(1+LMAX)*(2+LMAX)/2];
+
 //			Shift positions to with respect to the center of the expansion
 				for ( int ii = 0; ii < 3; ii++ ) pos[ii] -= Grav.center[ii];
 				r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
 				phi = atan2(pos[1], pos[0]);
-				theta = acos( pos[2] / r );
-				#endif
+				Grav.fillLegP(legP, pos[2] / r);
 
-/*
-        delta_x = pos[0] - cm_pos_x;
-        delta_y = pos[1] - cm_pos_y;
-        delta_z = pos[2] - cm_pos_z;
-        r = sqrt( ( delta_x * delta_x ) + ( delta_y * delta_y ) + ( delta_z * delta_z ) );
-*/
-
-				#if defined TIDES || defined POISSON_TEST
-				potC = 0.;
-
-				for ( int l = 0; l < Grav.lmaxBoundaries + 1; l++ ){
-					for ( int m = -l; m < l + 1; m++ ){
-						potC -= 4. * M_PI * pow(r, - l - 1.) * Grav.Q[l][l+m] * Grav.Y(l, m, theta, phi) / ( 2. * l + 1. );
+				pot_val = 0.;
+				int lmidx;
+				for ( int l = 0; l <= LMAX; l++ ){
+					lfac = - 8. * M_PI * pow(r, - l - 1. ) / ( 2. * l + 1. );
+					pot_val += 0.5 * lfac * Grav.ReQ[Grav.Qidx(0,l,0)] * legP[Grav.Qidx(0,l,0)];
+					for ( int m = 1; m < l + 1; m++ ){
+						lmidx = Grav.Qidx(0,l,m);
+						Ylmfac = legP[lmidx];
+						pot_val += lfac * ( Grav.ReQ[lmidx] * Ylmfac * cos(m * phi) - Grav.ImQ[lmidx] * Ylmfac * sin(m * phi) );
 					}
 				}
 
-				if ( fabs(imag(potC)) > 1.e-15 * fabs(real(potC)) ) {
-					printf("Potential is complex, exiting!\n");
-					chexit(-1);
-				}
-				else{
-					pot_val = real(potC);
-				}
-				#endif//TIDES || POISSON_TEST
+				pot_val *= Grav.Gconst;
+
+//			TEMPORARY OFF: Sphere potential
+//				r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
+//  			pot_val = - G_CGS * 1.989e33 / r;
+//			TEMPORARY OFF: Compare to sphere potential
+//	  		printf("pot_val/pot_sphere: %.10e\n", pot_val / ( - G_CGS * 1.989e33 / r ));
+				#endif
 
         pot_boundary[id] = pot_val;
                         
       }
     }
-  }    
+  }
     
 }
 

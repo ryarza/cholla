@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include"global.h"
-
+#include "global.h"
+#include "io.h"
 
 /* Global variables */
 Real gama; // Ratio of specific heats
@@ -270,6 +270,14 @@ parms->scale_outputs_file[0] = '\0';
       parms->Rstar = atof(value);
     else if (strcmp(name, "Mbh")==0)
       parms->Mbh = atof(value);
+    else if (strcmp(name, "relaxRate0")==0)
+      parms->relaxRate0 = atof(value);
+    else if (strcmp(name, "relaxRateBkgnd")==0)
+      parms->relaxRateBkgnd = atof(value);
+    else if (strcmp(name, "rhoAmb")==0)
+      parms->rhoAmb = atof(value);
+    else if (strcmp(name, "pAmb")==0)
+      parms->pAmb = atof(value);
     else if (strcmp(name, "polyN")==0)
       parms->polyN = atof(value);
 		else if (strcmp(name, "rprt")==0)
@@ -279,7 +287,6 @@ parms->scale_outputs_file[0] = '\0';
 		else if (strcmp(name, "r0rt") == 0)
 			parms->r0rt = atof(value);
 #endif
-
 #ifdef POISSON_TEST
 		else if (strcmp(name, "c0")==0)
 			parms->c[0] = atof(value);
@@ -294,23 +301,18 @@ parms->scale_outputs_file[0] = '\0';
 		else if (strcmp(name, "c5")==0)
 			parms->c[5] = atof(value);
 		else if (strcmp(name, "d0")==0)
-			parms->d[0] = atof(value);
+			parms->d[0] = atoi(value);
 		else if (strcmp(name, "d1")==0)
-			parms->d[1] = atof(value);
+			parms->d[1] = atoi(value);
 		else if (strcmp(name, "d2")==0)
-			parms->d[2] = atof(value);
+			parms->d[2] = atoi(value);
 		else if (strcmp(name, "d3")==0)
-			parms->d[3] = atof(value);
+			parms->d[3] = atoi(value);
 		else if (strcmp(name, "d4")==0)
-			parms->d[4] = atof(value);
+			parms->d[4] = atoi(value);
 		else if (strcmp(name, "d5")==0)
-			parms->d[5] = atof(value);
+			parms->d[5] = atoi(value);
 #endif//POISSON_TEST
-
-#if defined TIDES || defined POISSON_TEST
-		else if (strcmp(name, "lmaxBoundaries")==0)
-			parms->lmaxBoundaries = atoi(value);
-#endif
 
 #ifdef SET_MPI_GRID
     // Set the MPI Processes grid [n_proc_x, n_proc_y, n_proc_z]
@@ -328,4 +330,57 @@ parms->scale_outputs_file[0] = '\0';
 
   /* Close file */
   fclose (fp);
+}
+
+void printCompileOptions(){
+
+//Time integrator
+	chprintf("Integrator: ");
+	#ifdef CTU
+	chprintf("CTU");
+	#elif defined VL
+	chprintf("VL");
+	#elif defined CTU
+	chprintf("CTU");
+	#else
+	chprintf("not recognized");
+	#endif
+
+//CFL
+	chprintf(". CFL: %f", C_cfl);
+
+//Reconstruction
+	chprintf(". Reconstruction: ");
+	#ifdef PCM
+	chprintf("PCM");
+	#elif defined PLMP
+	chprintf("PLMP");
+	#elif defined PPLMC
+	chprintf("PPLMC");
+	#elif defined PPMP
+	chprintf("PPMP");
+	#elif defined PPMC
+	chprintf("PPMC");
+	#else
+	chprintf("not recognized");
+	#endif
+
+//Riemann solver
+	chprintf(". Riemann solver: ");
+	#ifdef EXACT
+	chprintf("exact");
+	#elif defined ROE
+	chprintf("Roe");
+	#elif defined HLLC
+	chprintf("HLLC");
+	#else
+	chprintf("not recognized");
+	#endif
+
+	chprintf("\n");
+
+	#ifdef H_CORRECTION
+	chprintf("H correction enabled\n");
+	#endif
+
 }

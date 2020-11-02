@@ -596,36 +596,36 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
 
 	#ifdef TIDES
 
-  attribute_id = H5Acreate(file_id, "posFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "xFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posFrame);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "velFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "vFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velFrame);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "accFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "aFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accFrame);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "posBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "xBH", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posBh);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "velBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "vBH", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velBh);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "accBh", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  attribute_id = H5Acreate(file_id, "aBH", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accBh);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "posSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
-  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posSt);
+  attribute_id = H5Acreate(file_id, "xstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.xstar);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "velSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
-  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.velSt);
+  attribute_id = H5Acreate(file_id, "vstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.vstar);
   status = H5Aclose(attribute_id);
 
 //  attribute_id = H5Acreate(file_id, "accSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
@@ -1230,26 +1230,6 @@ void Grid3D::Write_Grid_HDF5(hid_t file_id)
     dims[2] = nz_dset;
     dataspace_id = H5Screate_simple(3, dims, NULL);
 
-		#ifdef POISSON_TEST
-		// Copy the analytical potential array to the memory buffer
-		for (int k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
-			for (int j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
-				for (int i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
-					id = i + j*H.nx + k*H.nx*H.ny;
-					buf_id = ( k - H.n_ghost ) + ( j - H.n_ghost ) * H.nz_real + ( i - H.n_ghost ) * H.nz_real * H.ny_real;
-					dataset_buffer[buf_id] = C.analyticalPotential[id];
-				}
-			}
-		}
-
-    // Create a dataset id for the analytical potential
-    dataset_id = H5Dcreate(file_id, "/analyticalPotential", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    // Write the density array to file  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
-    status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer); 
-    // Free the dataset id
-    status = H5Dclose(dataset_id);
-		#endif
-
     // Copy the density array to the memory buffer
     for (k=0; k<H.nz_real; k++) {
       for (j=0; j<H.ny_real; j++) {
@@ -1324,9 +1304,8 @@ void Grid3D::Write_Grid_HDF5(hid_t file_id)
       status = H5Dclose(dataset_id);
     }
       
-   
-    // Copy the energy array to the memory buffer
-    for (k=0; k<H.nz_real; k++) {
+// Copy the energy array to the memory buffer
+    for (k=0; k<H.nz_real; k++) { 
       for (j=0; j<H.ny_real; j++) {
         for (i=0; i<H.nx_real; i++) {
           id = (i+H.n_ghost) + (j+H.n_ghost)*H.nx + (k+H.n_ghost)*H.nx*H.ny;
@@ -1521,6 +1500,26 @@ void Grid3D::Write_Grid_HDF5(hid_t file_id)
     #endif
     
     #ifdef GRAVITY
+
+		#ifdef POISSON_TEST
+		// Copy the analytical potential array to the memory buffer. Remember that we defined the analytical potential inside G, so it has the hydro number of ghost zones
+    for (int k=0; k< H.nz_real; k++) {
+      for (int j=0; j< H.ny_real; j++) {
+        for (int i=0; i< H.nx_real; i++) {
+          id = ( i + H.n_ghost ) + ( j + H.n_ghost ) * H.nx + ( k + H.n_ghost ) * H.nx * H.ny;
+          buf_id = k + j * H.nz_real + i* H.ny_real * H.nz_real;
+          dataset_buffer[buf_id] = C.analyticalPotential[id];
+        }
+      }
+    }
+    // Create a dataset id for density
+    dataset_id = H5Dcreate(file_id, "/analyticalPotential", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+    // Write the density array to file  // NOTE: NEED TO FIX FOR FLOAT REAL!!!
+    status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer);
+    // Free the dataset id
+    status = H5Dclose(dataset_id);
+		#endif
+
     #ifdef OUTPUT_POTENTIAL
     // Copy the potential array to the memory buffer
     for (k=0; k<Grav.nz_local; k++) {

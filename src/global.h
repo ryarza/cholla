@@ -50,8 +50,8 @@ typedef double Real;
 #define LOG_FILE_NAME "run_output.log"
 
 //Conserved Floor Values
-#define TEMP_FLOOR 1e0
-#define DENS_FLOOR 1e-18
+#define TEMP_FLOOR 1e-3
+#define DENS_FLOOR 1e-24
 
 //Parameter for Enzo dual Energy Condition
 #define DE_ETA_1 0.001 //Ratio of U to E for wich  Inetrnal Energy is used to compute the Pressure
@@ -236,19 +236,19 @@ struct parameters
   Real Mstar;
   Real Rstar;
   Real Mbh;
+	Real pAmb;
+	Real rhoAmb;
 	Real tRelaxtDyn;
   Real polyN;
 	Real rprt;
 	Real r0rt;
+	Real relaxRate0;
+	Real relaxRateBkgnd;
 #endif//TIDES
 
 #ifdef POISSON_TEST
 	Real c[6];
 	int d[6];
-#endif
-
-#if defined POISSON_TEST || defined TIDES
-	int lmaxBoundaries;
 #endif
 
 #ifdef COSMOLOGY
@@ -275,6 +275,8 @@ struct parameters
 /*! \fn void parse_params(char *param_file, struct parameters * parms);
  *  \brief Reads the parameters in the given file into a structure. */
 extern void parse_params (char *param_file, struct parameters * parms);
+
+extern void printCompileOptions();
 
 
 #endif //GLOBAL_H

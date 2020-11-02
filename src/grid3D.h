@@ -607,12 +607,14 @@ class Grid3D
     void Uniform_Grid();
     
     void Zeldovich_Pancake( struct parameters P );
-    
+
+		#ifdef TIDES    
     // Initial Conditions for a Polytropic Star
     void Polytropic_Star( struct parameters &P );
 
     // Relax the polytrope to achive hydrostatic equilibrium
     void Polytropic_Star_Relaxation(  struct parameters &P  );
+		#endif
 
 
 #ifdef   MPI_CHOLLA
@@ -746,17 +748,18 @@ class Grid3D
   #endif
 
 	#ifdef TIDES
-	void AccBh(Real posBhx, Real posBhy, Real posBhz, Real *accBhx, Real *accBhy, Real *accBhz);
+//	void AccBh(Real posBhx, Real posBhy, Real posBhz, Real *accBhx, Real *accBhy, Real *accBhz);
 	void damp();
 	void updateCOM();
 	#endif
 
 	#ifdef POISSON_TEST
 	void poissonTest( struct parameters P );
+	void poissonErrorNorm();
 	#endif
 
-	#if defined TIDES || POISSON_TEST
-	void getMoments();
+	#if defined POISSON_TEST || defined TIDES
+	void setMoments();
 	#endif
 
 };

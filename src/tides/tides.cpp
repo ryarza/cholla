@@ -3,6 +3,7 @@
 #include "tides.h"
 #include "../global.h"
 #include "../io.h"
+#include <string.h>
 
 // Kronecker delta
 int kronDelta(int i, int j){
@@ -14,7 +15,7 @@ int kronDelta(int i, int j){
 
 }
 
-void Star::initialize(struct parameters &P, Real t, Real dt){
+void Star::initialize(struct parameters &P, Real t, Real dt, int nx, int ny, int nz){
 
   Mstar   = P.Mstar;
   Mbh     = P.Mbh;
@@ -53,22 +54,59 @@ void Star::initialize(struct parameters &P, Real t, Real dt){
 
 //Initial time
 	t0 = sqrt(2.) * tdynOrb * eta0 * ( 1. + eta0 * eta0 / 3. );
-	chprintf("t0 = %.20e\n", t0);
-
-	chprintf("  Dynamical time of the star : %.5e\n", tdynStar);
-	chprintf("  Dynamical time of the orbit: %.5e\n", tdynOrb );
-	chprintf("  Initial eta                : %.5e\n", eta0    );
 
 // Total energy of the star
 	E0star = ( G_CGS * Mstar * Mstar / Rstar ) * ( 3. / ( polyN - 5. ) + 1. / ( 5. - polyN ) / ( P.gamma - 1. ) );
 
 //Relaxation time
 	tRelax = P.tRelaxtDyn * tdynStar;
+	relaxRate0 = P.relaxRate0;
+	relaxRateBkgnd = P.relaxRateBkgnd;
 
 	update(t, dt);
-//	E0orb = getEorb();
+
+	comBlocks = ceil ( nx * ny * nz / COMTPB );
+	bufferxstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
+	buffervstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
+
+	chprintf("  Star:\n");
+	chprintf("    Mass  : %.10e g\n", Mstar);
+	chprintf("    Radius: %.10e cm\n", Rstar);
+	chprintf("    n_poly: %.10e\n", polyN);
+	chprintf("    t_dyn : %.10e s\n", tdynStar);
+
+	chprintf("  Orbit:\n");
+	chprintf("    Mass ratio    : %.10e\n", q);
+	chprintf("    t_dyn         : %.10e s\n", tdynOrb);
+	chprintf("		Tidal radius  : %.10e cm\n", rt      );
+	chprintf("    Initial dist  : %.10e cm\n", r0      );
+	chprintf("    Periapsis dist: %.10e cm\n", rp      );
+	chprintf("    Periapsis time: %.10e s\n", -t0     );
+
+	if ( tRelax > 0 ) chprintf("  Relaxation enabled. Initial relax rate: %f. Background relax rate: %.f\n", relaxRate0, relaxRateBkgnd);
 
 }
+
+void Star::update(Real t, Real dt){
+
+//The time along the orbit is different from the hydro time because we relax the star, and because the time along the orbit is measured with t = 0 at periapsis. When the star is not relaxed, we hold the star at the initial position along the orbit (but we compute no tidal forces!). After it's relaxed, we compute the time along the orbit accounting for the offset from the initial conditions. Remember that t0 is negative.
+
+//When relaxed == 0, the tidal tensors aren't used anyways.
+	if ( relaxed == 0 ){
+		tOrb = t0;
+	}
+	else{
+		tOrb = t + t0;
+	}
+
+// Important: first do frames, then tidal tensors since they depend on the frames!
+	eta = geteta(tOrb);
+	updateFrameCoords (tOrb, dt);
+	updateBhCoords    (tOrb, dt);
+	updateTidalTensors(tOrb, dt);
+
+}
+
 
 
 // Given a position and a set of tidal tensors, return the tidal potential

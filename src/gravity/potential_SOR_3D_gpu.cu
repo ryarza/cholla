@@ -138,22 +138,23 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
   tid_pot = tid_x + tid_y*nx_pot + tid_z*nx_pot*ny_pot; 
   
   // //Set neighbors ids
-  int indx_l, indx_r, indx_d, indx_u, indx_b, indx_t, indx_l2, indx_r2, indx_d2, indx_u2, indx_b2, indx_t2;
+  int indx_l, indx_r, indx_d, indx_u, indx_b, indx_t;
+//	int indx_l2, indx_r2, indx_d2, indx_u2, indx_b2, indx_t2;
   
   indx_l  = tid_x-1; //Left
-	indx_l2 = tid_x-2; //Two to the left
+//	indx_l2 = tid_x-2; //Two to the left
   indx_r  = tid_x+1; //Right
-	indx_r2 = tid_x+2; //Two to the right
+//	indx_r2 = tid_x+2; //Two to the right
 
   indx_d  = tid_y-1; //Down
-	indx_d2 = tid_y-2; //Two down
+//	indx_d2 = tid_y-2; //Two down
   indx_u  = tid_y+1; //Up
-	indx_u2 = tid_y+2; //Two up
+//	indx_u2 = tid_y+2; //Two up
 
   indx_b  = tid_z-1; //Bottom
-	indx_b2 = tid_z-2; //Two bottom
+//	indx_b2 = tid_z-2; //Two bottom
   indx_t  = tid_z+1; //Top
-	indx_t2 = tid_z+2; //Two top
+//	indx_t2 = tid_z+2; //Two top
   
   //Boundary Conditions are loaded to the potential array, the natural indices work!
   
@@ -173,21 +174,22 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
   // indx_b = tid_z == n_ghost          ?    tid_z+1 : tid_z-1;  //Bottom
   // indx_t = tid_z == nz_pot-n_ghost-1 ?    tid_z-1 : tid_z+1;  //Top
   
-  Real rho, phi_c, phi_l2, phi_l, phi_r, phi_r2, phi_d2, phi_d, phi_u, phi_u2, phi_b2, phi_b, phi_t, phi_t2, phi_new;
+  Real rho, phi_c, phi_l, phi_r, phi_d, phi_u, phi_b, phi_t, phi_new;
+//	Real phi_l2, phi_r2, phi_d2, phi_u2, phi_b2, phi_t2;
   rho    = density_d[tid];
   phi_c  = potential_d[tid_pot];
-  phi_l2 = potential_d[ indx_l2 + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
+//  phi_l2 = potential_d[ indx_l2 + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
   phi_l  = potential_d[ indx_l  + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
   phi_r  = potential_d[ indx_r  + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
-  phi_r2 = potential_d[ indx_r2 + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
-  phi_d2 = potential_d[ tid_x   + indx_d2 * nx_pot + tid_z   * nx_pot * ny_pot ];
+//  phi_r2 = potential_d[ indx_r2 + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
+//  phi_d2 = potential_d[ tid_x   + indx_d2 * nx_pot + tid_z   * nx_pot * ny_pot ];
   phi_d  = potential_d[ tid_x   + indx_d  * nx_pot + tid_z   * nx_pot * ny_pot ];
   phi_u  = potential_d[ tid_x   + indx_u  * nx_pot + tid_z   * nx_pot * ny_pot ];
-  phi_u2 = potential_d[ tid_x   + indx_u2 * nx_pot + tid_z   * nx_pot * ny_pot ];
-  phi_b2 = potential_d[ tid_x   + tid_y   * nx_pot + indx_b2 * nx_pot * ny_pot ];
+//  phi_u2 = potential_d[ tid_x   + indx_u2 * nx_pot + tid_z   * nx_pot * ny_pot ];
+//  phi_b2 = potential_d[ tid_x   + tid_y   * nx_pot + indx_b2 * nx_pot * ny_pot ];
   phi_b  = potential_d[ tid_x   + tid_y   * nx_pot + indx_b  * nx_pot * ny_pot ];
   phi_t  = potential_d[ tid_x   + tid_y   * nx_pot + indx_t  * nx_pot * ny_pot ];
-  phi_t2 = potential_d[ tid_x   + tid_y   * nx_pot + indx_t2 * nx_pot * ny_pot ];
+//  phi_t2 = potential_d[ tid_x   + tid_y   * nx_pot + indx_t2 * nx_pot * ny_pot ];
 
 /*
 	if ( tid < 10 ){

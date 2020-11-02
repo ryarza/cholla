@@ -13,7 +13,7 @@ OBJS := $(subst .c,.o,$(CFILES)) $(subst .cpp,.o,$(CPPFILES)) $(subst .cu,.o,$(G
 
 #To use GPUs, CUDA must be turned on here
 #Optional error checking can also be enabled
-DFLAGS += -DCUDA #-DCUDA_ERROR_CHECK
+DFLAGS += -DCUDA# -DCUDA_ERROR_CHECK
 
 #To use MPI, DFLAGS must include -DMPI_CHOLLA
 DFLAGS += -DMPI_CHOLLA -DBLOCK
@@ -21,7 +21,7 @@ DFLAGS += -DMPI_CHOLLA -DBLOCK
 #DFLAGS += -DPRECISION=1
 DFLAGS += -DPRECISION=2
 
-DFLAGS += -DH_CORRECTION
+#DFLAGS += -DH_CORRECTION
 
 # Output
 #DFLAGS += -DBINARY
@@ -38,14 +38,14 @@ DFLAGS += -DPPMP
 #DFLAGS += -DPPMC
 
 # Solver
-#DFLAGS += -DEXACT
+DFLAGS += -DEXACT
 #DFLAGS += -DROE
-DFLAGS += -DHLLC
+#DFLAGS += -DHLLC
 
 # Integrator
-#DFLAGS += -DVL
+DFLAGS += -DVL
 #DFLAGS += -DCTU
-DFLAGS += -DSIMPLE
+#DFLAGS += -DSIMPLE
 
 # Dual-Energy Formalism
 #DFLAGS += -DDE
@@ -98,10 +98,10 @@ DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
 #Stellar simulation
-#DFLAGS += -DTIDES
+DFLAGS += -DTIDES
 
 # Test Poisson solver
-DFLAGS += -DPOISSON_TEST
+#DFLAGS += -DPOISSON_TEST
 
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY

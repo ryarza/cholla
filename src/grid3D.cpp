@@ -64,7 +64,7 @@ Grid3D::Grid3D(void)
   #ifdef PPMC
   H.n_ghost=4;
   #endif //PPMC
-  
+ 
   #ifdef GRAVITY
   H.n_ghost_potential_offset = H.n_ghost - N_GHOST_POTENTIAL;
   #endif
@@ -118,7 +118,8 @@ void Grid3D::Initialize(struct parameters *P)
 
   // Set the CFL coefficient (a global variable)
   C_cfl = 0.3;
-	C_cfl /= 5.;
+//TEMPORARY ON: Lower CFL
+	C_cfl /= 3.;
 
 #ifndef MPI_CHOLLA
 

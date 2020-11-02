@@ -5,8 +5,9 @@
 #include"../global.h"
 
 #if defined TIDES || defined POISSON_TEST
-#include <complex>
-#endif//TIDES
+#define LMAX (5)
+#define QTPB (128)
+#endif
 
 
 #ifdef PFFT
@@ -114,10 +115,15 @@ class Grav3D
   Potential_SOR_3D Poisson_solver;
 
 	#if defined TIDES || defined POISSON_TEST
-	std::complex<Real> **Q;
+	Real *ReQ;
+	Real *ImQ;
+	Real *bufferReQ;
+	Real *bufferImQ;
+	int Qblocks;
 	Real center[3];
-	int lmaxBoundaries;
-	#endif//TIDES
+	int Qidx(int cidx, int l, int m);
+	void fillLegP(Real* legP, Real x);
+	#endif
 
   #endif//SOR
 
@@ -181,10 +187,6 @@ class Grav3D
   void Copy_Isolated_Boundary_To_GPU_buffer( Real *isolated_boundary_h, Real *isolated_boundary_d, int boundary_size );
   void Copy_Isolated_Boundaries_To_GPU( struct parameters *P );
   #endif
-
-	#if defined TIDES || defined POISSON_TEST
-	std::complex<Real> Y(int l, int m, Real theta, Real phi);
-	#endif
 
 };
 

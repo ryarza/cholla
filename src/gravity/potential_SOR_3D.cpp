@@ -131,8 +131,10 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
   Grav.Poisson_solver.Set_Isolated_Boundary_Conditions( Grav.boundary_flags, P );
 
 
-	#if defined POISSON_TEST || defined TIDES
+	#ifdef POISSON_TEST
   Real epsilon = 1.e-10;
+	#elif defined TIDES
+	Real epsilon = 1.e-8;
 	#else
 	Real epsilon = 1.e-4;
 	#endif
@@ -218,7 +220,7 @@ void Potential_SOR_3D::Set_Isolated_Boundary_Conditions( int *boundary_flags, st
   
   if ( P->xl_bcnd != 3 && P->xu_bcnd != 3 && P->yl_bcnd != 3 && P->yu_bcnd != 3 && P->zl_bcnd != 3 && P->zu_bcnd != 3 ) return;
   
-  chprintf( " Setting Isolated Boundaries \n");
+//  chprintf( " Setting Isolated Boundaries \n");
   if ( boundary_flags[0] == 3 ) Set_Isolated_Boundary_GPU( 0, 0,  F.boundary_isolated_x0_d );
   if ( boundary_flags[1] == 3 ) Set_Isolated_Boundary_GPU( 0, 1,  F.boundary_isolated_x1_d );
   if ( boundary_flags[2] == 3 ) Set_Isolated_Boundary_GPU( 1, 0,  F.boundary_isolated_y0_d );

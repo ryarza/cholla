@@ -13,23 +13,7 @@
 #include "../parallel_omp.h"
 #endif
 
-#if defined TIDES || defined POISSON_TEST
-#include "complex"
-#endif
-
 Grav3D::Grav3D( void ){}
-
-#if defined TIDES || defined POISSON_TEST
-std::complex<Real> Grav3D::Y(int l, int m, Real theta, Real phi){
-  const std::complex<Real> I(0.0,1.0);
-  if ( m < 0 ){
-    return pow(-1., -m) * conj(Y(l, -m, theta, phi));
-  }
-  else{
-    return gsl_sf_legendre_sphPlm(l, m, cos(theta)) * std::exp(I * ( phi * m));
-  }
-}
-#endif
 
 void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P )
 {
@@ -95,14 +79,6 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   Gconst = G_CGS;
   chprintf("WARNING: Using Gravitational Constant in cgs units.\n");
   #endif//TIDES
-
-	#if defined TIDES || defined POISSON_TEST
-	Q = ( std::complex<Real> **) malloc((P->lmaxBoundaries + 1) * sizeof(std::complex<Real> *));
-	for ( int l = 0; l < P->lmaxBoundaries + 1; l++ ){
-		Q[l] = ( std::complex<Real> *) malloc((2*l+1)*sizeof(std::complex<Real>));
-	}
-	lmaxBoundaries = P->lmaxBoundaries;
-	#endif
   
   //Flag to transfer the Potential boundaries
   TRANSFER_POTENTIAL_BOUNDARIES = false;
@@ -154,6 +130,16 @@ void Grav3D::AllocateMemory_CPU(void)
   F.pot_boundary_z0  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*ny_local*sizeof(Real)); //array for the potential isolated boundary
   F.pot_boundary_z1  = (Real *) malloc(N_GHOST_POTENTIAL*nx_local*ny_local*sizeof(Real));
   #endif
+
+	#if defined TIDES || defined POISSON_TEST
+//Real and imaginary parts of the multipole moments of the density distribution
+	ReQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
+	ImQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
+	Qblocks = ceil( ( nx_local * ny_local * nz_local ) / QTPB );
+	bufferReQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );
+	bufferImQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );
+	#endif
+
 }
 
 void Grav3D::Set_Boundary_Flags( int *flags ){
@@ -171,6 +157,12 @@ void Grav3D::Initialize_values_CPU(void){
     F.potential_h[id_pot] = 0;
     F.potential_1_h[id_pot] = 0;
   }
+
+	for ( int i = 0; i < ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i++ ){
+		ReQ[i] = 0.;
+		ImQ[i] = 0.;
+	}
+
 }
 
 void Grav3D::FreeMemory_CPU(void)

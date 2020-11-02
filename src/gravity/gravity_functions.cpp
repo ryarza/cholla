@@ -7,6 +7,7 @@
 
 #ifdef CUDA
 #include "../cuda_mpi_routines.h"
+#include"../global_cuda.h"
 #endif
 
 #ifdef PARALLEL_OMP
@@ -356,8 +357,8 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
 
 	#if defined TIDES || defined POISSON_TEST
 //	Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
-	getMoments();
-	#endif//TIDES
+	setMoments();
+	#endif
   
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   if ( Grav.boundary_flags[0] == 3 ) Compute_Potential_Boundaries_Isolated(0);
@@ -501,16 +502,17 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
 
         }
 
-/*      
+//			TEMPORARY OFF: NO TIDAL POTENTIAL
 				#ifdef TIDES
+
 //			Add the extrapolated tidal potential, but only if the relaxation has ended!
+
 				if ( S.relaxed == 1 ){
 					Get_Position(i+nGHST, j+nGHST, k+nGHST, &posx, &posy, &posz);
 					pot_extrp += S.getTidalPotential(posx, posy, posz, S.extCij, S.extCijk, S.extCijkl);
-//					chprintf("Added extrapolated tidal potential\n");
 				}
-				#endif//TIDES
-*/
+
+				#endif
 
         #ifdef COSMOLOGY
         //For cosmological simulation the potential is transformrd to 'comuving coordinates' 

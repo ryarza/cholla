@@ -58,6 +58,9 @@ int main(int argc, char *argv[])
   // create the grid
   Grid3D G;
 
+//Print useful compile options to keep track of exactly how the code was run
+	printCompileOptions();
+
   // read in the parameters
   parse_params (param_file, &P);
   // and output to screen
@@ -84,12 +87,6 @@ int main(int argc, char *argv[])
     nfile = P.nfile*P.nfull;
   }
 
-	#ifdef TIDES
-	G.S.initialize(P, G.H.t, G.H.dt);
-//	chprintf("About to update COM\n");
-	G.updateCOM();
-	#endif
-  
   #ifdef DE
   chprintf("\nUsing Dual Energy Formalism:\n eta_1: %0.3f   eta_2: %0.4f\n", DE_ETA_1, DE_ETA_2 );
   char *message = (char*)malloc(50 * sizeof(char));
@@ -123,6 +120,10 @@ int main(int argc, char *argv[])
   G.Compute_Gravitational_Potential( &P);
   #endif
 
+	#ifdef TIDES
+	G.updateCOM();
+	#endif
+
   // Set boundary conditions (assign appropriate values to ghost cells) for hydro and potential
   chprintf("Setting boundary conditions...\n");
   G.Set_Boundary_Conditions_Grid(P);
@@ -137,15 +138,17 @@ int main(int argc, char *argv[])
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
-/*
+
   #ifdef TIDES
-  //If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
-  P.nfile = nfile;
-  if (strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0.) G.Polytropic_Star_Relaxation( P );
-  nfile = P.nfile;
-  chprintf("nfile after relaxation: %i\n", P.nfile);
+	if ( strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0. ){
+		P.nfile = nfile;
+//	If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
+		G.Polytropic_Star_Relaxation( P );
+		nfile = P.nfile;
+		chprintf("nfile after relaxation: %i\n", P.nfile);
+	}
+	G.S.relaxed = 1;
   #endif
-*/
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {
@@ -157,18 +160,10 @@ int main(int argc, char *argv[])
   nfile++;
   #endif //OUTPUT
 
+//If doing Poisson test, exit after first computation
 	#ifdef POISSON_TEST
-	#ifdef MPI_CHOLLA
-	MPI_Barrier(world);
-	#endif//MPI_CHOLLA
-	chprintf("Poisson equation solved. Exiting now...\n");
-  G.Reset();
-
-  #ifdef MPI_CHOLLA
-  MPI_Finalize();
-  #endif//MPI_CHOLLA
-
-	return 0;
+	G.poissonErrorNorm();
+	exit(0);
 	#endif//POISSON_TEST
 
   // increment the next output time
@@ -209,16 +204,16 @@ int main(int argc, char *argv[])
     
 		#ifdef TIDES
 		G.S.update(G.H.t, G.H.dt);
-		G.updateCOM();
 		#endif
 
     // Advance the grid by one timestep
     dti = G.Update_Hydro_Grid();
 
 		#ifdef TIDES
+//	TEMPORARY ON: No tides damping
 //	Damp very low densities by a constant factor
-		G.damp();
-		#endif//TIDES
+//		G.damp();
+		#endif
 
     // update the simulation time ( t += dt )
     G.Update_Time();
@@ -227,6 +222,10 @@ int main(int argc, char *argv[])
     //Compute Gravitational potential for next step
     G.Compute_Gravitational_Potential( &P);
     #endif
+
+		#ifdef TIDES
+		G.updateCOM();
+		#endif
 
     // add one to the timestep count
     G.H.n_step++;

@@ -6,18 +6,20 @@
 #include <stdio.h>
 #include <cmath>
 #include "../global.h"
-//#include "../grid3D.h"
+
+#define COMTPB (1024)
 
 class Star
 {
 public:
-
 
 //Star
 	Real Mstar;
 	Real Rstar;
 	Real polyN;
 	Real tRelax;
+	Real relaxRate0;
+	Real relaxRateBkgnd;
 	Real tdynStar;
 	int relaxed;
 
@@ -51,7 +53,7 @@ public:
 	Real velFrameExt[3];
 	Real accFrameExt[3];
 
-//	Coordinates of the bh
+//Coordinates of the bh
 	Real posBh[3];
 	Real velBh[3];
 	Real accBh[3];
@@ -62,13 +64,9 @@ public:
 	Real accBhExt[3];
 
 //	Coordinates of the star
-	Real posSt[3];
-	Real velSt[3];
-	Real accSt[3];
-
-	Real posStExt[3];
-	Real velStExt[3];
-	Real accStExt[3];
+	Real xstar[3];
+	Real vstar[3];
+	Real astar[3];
 
 //Tidal tensors at the current time and at t + dt / 2
 
@@ -81,7 +79,7 @@ public:
 	Real Cijkl[3][3][3][3];
 
 //Functions that change the state of S
-	void initialize(struct parameters &P, Real t, Real dt);
+	void initialize(struct parameters &P, Real t, Real dt, int nx, int ny, int nz);
 	void update(Real t, Real dt);
 	void updateFrameCoords(Real t, Real dt);
 	void updateBhCoords(Real t, Real dt);
@@ -95,10 +93,10 @@ public:
 //Returns the tidal potential given a set of tidal tensors
 	Real getTidalPotential(Real x, Real y, Real z, Real Cij[3][3], Real Cijk[3][3][3], Real Cijkl[3][3][3][3]);
 
-//Returns the position of the center of the frame at time t
-	void getFrameAndBhPos(Real t, Real *xFrame, Real *yFrame, Real *zFrame, Real *xBh, Real *yBh, Real *zBh);
-
-	Real getEorb();
+//Used for computing the center of mass position and speed in the GPU
+	int comBlocks;
+	Real *bufferxstar;
+	Real *buffervstar;
 
 };
 
