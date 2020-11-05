@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
   int nfile = 0; // number of output files
   Real outtime = 0; // current output time
 
-
   // read in command line arguments
   if (argc != 2)
   {
@@ -58,13 +57,13 @@ int main(int argc, char *argv[])
   // create the grid
   Grid3D G;
 
-//Print useful compile options to keep track of exactly how the code was run
-	printCompileOptions();
+// Print compile options to keep track of the exact state of the code
+  printCompileOptions();
 
   // read in the parameters
   parse_params (param_file, &P);
   // and output to screen
-  chprintf ("Parameter values:  nx = %d, ny = %d, nz = %d, tout = %f, init = %s, boundaries = %d %d %d %d %d %d\n", 
+  chprintf ("Parameter values:  nx = %d, ny = %d, nz = %d, tout = %f, init = %s, boundaries = %i %i %i %i %i %i\n", 
     P.nx, P.ny, P.nz, P.tout, P.init, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd);
   if (strcmp(P.init, "Read_Grid") == 0  ) chprintf ("Input directory:  %s\n", P.indir);
   chprintf ("Output directory:  %s\n", P.outdir);
@@ -75,6 +74,7 @@ int main(int argc, char *argv[])
   // initialize the grid
   G.Initialize(&P);
   chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
+  chprintf("CFL: %f\n", C_cfl);
 
   // Set initial conditions and calculate first dt
   chprintf("Setting initial conditions...\n");
@@ -93,7 +93,6 @@ int main(int argc, char *argv[])
   sprintf(message, " eta_1: %0.3f   eta_2: %0.3f  ", DE_ETA_1, DE_ETA_2 );
   Write_Message_To_Log_File( message );
   #endif
-  
   
   #ifdef CPU_TIME
   G.Timer.Initialize();
@@ -120,9 +119,9 @@ int main(int argc, char *argv[])
   G.Compute_Gravitational_Potential( &P);
   #endif
 
-	#ifdef TIDES
-	G.updateCOM();
-	#endif
+  #ifdef TIDES
+  G.updateCOM();
+  #endif
 
   // Set boundary conditions (assign appropriate values to ghost cells) for hydro and potential
   chprintf("Setting boundary conditions...\n");
@@ -138,16 +137,15 @@ int main(int argc, char *argv[])
   chprintf("Ratio of specific heats gamma = %f\n",gama);
   chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
-
   #ifdef TIDES
-	if ( strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0. ){
-		P.nfile = nfile;
-//	If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
-		G.Polytropic_Star_Relaxation( P );
-		nfile = P.nfile;
-		chprintf("nfile after relaxation: %i\n", P.nfile);
-	}
-	G.S.relaxed = 1;
+  if ( strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0. ){
+    P.nfile = nfile;
+//  If solving a polytropic star, do the relaxation step to achive hydrostactic equilibrium
+    G.Polytropic_Star_Relaxation( P );
+    nfile = P.nfile;
+    chprintf("nfile after relaxation: %i\n", P.nfile);
+  }
+  G.S.relaxed = 1;
   #endif
 
   #ifdef OUTPUT
@@ -161,10 +159,10 @@ int main(int argc, char *argv[])
   #endif //OUTPUT
 
 //If doing Poisson test, exit after first computation
-	#ifdef POISSON_TEST
-	G.poissonErrorNorm();
-	exit(0);
-	#endif//POISSON_TEST
+  #ifdef POISSON_TEST
+  G.poissonErrorNorm();
+  exit(0);
+  #endif//POISSON_TEST
 
   // increment the next output time
   outtime += P.outstep;
@@ -201,31 +199,29 @@ int main(int argc, char *argv[])
     //Transfer the particles that moved outside the local domain  
     G.Transfer_Particles_Boundaries(P); 
     #endif
-    
-		#ifdef TIDES
-		G.S.update(G.H.t, G.H.dt);
-		#endif
 
     // Advance the grid by one timestep
     dti = G.Update_Hydro_Grid();
 
-		#ifdef TIDES
-//	TEMPORARY ON: No tides damping
-//	Damp very low densities by a constant factor
-//		G.damp();
-		#endif
+    #ifdef TIDES
+//  TEMPORARY ON: No tides damping
+//  Damp very low densities by a constant factor
+//    G.damp();
+    #endif
 
     // update the simulation time ( t += dt )
     G.Update_Time();
+    G.set_dt(dti);
+
+    #ifdef TIDES
+    G.S.update(G.H.t, G.H.dt);
+    #endif
         
     #ifdef GRAVITY
     //Compute Gravitational potential for next step
     G.Compute_Gravitational_Potential( &P);
     #endif
 
-		#ifdef TIDES
-		G.updateCOM();
-		#endif
 
     // add one to the timestep count
     G.H.n_step++;
@@ -261,6 +257,10 @@ int main(int argc, char *argv[])
   
     if (G.H.t == outtime || G.H.Output_Now )
     {
+//  TEMPORARY: Compute COM only when outputting (it's not used for anything else as of now)
+      #ifdef TIDES
+      G.updateCOM();
+      #endif
       #ifdef OUTPUT
       /*output the grid data*/
       WriteData(G, P, nfile);

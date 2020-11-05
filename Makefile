@@ -38,9 +38,9 @@ DFLAGS += -DPPMP
 #DFLAGS += -DPPMC
 
 # Solver
-DFLAGS += -DEXACT
+#DFLAGS += -DEXACT
 #DFLAGS += -DROE
-#DFLAGS += -DHLLC
+DFLAGS += -DHLLC
 
 # Integrator
 DFLAGS += -DVL
@@ -52,7 +52,7 @@ DFLAGS += -DVL
 
 # Apply a minimum value to conserved values
 DFLAGS += -DDENSITY_FLOOR
-DFLAGS += -DTEMPERATURE_FLOOR
+#DFLAGS += -DTEMPERATURE_FLOOR
 
 # Allocate GPU memory only once at the first timestep
 #DFLAGS += -DDYNAMIC_GPU_ALLOC

@@ -355,10 +355,10 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
     Grav.BC_FLAGS_SET = true;
   }
 
-	#if defined TIDES || defined POISSON_TEST
-//	Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
-	setMoments();
-	#endif
+  #if defined TIDES || defined POISSON_TEST
+//  Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
+  setMoments();
+  #endif
   
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   if ( Grav.boundary_flags[0] == 3 ) Compute_Potential_Boundaries_Isolated(0);
@@ -486,7 +486,12 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
   int nGHST = n_ghost_grid - N_GHOST_POTENTIAL;
   Real pot_now, pot_prev, pot_extrp;
   int k, j, i, id_pot, id_grid;
-	Real posx, posy, posz;
+
+  #ifdef TIDES
+  Real x[3], dxaux[3], globalPot, framePot;
+  for ( int i = 0; i < 3; i++ ) dxaux[i] = S.posBhExt[i] - S.posFrameExt[i];
+  #endif
+
   for ( k=g_start; k<g_end; k++ ){
     for ( j=0; j<ny_pot; j++ ){
       for ( i=0; i<nx_pot; i++ ){
@@ -502,17 +507,23 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
 
         }
 
-//			TEMPORARY OFF: NO TIDAL POTENTIAL
-				#ifdef TIDES
+//      TEMPORARY OFF: NO TIDAL POTENTIAL
+        #ifdef TIDES
+//      Add the extrapolated tidal potential, but only if the relaxation has ended!
 
-//			Add the extrapolated tidal potential, but only if the relaxation has ended!
+        if ( S.relaxed == 1 ){
+          Get_Position(i+nGHST, j+nGHST, k+nGHST, &x[0], &x[1], &x[2]);
 
-				if ( S.relaxed == 1 ){
-					Get_Position(i+nGHST, j+nGHST, k+nGHST, &posx, &posy, &posz);
-					pot_extrp += S.getTidalPotential(posx, posy, posz, S.extCij, S.extCijk, S.extCijkl);
-				}
+//        TEMPORARY ON: Analytical tidal potential for newtonian potential instead of tidal tensors
+          framePot = G_CGS * S.Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
+          globalPot = - G_CGS * S.Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
 
-				#endif
+          pot_extrp += globalPot + framePot;
+//          chprintf("Tensor / analytical: %.10e\n", S.getTidalPotential(x[0], x[1], x[2], S.extCij, S.extCijk, S.extCijkl) / ( globalPot + framePot ));
+//          pot_extrp += S.getTidalPotential(posx, posy, posz, S.extCij, S.extCijk, S.extCijkl);
+        }
+
+        #endif
 
         #ifdef COSMOLOGY
         //For cosmological simulation the potential is transformrd to 'comuving coordinates' 

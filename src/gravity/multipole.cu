@@ -110,14 +110,14 @@ void Grav3D::fillLegP(Real* legP, Real x){
 __device__ int tidFake(int tid_x, int tid_y, int tid_z, int n_ghost, int *n){
 
   int tid = ( tid_z + n_ghost ) * n[0] * n[1] + ( tid_y + n_ghost ) * n[0] + ( tid_x + n_ghost );
-	#ifdef POISSON_TEST
+  #ifdef POISSON_TEST
   int tid_z_fake = tid / ( n[0] * n[1]);
   int tid_y_fake = ( tid - tid_z_fake * n[0] * n[1] ) / n[0];
   int tid_x_fake = tid - tid_z_fake * n[0] * n[1] - tid_y_fake * n[0];
   if ( tid_x_fake < n_ghost || tid_y_fake < n_ghost || tid_z_fake < n_ghost || tid_z_fake > n[2] - n_ghost || tid_y_fake > n[1] - n_ghost || tid_x_fake > n[0] - n_ghost || tid >= n[0] * n[1] * n[2] || tid_z_fake != tid_z + n_ghost || tid_y_fake != tid_y + n_ghost || tid_x_fake != tid_x + n_ghost){
     printf("Something wrong in cell mapping.\n");
   }
-	#endif
+  #endif
   return tid;
 }
 
@@ -126,10 +126,10 @@ __global__ void QlmKernel(Real *rho, Real *center, Real *bounds, Real *dx, Real 
   __shared__ Real ReQ[QTPB * (1 + LMAX ) * (2 + LMAX ) / 2];
   __shared__ Real ImQ[QTPB * (1 + LMAX ) * (2 + LMAX ) / 2];
 
-	for ( int i = threadIdx.x * ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i < ( threadIdx.x + 1 ) * ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i++ ){
-		ReQ[i] = 0.;
-		ImQ[i] = 0.;
-	}
+  for ( int i = threadIdx.x * ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i < ( threadIdx.x + 1 ) * ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i++ ){
+    ReQ[i] = 0.;
+    ImQ[i] = 0.;
+  }
 
   int nreal[3];
   for ( int i = 0; i < 3; i++ ) nreal[i] = n[i] - 2 * n_ghost;
@@ -200,10 +200,10 @@ __global__ void QlmKernel(Real *rho, Real *center, Real *bounds, Real *dx, Real 
 __global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_ghost, Real *partialCenter){
 
 
-	int nreal[3];
-	for ( int i = 0; i < 3; i++ ) nreal[i] = n[i] - 2 * n_ghost;
-	int nrealcells = nreal[0] * nreal[1] * nreal[2];
-	int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  int nreal[3];
+  for ( int i = 0; i < 3; i++ ) nreal[i] = n[i] - 2 * n_ghost;
+  int nrealcells = nreal[0] * nreal[1] * nreal[2];
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
   int tid_z = tid / ( nreal[0] * nreal[1] );
   int tid_y = ( tid - tid_z * nreal[0] * nreal[1] ) / nreal[0];
   int tid_x = tid - tid_z * nreal[0] * nreal[1] - tid_y * nreal[0];
@@ -220,76 +220,76 @@ __global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_gh
     pos[1] = bounds[1] + dx[1] * ( tid_y + 0.5) - center[1];
     pos[2] = bounds[2] + dx[2] * ( tid_z + 0.5) - center[2];
     r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
-		rhosq= rho[tidFake(...)] * rho[tidFake(...)];
+    rhosq= rho[tidFake(...)] * rho[tidFake(...)];
 
-		
+    
 
 }
 */
 
 void Grid3D::setMoments(){
 
-	Real dx[3], bounds[3];
-	int n[3];
-	dx[0] = H.dx;	dx[1] = H.dy;	dx[2] = H.dz;
-	Real dV = dx[0] * dx[1] * dx[2];
-	bounds[0] = H.xblocal; bounds[1] = H.yblocal;	bounds[2] = H.zblocal;
-	n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
+  Real dx[3], bounds[3];
+  int n[3];
+  dx[0] = H.dx; dx[1] = H.dy; dx[2] = H.dz;
+  Real dV = dx[0] * dx[1] * dx[2];
+  bounds[0] = H.xblocal; bounds[1] = H.yblocal; bounds[2] = H.zblocal;
+  n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
 
-	#ifdef POISSON_TEST
-	struct timeval timecheck;
-	long start, end;
+  #ifdef POISSON_TEST
+  struct timeval timecheck;
+  long start, end;
 
-	gettimeofday(&timecheck, NULL);
-	start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
-	#endif
-/*
-	int id;
-	Real rhosq, totrhosq;
-	Real pos[3];
+  gettimeofday(&timecheck, NULL);
+  start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
+  #endif
+
+  int id;
+  Real rhosq, totrhosq;
+  Real x[3];
 
 // Find the center of the multipole expansion according to Couch et al. 2013
-	totrhosq = 0.;
+  totrhosq = 0.;
 
-	for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
 
-	for (int k = H.n_ghost; k < H.nz - H.n_ghost; k++) {
-		for (int j = H.n_ghost; j < H.ny - H.n_ghost; j++) {
-			for (int i = H.n_ghost; i < H.nx - H.n_ghost; i++) {
+  for (int k = H.n_ghost; k < H.nz - H.n_ghost; k++) {
+    for (int j = H.n_ghost; j < H.ny - H.n_ghost; j++) {
+      for (int i = H.n_ghost; i < H.nx - H.n_ghost; i++) {
 
-				id = i + j*H.nx + k*H.nx*H.ny;
-				Get_Position(i, j, k, &pos[0], &pos[1], &pos[2]);
-				rhosq = C.density[id] * C.density[id];
+        id = i + j*H.nx + k*H.nx*H.ny;
+        Get_Position(i, j, k, &x[0], &x[1], &x[2]);
+        rhosq = C.density[id] * C.density[id];
 
-				for ( int ii = 0; ii < 3; ii++ ) Grav.center[ii] += rhosq * pos[ii];
-				totrhosq += rhosq;
-				
-			}
-		}
-	}
+        for ( int ii = 0; ii < 3; ii++ ) Grav.center[ii] += rhosq * x[ii];
+        totrhosq += rhosq;
+        
+      }
+    }
+  }
 
-	#ifdef MPI_CHOLLA
-	MPI_Allreduce(MPI_IN_PLACE, &totrhosq, 1, MPI_CHREAL, MPI_SUM, world);
-	MPI_Allreduce(MPI_IN_PLACE, Grav.center, 3, MPI_CHREAL, MPI_SUM, world);
-	#endif//MPI_CHOLLA
+  #ifdef MPI_CHOLLA
+  MPI_Allreduce(MPI_IN_PLACE, &totrhosq, 1, MPI_CHREAL, MPI_SUM, world);
+  MPI_Allreduce(MPI_IN_PLACE, Grav.center, 3, MPI_CHREAL, MPI_SUM, world);
+  #endif//MPI_CHOLLA
 
-	for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
-*/
-	for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
 
-//	chprintf("  Center of the multipole expansion: %.5e, %.5e, %.5e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
+//  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
 
-	#ifdef POISSON_TEST
-	gettimeofday(&timecheck, NULL);
+  chprintf(" Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
+
+  #ifdef POISSON_TEST
+  gettimeofday(&timecheck, NULL);
   end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
 
-	Real timeused = ( (Real) ( end - start ) );
-	chprintf("Computing the center of the expansion took %.10e milliseconds\n", timeused);
+  Real timeused = ( (Real) ( end - start ) );
+  chprintf("Computing the center of the expansion took %.10e milliseconds\n", timeused);
 
 
-	gettimeofday(&timecheck, NULL);
-	start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000; 
-	#endif
+  gettimeofday(&timecheck, NULL);
+  start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000; 
+  #endif
 
   Real *dev_rho, *dev_center, *dev_bounds, *dev_dx, *dev_partialReQ, *dev_partialImQ;
   int *dev_n;
@@ -311,7 +311,7 @@ void Grid3D::setMoments(){
   cudaMemcpy( dev_dx, dx, 3*sizeof(Real), cudaMemcpyHostToDevice);
 
 //Call Kernel
-	cudaDeviceSynchronize();
+  cudaDeviceSynchronize();
   QlmKernel<<<Grav.Qblocks,QTPB>>>(dev_rho, dev_center, dev_bounds, dev_dx, H.xdglobal / 2., dev_n, H.n_ghost, dev_partialReQ, dev_partialImQ);
 
 //Copy result to CPU
@@ -348,29 +348,29 @@ void Grid3D::setMoments(){
     }
   }
 
-	#ifdef MPI_CHOLLA
-	MPI_Allreduce(MPI_IN_PLACE, Grav.ReQ, (1 + LMAX ) * (2 + LMAX ) / 2, MPI_CHREAL, MPI_SUM, world);
-	MPI_Allreduce(MPI_IN_PLACE, Grav.ImQ, (1 + LMAX ) * (2 + LMAX ) / 2, MPI_CHREAL, MPI_SUM, world);
-	#endif
+  #ifdef MPI_CHOLLA
+  MPI_Allreduce(MPI_IN_PLACE, Grav.ReQ, (1 + LMAX ) * (2 + LMAX ) / 2, MPI_CHREAL, MPI_SUM, world);
+  MPI_Allreduce(MPI_IN_PLACE, Grav.ImQ, (1 + LMAX ) * (2 + LMAX ) / 2, MPI_CHREAL, MPI_SUM, world);
+  #endif
 
-	#ifdef POISSON_TEST
-	gettimeofday(&timecheck, NULL);
+  #ifdef POISSON_TEST
+  gettimeofday(&timecheck, NULL);
   end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
 
-	timeused = ( (Real) ( end - start ) );
-	chprintf("Computing Qlm took %.10e milliseconds\n", timeused);
+  timeused = ( (Real) ( end - start ) );
+  chprintf("Computing Qlm took %.10e milliseconds\n", timeused);
 
-	int lmidx;
+  int lmidx;
   for ( int l = 0; l <= LMAX; l++ ){
     for ( int m = 0; m <= l; m++ ){
-			lmidx = Grav.Qidx(0,l,m);
+      lmidx = Grav.Qidx(0,l,m);
 
       chprintf("ReQ[%i][%i]=%.20e\n", l, m, Grav.ReQ[lmidx]);
       chprintf("ImQ[%i][%i]=%.20e\n", l, m, Grav.ImQ[lmidx]);
 
-		}
-	}
-	#endif
+    }
+  }
+  #endif
 
 }
 

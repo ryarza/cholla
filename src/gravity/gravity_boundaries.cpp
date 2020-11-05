@@ -129,10 +129,10 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
   #endif  
 
   int i, j, k, id;
-	Real pos[3], r, pot_val;
-	#if defined TIDES || defined POISSON_TEST
-	Real phi, theta, Ylmfac, lfac;
-	#endif
+  Real pos[3], r, pot_val;
+  #if defined TIDES || defined POISSON_TEST
+  Real phi, theta, Ylmfac, lfac;
+  #endif
   
   for ( k=0; k<nGHST; k++ ){
     for ( i=0; i<n_i; i++ ){
@@ -141,55 +141,55 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         id = i + j*n_i + k*n_i*n_j; 
         
         if ( direction == 0 ){
-					pos[0] = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
+          pos[0] = Grav.xMin + ( k + 0.5 - nGHST ) * Grav.dx;
           if ( side == 1 ) pos[0] += Lx_local + nGHST*Grav.dx;
           pos[1] = Grav.yMin + ( i + 0.5 )* Grav.dy;
           pos[2] = Grav.zMin + ( j + 0.5 )* Grav.dz;
         }
         
         if ( direction == 1 ){
-					pos[1] = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
+          pos[1] = Grav.yMin + ( k + 0.5 - nGHST ) * Grav.dy;
           if ( side == 1 ) pos[1] += Ly_local + nGHST*Grav.dy;
           pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
           pos[2] = Grav.zMin + ( j + 0.5 )* Grav.dz;
         } 
           
         if ( direction == 2 ){
-					pos[2] = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
+          pos[2] = Grav.zMin + ( k + 0.5 - nGHST ) * Grav.dz;
           if ( side == 1 ) pos[2] += Lz_local + nGHST*Grav.dz;
           pos[0] = Grav.xMin + ( i + 0.5 )* Grav.dx;
           pos[1] = Grav.yMin + ( j + 0.5 )* Grav.dy;
         }
 
-				#if defined POISSON_TEST || defined TIDES
-				Real legP[(1+LMAX)*(2+LMAX)/2];
+        #if defined POISSON_TEST || defined TIDES
+        Real legP[(1+LMAX)*(2+LMAX)/2];
 
-//			Shift positions to with respect to the center of the expansion
-				for ( int ii = 0; ii < 3; ii++ ) pos[ii] -= Grav.center[ii];
-				r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
-				phi = atan2(pos[1], pos[0]);
-				Grav.fillLegP(legP, pos[2] / r);
+//      Shift positions to with respect to the center of the expansion
+        for ( int ii = 0; ii < 3; ii++ ) pos[ii] -= Grav.center[ii];
+        r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
+        phi = atan2(pos[1], pos[0]);
+        Grav.fillLegP(legP, pos[2] / r);
 
-				pot_val = 0.;
-				int lmidx;
-				for ( int l = 0; l <= LMAX; l++ ){
-					lfac = - 8. * M_PI * pow(r, - l - 1. ) / ( 2. * l + 1. );
-					pot_val += 0.5 * lfac * Grav.ReQ[Grav.Qidx(0,l,0)] * legP[Grav.Qidx(0,l,0)];
-					for ( int m = 1; m < l + 1; m++ ){
-						lmidx = Grav.Qidx(0,l,m);
-						Ylmfac = legP[lmidx];
-						pot_val += lfac * ( Grav.ReQ[lmidx] * Ylmfac * cos(m * phi) - Grav.ImQ[lmidx] * Ylmfac * sin(m * phi) );
-					}
-				}
+        pot_val = 0.;
+        int lmidx;
+        for ( int l = 0; l <= LMAX; l++ ){
+          lfac = - 8. * M_PI * pow(r, - l - 1. ) / ( 2. * l + 1. );
+          pot_val += 0.5 * lfac * Grav.ReQ[Grav.Qidx(0,l,0)] * legP[Grav.Qidx(0,l,0)];
+          for ( int m = 1; m < l + 1; m++ ){
+            lmidx = Grav.Qidx(0,l,m);
+            Ylmfac = legP[lmidx];
+            pot_val += lfac * ( Grav.ReQ[lmidx] * Ylmfac * cos(m * phi) - Grav.ImQ[lmidx] * Ylmfac * sin(m * phi) );
+          }
+        }
 
-				pot_val *= Grav.Gconst;
+        pot_val *= Grav.Gconst;
 
-//			TEMPORARY OFF: Sphere potential
-//				r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
-//  			pot_val = - G_CGS * 1.989e33 / r;
-//			TEMPORARY OFF: Compare to sphere potential
-//	  		printf("pot_val/pot_sphere: %.10e\n", pot_val / ( - G_CGS * 1.989e33 / r ));
-				#endif
+//      TEMPORARY OFF: Sphere potential
+//        r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
+//        pot_val = - G_CGS * 1.989e33 / r;
+//      TEMPORARY OFF: Compare to sphere potential
+//        printf("pot_val/pot_sphere: %.10e\n", pot_val / ( - G_CGS * 1.989e33 / r ));
+        #endif
 
         pot_boundary[id] = pot_val;
                         

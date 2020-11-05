@@ -5,10 +5,9 @@
 #include"../global.h"
 
 #if defined TIDES || defined POISSON_TEST
-#define LMAX (5)
-#define QTPB (128)
+#define LMAX (7)
+#define QTPB (64)
 #endif
-
 
 #ifdef PFFT
 #include"potential_PFFT_3D.h"
@@ -20,6 +19,7 @@
 
 #ifdef SOR
 #include"potential_SOR_3D.h"
+#define SOREPSILON (1.e-12)
 #endif
 
 #ifdef PARIS
@@ -114,18 +114,18 @@ class Grav3D
   #ifdef SOR
   Potential_SOR_3D Poisson_solver;
 
-	#if defined TIDES || defined POISSON_TEST
-	Real *ReQ;
-	Real *ImQ;
-	Real *bufferReQ;
-	Real *bufferImQ;
-	int Qblocks;
-	Real center[3];
-	int Qidx(int cidx, int l, int m);
-	void fillLegP(Real* legP, Real x);
-	#endif
+  #if defined TIDES || defined POISSON_TEST
+  Real *ReQ;
+  Real *ImQ;
+  Real *bufferReQ;
+  Real *bufferImQ;
+  int Qblocks;
+  Real center[3];
+  int Qidx(int cidx, int l, int m);
+  void fillLegP(Real* legP, Real x);
+  #endif
 
-  #endif//SOR
+  #endif
 
   #ifdef PARIS
   #if (defined(PFFT) || defined(CUFFT) || defined(SOR))

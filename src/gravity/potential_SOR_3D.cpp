@@ -50,6 +50,12 @@ void Potential_SOR_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y
 
   
   chprintf( " Using Poisson Solver: SOR\n");
+  chprintf("  Convergence epsilon: %.10e\n", SOREPSILON);
+
+  #ifdef TIDES
+  chprintf("  Maximum angular order: %i", LMAX);
+  #endif
+
   chprintf( "  SOR: L[ %f %f %f ] N[ %d %d %d ] dx[ %f %f %f ]\n", Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local, dx, dy, dz );
 
   chprintf( "  SOR: Allocating memory...\n");
@@ -130,15 +136,6 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
   Grav.Copy_Isolated_Boundaries_To_GPU( P );
   Grav.Poisson_solver.Set_Isolated_Boundary_Conditions( Grav.boundary_flags, P );
 
-
-	#ifdef POISSON_TEST
-  Real epsilon = 1.e-10;
-	#elif defined TIDES
-	Real epsilon = 1.e-8;
-	#else
-	Real epsilon = 1.e-4;
-	#endif
-//	chprintf("SOR convergence epsilon: %.5e", epsilon);
   int max_iter = 10000000;
   int n_iter = 0;
 
@@ -170,7 +167,7 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
       Grav.Poisson_solver.TRANSFER_POISSON_BOUNDARIES = false;
     }
     
-    Grav.Poisson_solver.Poisson_Partial_Iteration( 0, omega, epsilon ); 
+    Grav.Poisson_solver.Poisson_Partial_Iteration( 0, omega, SOREPSILON ); 
 
     if ( set_boundaries ){
       Grav.Poisson_solver.TRANSFER_POISSON_BOUNDARIES = true;
@@ -178,7 +175,7 @@ void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current
       Grav.Poisson_solver.TRANSFER_POISSON_BOUNDARIES = false;
     }
     
-    Grav.Poisson_solver.Poisson_Partial_Iteration( 1, omega, epsilon );
+    Grav.Poisson_solver.Poisson_Partial_Iteration( 1, omega, SOREPSILON );
 
     n_iter += 1;
 

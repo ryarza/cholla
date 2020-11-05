@@ -280,38 +280,38 @@ parms->scale_outputs_file[0] = '\0';
       parms->pAmb = atof(value);
     else if (strcmp(name, "polyN")==0)
       parms->polyN = atof(value);
-		else if (strcmp(name, "rprt")==0)
-			parms->rprt = atof(value);
-		else if (strcmp(name, "tRelaxtDyn")==0)
-			parms->tRelaxtDyn = atof(value);
-		else if (strcmp(name, "r0rt") == 0)
-			parms->r0rt = atof(value);
+    else if (strcmp(name, "rprt")==0)
+      parms->rprt = atof(value);
+    else if (strcmp(name, "tRelaxtDyn")==0)
+      parms->tRelaxtDyn = atof(value);
+    else if (strcmp(name, "r0rt") == 0)
+      parms->r0rt = atof(value);
 #endif
 #ifdef POISSON_TEST
-		else if (strcmp(name, "c0")==0)
-			parms->c[0] = atof(value);
-		else if (strcmp(name, "c1")==0)
-			parms->c[1] = atof(value);
-		else if (strcmp(name, "c2")==0)
-			parms->c[2] = atof(value);
-		else if (strcmp(name, "c3")==0)
-			parms->c[3] = atof(value);
-		else if (strcmp(name, "c4")==0)
-			parms->c[4] = atof(value);
-		else if (strcmp(name, "c5")==0)
-			parms->c[5] = atof(value);
-		else if (strcmp(name, "d0")==0)
-			parms->d[0] = atoi(value);
-		else if (strcmp(name, "d1")==0)
-			parms->d[1] = atoi(value);
-		else if (strcmp(name, "d2")==0)
-			parms->d[2] = atoi(value);
-		else if (strcmp(name, "d3")==0)
-			parms->d[3] = atoi(value);
-		else if (strcmp(name, "d4")==0)
-			parms->d[4] = atoi(value);
-		else if (strcmp(name, "d5")==0)
-			parms->d[5] = atoi(value);
+    else if (strcmp(name, "c0")==0)
+      parms->c[0] = atof(value);
+    else if (strcmp(name, "c1")==0)
+      parms->c[1] = atof(value);
+    else if (strcmp(name, "c2")==0)
+      parms->c[2] = atof(value);
+    else if (strcmp(name, "c3")==0)
+      parms->c[3] = atof(value);
+    else if (strcmp(name, "c4")==0)
+      parms->c[4] = atof(value);
+    else if (strcmp(name, "c5")==0)
+      parms->c[5] = atof(value);
+    else if (strcmp(name, "d0")==0)
+      parms->d[0] = atoi(value);
+    else if (strcmp(name, "d1")==0)
+      parms->d[1] = atoi(value);
+    else if (strcmp(name, "d2")==0)
+      parms->d[2] = atoi(value);
+    else if (strcmp(name, "d3")==0)
+      parms->d[3] = atoi(value);
+    else if (strcmp(name, "d4")==0)
+      parms->d[4] = atoi(value);
+    else if (strcmp(name, "d5")==0)
+      parms->d[5] = atoi(value);
 #endif//POISSON_TEST
 
 #ifdef SET_MPI_GRID
@@ -335,52 +335,53 @@ parms->scale_outputs_file[0] = '\0';
 void printCompileOptions(){
 
 //Time integrator
-	chprintf("Integrator: ");
-	#ifdef CTU
-	chprintf("CTU");
-	#elif defined VL
-	chprintf("VL");
-	#elif defined CTU
-	chprintf("CTU");
-	#else
-	chprintf("not recognized");
-	#endif
-
-//CFL
-	chprintf(". CFL: %f", C_cfl);
+  chprintf("Integrator: ");
+  #ifdef CTU
+  chprintf("CTU");
+  #elif defined VL
+  chprintf("VL");
+  #elif defined CTU
+  chprintf("CTU");
+  #else
+  chprintf("not recognized");
+  #endif
 
 //Reconstruction
-	chprintf(". Reconstruction: ");
-	#ifdef PCM
-	chprintf("PCM");
-	#elif defined PLMP
-	chprintf("PLMP");
-	#elif defined PPLMC
-	chprintf("PPLMC");
-	#elif defined PPMP
-	chprintf("PPMP");
-	#elif defined PPMC
-	chprintf("PPMC");
-	#else
-	chprintf("not recognized");
-	#endif
+  chprintf(". Reconstruction: ");
+  #ifdef PCM
+  chprintf("PCM");
+  #elif defined PLMP
+  chprintf("PLMP");
+  #elif defined PPLMC
+  chprintf("PPLMC");
+  #elif defined PPMP
+  chprintf("PPMP");
+  #elif defined PPMC
+  chprintf("PPMC");
+  #else
+  chprintf("not recognized");
+  #endif
 
 //Riemann solver
-	chprintf(". Riemann solver: ");
-	#ifdef EXACT
-	chprintf("exact");
-	#elif defined ROE
-	chprintf("Roe");
-	#elif defined HLLC
-	chprintf("HLLC");
-	#else
-	chprintf("not recognized");
-	#endif
+  chprintf(". Riemann solver: ");
+  #ifdef EXACT
+  chprintf("exact");
+  #elif defined ROE
+  chprintf("Roe");
+  #elif defined HLLC
+  chprintf("HLLC");
+  #else
+  chprintf("not recognized");
+  #endif
 
-	chprintf("\n");
+//H correction
+  chprintf(". H correction: ");
+  #ifdef H_CORRECTION
+  chprintf("enabled");
+  #else
+  chprintf("disabled");
+  #endif
 
-	#ifdef H_CORRECTION
-	chprintf("H correction enabled\n");
-	#endif
+  chprintf("\n");
 
 }

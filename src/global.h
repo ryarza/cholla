@@ -51,7 +51,7 @@ typedef double Real;
 
 //Conserved Floor Values
 #define TEMP_FLOOR 1e-3
-#define DENS_FLOOR 1e-24
+#define DENS_FLOOR 1e-25
 
 //Parameter for Enzo dual Energy Condition
 #define DE_ETA_1 0.001 //Ratio of U to E for wich  Inetrnal Energy is used to compute the Pressure
@@ -236,19 +236,19 @@ struct parameters
   Real Mstar;
   Real Rstar;
   Real Mbh;
-	Real pAmb;
-	Real rhoAmb;
-	Real tRelaxtDyn;
+  Real pAmb;
+  Real rhoAmb;
+  Real tRelaxtDyn;
   Real polyN;
-	Real rprt;
-	Real r0rt;
-	Real relaxRate0;
-	Real relaxRateBkgnd;
+  Real rprt;
+  Real r0rt;
+  Real relaxRate0;
+  Real relaxRateBkgnd;
 #endif//TIDES
 
 #ifdef POISSON_TEST
-	Real c[6];
-	int d[6];
+  Real c[6];
+  int d[6];
 #endif
 
 #ifdef COSMOLOGY
