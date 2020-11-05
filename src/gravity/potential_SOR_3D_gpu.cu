@@ -139,22 +139,22 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
   
   // //Set neighbors ids
   int indx_l, indx_r, indx_d, indx_u, indx_b, indx_t;
-//	int indx_l2, indx_r2, indx_d2, indx_u2, indx_b2, indx_t2;
+//  int indx_l2, indx_r2, indx_d2, indx_u2, indx_b2, indx_t2;
   
   indx_l  = tid_x-1; //Left
-//	indx_l2 = tid_x-2; //Two to the left
+//  indx_l2 = tid_x-2; //Two to the left
   indx_r  = tid_x+1; //Right
-//	indx_r2 = tid_x+2; //Two to the right
+//  indx_r2 = tid_x+2; //Two to the right
 
   indx_d  = tid_y-1; //Down
-//	indx_d2 = tid_y-2; //Two down
+//  indx_d2 = tid_y-2; //Two down
   indx_u  = tid_y+1; //Up
-//	indx_u2 = tid_y+2; //Two up
+//  indx_u2 = tid_y+2; //Two up
 
   indx_b  = tid_z-1; //Bottom
-//	indx_b2 = tid_z-2; //Two bottom
+//  indx_b2 = tid_z-2; //Two bottom
   indx_t  = tid_z+1; //Top
-//	indx_t2 = tid_z+2; //Two top
+//  indx_t2 = tid_z+2; //Two top
   
   //Boundary Conditions are loaded to the potential array, the natural indices work!
   
@@ -175,7 +175,7 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
   // indx_t = tid_z == nz_pot-n_ghost-1 ?    tid_z-1 : tid_z+1;  //Top
   
   Real rho, phi_c, phi_l, phi_r, phi_d, phi_u, phi_b, phi_t, phi_new;
-//	Real phi_l2, phi_r2, phi_d2, phi_u2, phi_b2, phi_t2;
+//  Real phi_l2, phi_r2, phi_d2, phi_u2, phi_b2, phi_t2;
   rho    = density_d[tid];
   phi_c  = potential_d[tid_pot];
 //  phi_l2 = potential_d[ indx_l2 + tid_y   * nx_pot + tid_z   * nx_pot * ny_pot ];
@@ -192,23 +192,23 @@ __global__ void Iteration_Step_SOR( int n_cells, Real *density_d, Real *potentia
 //  phi_t2 = potential_d[ tid_x   + tid_y   * nx_pot + indx_t2 * nx_pot * ny_pot ];
 
 /*
-	if ( tid < 10 ){
-		printf("l2: %f\n", phi_l2);
-		printf("r2: %f\n", phi_r2);
-		printf("d2: %f\n", phi_d2);
-		printf("u2: %f\n", phi_u2);
-		printf("b2: %f\n", phi_b2);
-		printf("t2: %f\n", phi_t2);
-	}
+  if ( tid < 10 ){
+    printf("l2: %f\n", phi_l2);
+    printf("r2: %f\n", phi_r2);
+    printf("d2: %f\n", phi_d2);
+    printf("u2: %f\n", phi_u2);
+    printf("b2: %f\n", phi_b2);
+    printf("t2: %f\n", phi_t2);
+  }
 */
-//	4th order SOR step
+//  4th order SOR step
 /*
-		phi_new = (1. - omega) *phi_c
+    phi_new = (1. - omega) *phi_c
               + ( omega / 90. ) * ( - phi_l2 + 16. * phi_l + 16. * phi_r - phi_r2
-																		- phi_d2 + 16. * phi_d + 16. * phi_u - phi_u2
-																		- phi_b2 + 16. * phi_b + 16. * phi_t - phi_t2
-																		- 12. * dx * dx * rho
-																	);
+                                    - phi_d2 + 16. * phi_d + 16. * phi_u - phi_u2
+                                    - phi_b2 + 16. * phi_b + 16. * phi_t - phi_t2
+                                    - 12. * dx * dx * rho
+                                  );
 */
 
   phi_new = (1-omega)*phi_c + omega/6*( phi_l + phi_r + phi_d + phi_u + phi_b + phi_t - dx*dx*rho );

@@ -473,7 +473,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "eta0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.eta0);
   status = H5Aclose(attribute_id);
-	
+  
   attribute_id = H5Acreate(file_id, "eta", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.eta);
   status = H5Aclose(attribute_id);
@@ -594,7 +594,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, Real_data);
   status = H5Aclose(attribute_id);
 
-	#ifdef TIDES
+  #ifdef TIDES
 
   attribute_id = H5Acreate(file_id, "xFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posFrame);
@@ -631,7 +631,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
 //  attribute_id = H5Acreate(file_id, "accSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
 //  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accSt);
 //  status = H5Aclose(attribute_id);
-	#endif//TIDES
+  #endif//TIDES
  
   // Close the dataspace
   status = H5Sclose(dataspace_id);
@@ -1501,8 +1501,8 @@ void Grid3D::Write_Grid_HDF5(hid_t file_id)
     
     #ifdef GRAVITY
 
-		#ifdef POISSON_TEST
-		// Copy the analytical potential array to the memory buffer. Remember that we defined the analytical potential inside G, so it has the hydro number of ghost zones
+    #ifdef POISSON_TEST
+    // Copy the analytical potential array to the memory buffer. Remember that we defined the analytical potential inside G, so it has the hydro number of ghost zones
     for (int k=0; k< H.nz_real; k++) {
       for (int j=0; j< H.ny_real; j++) {
         for (int i=0; i< H.nx_real; i++) {
@@ -1518,7 +1518,7 @@ void Grid3D::Write_Grid_HDF5(hid_t file_id)
     status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, dataset_buffer);
     // Free the dataset id
     status = H5Dclose(dataset_id);
-		#endif
+    #endif
 
     #ifdef OUTPUT_POTENTIAL
     // Copy the potential array to the memory buffer

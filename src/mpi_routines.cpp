@@ -160,12 +160,12 @@ void InitializeChollaMPI(int *pargc, char **pargv[])
   MPI_CHREAL = MPI_DOUBLE;
   #endif /*PRECISION*/
  
-	#if PRECISION == 1
-	MPI_CHCOMPLEX = MPI_COMPLEX;
-	#endif
-	#if PRECISION == 2
-	MPI_CHCOMPLEX = MPI_DOUBLE_COMPLEX;
-	#endif
+  #if PRECISION == 1
+  MPI_CHCOMPLEX = MPI_COMPLEX;
+  #endif
+  #if PRECISION == 2
+  MPI_CHCOMPLEX = MPI_DOUBLE_COMPLEX;
+  #endif
  
   #ifdef PARTICLES
   #ifdef PARTICLES_LONG_INTS
@@ -755,26 +755,26 @@ Real ReduceRealAvg(Real x)
 
 Real ReduceRealSum(Real x)
 {
-	Real in = x;
-	Real out;
-	Real y;
+  Real in = x;
+  Real out;
+  Real y;
 
-	MPI_Allreduce(&in, &out, 1, MPI_CHREAL, MPI_SUM, world);
-	y = (Real) out;
+  MPI_Allreduce(&in, &out, 1, MPI_CHREAL, MPI_SUM, world);
+  y = (Real) out;
 
-	return y;
+  return y;
 }
 
 std::complex<Real> ReduceComplexSum(std::complex<Real> x){
-	std::complex<Real> in = x;
-	std::complex<Real> out;
-	std::complex<Real> y;
+  std::complex<Real> in = x;
+  std::complex<Real> out;
+  std::complex<Real> y;
 
-	MPI_Allreduce(&in, &out, 1, MPI_CHCOMPLEX, MPI_SUM, world);
+  MPI_Allreduce(&in, &out, 1, MPI_CHCOMPLEX, MPI_SUM, world);
 
-	y = (std::complex<Real>) out;
+  y = (std::complex<Real>) out;
 
-	return y;
+  return y;
 }
 
 #ifdef PARTICLES
@@ -1244,13 +1244,13 @@ void TileBlockDecomposition(void)
 
   //initialize np_x, np_y, np_z
   int np_x = 1;
-	int np_y = 1;
-	int np_z = 1;
-	//printf("nproc %d n_gpf %d\n",nproc,n_gpf);
+  int np_y = 1;
+  int np_z = 1;
+  //printf("nproc %d n_gpf %d\n",nproc,n_gpf);
 
-	/*find the greatest prime factor of the number of MPI processes*/
+  /*find the greatest prime factor of the number of MPI processes*/
   n_gpf = greatest_prime_factor(nproc);
-	//printf("nproc %d n_gpf %d\n",nproc,n_gpf);
+  //printf("nproc %d n_gpf %d\n",nproc,n_gpf);
 
   /*base decomposition on whether n_gpf==2*/
   if(n_gpf!=2)
@@ -1275,17 +1275,17 @@ void TileBlockDecomposition(void)
         /*increase ny, nz round-robin*/
         while(np_x*np_y*np_z < nproc)
         {
-        	np_y*=2;
-        	if(np_x*np_y*np_z==nproc)
-        		break;
-        	np_z*=2;
+          np_y*=2;
+          if(np_x*np_y*np_z==nproc)
+            break;
+          np_z*=2;
         }
 
       }
     }
 
   }else{
-  	/*nproc is a power of 2*/
+    /*nproc is a power of 2*/
     /*if we are dealing with two dimensions, we can just assign domain*/
     if(nz_global==1)
     {
@@ -1315,21 +1315,21 @@ void TileBlockDecomposition(void)
   int n_tmp;
   if(np_z>np_y)
   {
-  	n_tmp = np_y;
-  	np_y  = np_z;
-  	np_z  = n_tmp;
+    n_tmp = np_y;
+    np_y  = np_z;
+    np_z  = n_tmp;
   }
   if(np_y>np_x)
   {
-  	n_tmp = np_x;
-  	np_x  = np_y;
-  	np_y  = n_tmp;
+    n_tmp = np_x;
+    np_x  = np_y;
+    np_y  = n_tmp;
   }
   if(np_z>np_y)
   {
-  	n_tmp = np_y;
-  	np_y  = np_z;
-  	np_z  = n_tmp;
+    n_tmp = np_y;
+    np_y  = np_z;
+    np_z  = n_tmp;
   }
 
   //save result
