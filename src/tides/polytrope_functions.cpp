@@ -70,14 +70,14 @@ int Binary_Search( int N, Real val, Real *data, int indx_l, int indx_r ){
 Real Interpolate( int n, int rootIdx, Real xi, Real *xiVals, Real *thetaVals, Real *dthetaVals ){
 //  if ( x <= xVals[0] )   return thetaVals[0];
 //  if ( x >= xVals[n-1] ) return thetaVals[n-1];
-	if ( xi < 0. ) chprintf("Error: radius requested < 0"    );
-//		if ( r > P.Rstar   ) chprintf("Error: radius requested > Rstar");
-	if ( xi > xiVals[rootIdx] ){
-		Real val = thetaVals[rootIdx] + ( xi - xiVals[rootIdx] ) * dthetaVals[rootIdx];
-		chprintf("This cell is after the last xi. Returning %.10e\n", val);
-		return val;
-	}
-	if ( xi > xiVals[rootIdx+1]) chprintf("wtf\n");
+  if ( xi < 0. ) chprintf("Error: radius requested < 0"    );
+//    if ( r > P.Rstar   ) chprintf("Error: radius requested > Rstar");
+  if ( xi > xiVals[rootIdx] ){
+    Real val = thetaVals[rootIdx] + ( xi - xiVals[rootIdx] ) * dthetaVals[rootIdx];
+    chprintf("This cell is after the last xi. Returning %.10e\n", val);
+    return val;
+  }
+  if ( xi > xiVals[rootIdx+1]) chprintf("wtf\n");
 
 // Find the closest index for which xVal is less than x;
   int indx = Binary_Search( n, xi, xiVals, 0, n-1 );
@@ -94,12 +94,12 @@ Real Interpolate( int n, int rootIdx, Real xi, Real *xiVals, Real *thetaVals, Re
 
 void Grid3D::Polytropic_Star( struct parameters &P ){
 
-	S.initialize(P, H.t, H.dt, H.nx, H.ny, H.nz);
-	chprintf("	Lane-Emden solver:\n");
+  S.initialize(P, H.t, H.dt, H.nx, H.ny, H.nz);
+  chprintf("  Lane-Emden solver:\n");
 
   //Solve Lane–Emden equation for the polytrope 
 //  int n_points = 500000000;
-	int n_points = 10000000;
+  int n_points = 10000000;
   Real *xi_vals      = new Real[n_points];
   Real *theta_vals   = new Real[n_points];
   Real *theta_deriv  = new Real[n_points];
@@ -110,22 +110,22 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 
   xi_min = 1.e-10;
 
-	if ( P.polyN == 0. ){
-		xi_max = 2.46;
-	}
-	else if ( P.polyN == 1. ){
-		xi_max = 3.15;
-	}
-	else if ( P.polyN == 1.5 ){
-		xi_max = 3.65376;
-	}
-	else{
-		xi_max = 7.;
-	}
+  if ( P.polyN == 0. ){
+    xi_max = 2.46;
+  }
+  else if ( P.polyN == 1. ){
+    xi_max = 3.15;
+  }
+  else if ( P.polyN == 1.5 ){
+    xi_max = 3.65376;
+  }
+  else{
+    xi_max = 7.;
+  }
 
   dxi = xi_max / ( n_points - 1. );
-	xi_vals[0] = 0.;
-	xi_vals[1] = xi_min;
+  xi_vals[0] = 0.;
+  xi_vals[1] = xi_min;
   for ( int i = 2; i < n_points; i++){
     xi_vals[i] = i * dxi;
   }
@@ -134,21 +134,21 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   vector<Real2> poly_coords;
 
 // The first elements of this vector will be the known boundary conditions
-	poly_coords.push_back( Real2(1., 0.) );
-	theta_vals[0] = 1.;
-	theta_deriv[0] = 0.;
+  poly_coords.push_back( Real2(1., 0.) );
+  theta_vals[0] = 1.;
+  theta_deriv[0] = 0.;
 
 // We can't start the integration from the previous point because there'll be division by zero. Instead, integrate the first point from the known Taylor series solution to the equation
-	Real thetaTaylor, dthetaTaylor;
+  Real thetaTaylor, dthetaTaylor;
 
   thetaTaylor = 1. - (1./6.) * xi_min * xi_min + P.polyN * pow(xi_min, 4.) / 120. - P.polyN * ( 8. * P.polyN - 5.) * pow(xi_min, 6.) / 15120.;
   dthetaTaylor = - xi_min / 3. + P.polyN * pow(xi_min, 3.) / 30. - pow(xi_min, 5.) * P.polyN * ( -5. + 8 * P.polyN ) / 2520.;
 
-	poly_coords.push_back( Real2( thetaTaylor, dthetaTaylor ) );
+  poly_coords.push_back( Real2( thetaTaylor, dthetaTaylor ) );
 
-//	chprintf("Taylor series: %.10e, %.10e", thetaTaylor, dthetaTaylor);
+//  chprintf("Taylor series: %.10e, %.10e", thetaTaylor, dthetaTaylor);
 
-	theta_vals[1] = poly_coords[1].x;
+  theta_vals[1] = poly_coords[1].x;
   theta_deriv[1] = poly_coords[1].y;
 
   //Solve the polytrope equation using the RK4 module
@@ -173,22 +173,22 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   }
 
 /*
-	for ( int i = 0; i < root_indx + 1; i++){
-		chprintf("xi = %.10e, theta = %.10e, dtheta = %.10e\n", xi_vals[i], theta_vals[i], theta_deriv[i]);
-	}
+  for ( int i = 0; i < root_indx + 1; i++){
+    chprintf("xi = %.10e, theta = %.10e, dtheta = %.10e\n", xi_vals[i], theta_vals[i], theta_deriv[i]);
+  }
 */
 
-//	Linear interpolation estimate of the root
-	Real xi_root = ( xi_vals[root_indx + 1] * theta_vals[root_indx] - xi_vals[root_indx] * theta_vals[root_indx + 1] ) / ( theta_vals[root_indx] - theta_vals[root_indx + 1]  );
-  chprintf( "		Root at xi = %.5e. Theta values before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
+//  Linear interpolation estimate of the root
+  Real xi_root = ( xi_vals[root_indx + 1] * theta_vals[root_indx] - xi_vals[root_indx] * theta_vals[root_indx + 1] ) / ( theta_vals[root_indx] - theta_vals[root_indx + 1]  );
+  chprintf( "   Root at xi = %.5e. Theta values before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
   
-//	Linear extrapolation estimate of the derivative evaluated at the root
+//  Linear extrapolation estimate of the derivative evaluated at the root
   Real theta_deriv_root = xi_vals[root_indx + 1] * theta_vals[root_indx] * ( theta_deriv[root_indx - 1] - theta_deriv[root_indx] );
-	theta_deriv_root += xi_vals[root_indx - 1] * theta_deriv[root_indx] * ( theta_vals[root_indx] - theta_vals[root_indx + 1] );
-	theta_deriv_root += xi_vals[root_indx] * ( theta_vals[root_indx + 1] * theta_deriv[root_indx] - theta_vals[root_indx] * theta_deriv[root_indx - 1] );
-	theta_deriv_root /= ( xi_vals[root_indx - 1] - xi_vals[root_indx] ) * ( theta_vals[root_indx] - theta_vals[root_indx  + 1] );
+  theta_deriv_root += xi_vals[root_indx - 1] * theta_deriv[root_indx] * ( theta_vals[root_indx] - theta_vals[root_indx + 1] );
+  theta_deriv_root += xi_vals[root_indx] * ( theta_vals[root_indx + 1] * theta_deriv[root_indx] - theta_vals[root_indx] * theta_deriv[root_indx - 1] );
+  theta_deriv_root /= ( xi_vals[root_indx - 1] - xi_vals[root_indx] ) * ( theta_vals[root_indx] - theta_vals[root_indx  + 1] );
   
-  chprintf( "		d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
+  chprintf( "   d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
   
   //Convert to physical values
   Real dens_avrg = ( 3 * P.Mstar ) / ( 4 * M_PI * pow( P.Rstar, 3) );
@@ -198,10 +198,10 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   Real K = pressure_central * pow( dens_central, -(P.polyN+1)/P.polyN );
   Real alpha = sqrt( (P.polyN + 1) * K / ( 4 * M_PI * G_CGS ) ) * pow( dens_central, (1.-P.polyN)/(2*P.polyN) );
   
-  chprintf( "		rho_c / rho_av: %.5e g/cm^3\n", dens_central / dens_avrg );
-  chprintf( "		p_c           : %.5e erg/cm^3\n", pressure_central );
+  chprintf( "   rho_c / rho_av: %.5e g/cm^3\n", dens_central / dens_avrg );
+  chprintf( "   p_c           : %.5e erg/cm^3\n", pressure_central );
   Real cs_center = sqrt(  pressure_central / dens_central * P.gamma );
-  chprintf( "		t_cross       : %.5e s\n ", P.Rstar / cs_center); 
+  chprintf( "   t_cross       : %.5e s\n ", P.Rstar / cs_center); 
   // chprintf( " K: %f \n", K );
   // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){
@@ -213,9 +213,9 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   int i, j, k, id;
   Real x_pos, y_pos, z_pos, r, center_x, center_y, center_z;
   Real density, pressure, energy;
-	#ifdef DE
-	Real gasEnergy;
-	#endif
+  #ifdef DE
+  Real gasEnergy;
+  #endif
 
   center_x = 0.;
   center_y = 0.;
@@ -225,22 +225,22 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   vx = 0.;
   vy = 0.;
   vz = 0.;
-	v2 = vx*vx + vy*vy + vz*vz;
+  v2 = vx*vx + vy*vy + vz*vz;
 
 //We must assign the mean value of the polytropic solution to the cell. To do so, we divide the cell into subcells, evaluate the solution at every subcell, then assign to the cell the average of the subcells. We sample values using a "np.linspace" from x-dx/2 to x+dx/2 but not including the endpoints, so that we use only values inside the cell.
 
 // Number of subcells in each dimension. The total number of subcells per cell is this number cubed
-	int nSubcells = 5;
-	Real totSubcells = pow(nSubcells, 3.);
+  int nSubcells = 5;
+  Real totSubcells = pow(nSubcells, 3.);
 
 //These variables hold the value of x-dx/2 (lo) and x+dx/2 (hi)
   Real xSubLo, xSubHi, ySubLo, ySubHi, zSubLo, zSubHi, dxSub, dySub, dzSub;
 
-//	Subcell properties
-	Real thetaSubcell, rhoSubcell, pressureSubcell, energySubcell;
-	#ifdef DE
-	Real gasEnergySubcell;
-	#endif
+//  Subcell properties
+  Real thetaSubcell, rhoSubcell, pressureSubcell, energySubcell;
+  #ifdef DE
+  Real gasEnergySubcell;
+  #endif
 
   // set the initial values of the conserved variables
   for (k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
@@ -252,70 +252,70 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
         Get_Position(i, j, k, &x_pos, &y_pos, &z_pos);
         r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
 
-				if ( r < P.Rstar + sqrt( H.dx * H.dx + H.dy * H.dy + H.dz * H.dz ) ){
-//				This variable will hold the value at the cell center
-					density = 0.;
-					pressure = 0.;
-					energy = 0.;
-					#ifdef DE
-					gasEnergy = 0.;
-					#endif
+        if ( r < P.Rstar + sqrt( H.dx * H.dx + H.dy * H.dy + H.dz * H.dz ) ){
+//        This variable will hold the value at the cell center
+          density = 0.;
+          pressure = 0.;
+          energy = 0.;
+          #ifdef DE
+          gasEnergy = 0.;
+          #endif
 
-//				Get the lower and upper limits of the linspace in every direction
-					xSubLo = x_pos - H.dx / 2.;
-					xSubHi = x_pos + H.dx / 2.;
-					ySubLo = y_pos - H.dy / 2.;
-					ySubHi = y_pos + H.dy / 2.;
-					zSubLo = z_pos - H.dz / 2.;
-					zSubHi = z_pos + H.dz / 2.;
-					dxSub  = ( xSubHi - xSubLo ) / nSubcells;
-					dySub  = ( ySubHi - ySubLo ) / nSubcells;
-					dzSub  = ( zSubHi - zSubLo ) / nSubcells;
+//        Get the lower and upper limits of the linspace in every direction
+          xSubLo = x_pos - H.dx / 2.;
+          xSubHi = x_pos + H.dx / 2.;
+          ySubLo = y_pos - H.dy / 2.;
+          ySubHi = y_pos + H.dy / 2.;
+          zSubLo = z_pos - H.dz / 2.;
+          zSubHi = z_pos + H.dz / 2.;
+          dxSub  = ( xSubHi - xSubLo ) / nSubcells;
+          dySub  = ( ySubHi - ySubLo ) / nSubcells;
+          dzSub  = ( zSubHi - zSubLo ) / nSubcells;
 
-					for (int kk = 0; kk < nSubcells; kk++){
-						z_pos = zSubLo + ( kk + 0.5 ) * dzSub;
-						for (int jj = 0; jj < nSubcells; jj++){
-							y_pos = ySubLo + ( jj + 0.5 ) * dySub;
-							for (int ii = 0; ii < nSubcells; ii++){
-								x_pos = xSubLo + ( ii + 0.5 ) * dxSub;
+          for (int kk = 0; kk < nSubcells; kk++){
+            z_pos = zSubLo + ( kk + 0.5 ) * dzSub;
+            for (int jj = 0; jj < nSubcells; jj++){
+              y_pos = ySubLo + ( jj + 0.5 ) * dySub;
+              for (int ii = 0; ii < nSubcells; ii++){
+                x_pos = xSubLo + ( ii + 0.5 ) * dxSub;
 
-								r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
+                r = sqrt( (x_pos-center_x)*(x_pos-center_x) + (y_pos-center_y)*(y_pos-center_y) + (z_pos-center_z)*(z_pos-center_z) );
 
-								if ( r < P.Rstar ){
-//								We interpolate linearly on theta. This interpolation is not equivalent to interpolating rho, since rho is a nonlinear function of theta!
-									thetaSubcell    = Interpolate( n_points, root_indx, r / alpha, xi_vals, theta_vals, theta_deriv );
-									rhoSubcell      = dens_central * pow( thetaSubcell, P.polyN );
-									pressureSubcell = K * pow(rhoSubcell, 1. + 1. / P.polyN );
-									energySubcell   = pressureSubcell / ( P.gamma - 1. ) + 0.5 * rhoSubcell * v2;
-								}
-								else{
-									rhoSubcell      = P.rhoAmb;
-									pressureSubcell = P.pAmb;
-									energySubcell   = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
-								}
+                if ( r < P.Rstar ){
+//                We interpolate linearly on theta. This interpolation is not equivalent to interpolating rho, since rho is a nonlinear function of theta!
+                  thetaSubcell    = Interpolate( n_points, root_indx, r / alpha, xi_vals, theta_vals, theta_deriv );
+                  rhoSubcell      = dens_central * pow( thetaSubcell, P.polyN );
+                  pressureSubcell = K * pow(rhoSubcell, 1. + 1. / P.polyN );
+                  energySubcell   = pressureSubcell / ( P.gamma - 1. ) + 0.5 * rhoSubcell * v2;
+                }
+                else{
+                  rhoSubcell      = P.rhoAmb;
+                  pressureSubcell = P.pAmb;
+                  energySubcell   = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
+                }
 
-								density  += rhoSubcell / totSubcells;
-								pressure += pressureSubcell / totSubcells;
-								energy   += energySubcell / totSubcells;
+                density  += rhoSubcell / totSubcells;
+                pressure += pressureSubcell / totSubcells;
+                energy   += energySubcell / totSubcells;
 
-								#ifdef DE
-								gasEnergySubcell = pressureSubcell / ( P.gamma - 1. );
-								gasEnergy += gasEnergySubcell / totSubcells;
-								#endif
+                #ifdef DE
+                gasEnergySubcell = pressureSubcell / ( P.gamma - 1. );
+                gasEnergy += gasEnergySubcell / totSubcells;
+                #endif
 
-							}
-						}
-					}
-				}
+              }
+            }
+          }
+        }
 
-				else{
-					density  = P.rhoAmb;
-					pressure = P.pAmb;
-					energy = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
-					#ifdef DE
-					gasEnergy = pressure / ( P.gamma - 1. );
-					#endif
-				}
+        else{
+          density  = P.rhoAmb;
+          pressure = P.pAmb;
+          energy = pressure / ( P.gamma - 1. ) + 0.5 * density * v2;
+          #ifdef DE
+          gasEnergy = pressure / ( P.gamma - 1. );
+          #endif
+        }
 
 
         C.density[id] = density;
@@ -352,20 +352,20 @@ void Grid3D::damp(){
 
 // Ohlmann+ 2018
 /*
-	Real tau;
-	Real tau1 = tdyn / 10.;
-	Real tau2 = tdyn      ;
+  Real tau;
+  Real tau1 = tdyn / 10.;
+  Real tau2 = tdyn      ;
 */
 
-	Real relaxRate;
-	if ( t <= S.tRelax ){
-//	This relaxRate will apply only during the relaxation procedure to all cells
-  	relaxRate = ( t / S.tRelax ) * ( 1. - S.relaxRate0 ) + S.relaxRate0;
-	}
-	else{
-//	This relaxRate will apply only after the relaxation procedure, and only to cells with low densities
-		relaxRate = S.relaxRateBkgnd;
-	}
+  Real relaxRate;
+  if ( t <= S.tRelax ){
+//  This relaxRate will apply only during the relaxation procedure to all cells
+    relaxRate = ( t / S.tRelax ) * ( 1. - S.relaxRate0 ) + S.relaxRate0;
+  }
+  else{
+//  This relaxRate will apply only after the relaxation procedure, and only to cells with low densities
+    relaxRate = S.relaxRateBkgnd;
+  }
 
   int i, j, k, id;
   for ( k = 0; k < Grav.nz_local; k++ ) {
@@ -381,40 +381,40 @@ void Grid3D::damp(){
         v2 = vx*vx + vy*vy + vz*vz;
         U = E - 0.5*dens*v2;
 
-//			Ohlmann+ 2018 relaxation
+//      Ohlmann+ 2018 relaxation
 /*
         dens_0 = G.C.density_0[id];
         vx_0   = G.C.momentum_x_0[id] / dens_0;
         vy_0   = G.C.momentum_y_0[id] / dens_0;
         vz_0   = G.C.momentum_z_0[id] / dens_0;
 
-      	if (t < 2. * tdyn) {
-      	  tau = tau1;
-      	}
-      	else {
-      	  tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
-      	}
+        if (t < 2. * tdyn) {
+          tau = tau1;
+        }
+        else {
+          tau = tau1 * pow( tau2 / tau1, (t - 2. * tdyn) / ( 3. * tdyn ) );
+        }
 
-      	vx -= vx_0 * dt / tau;
-      	vy -= vy_0 * dt / tau;
-      	vz -= vz_0 * dt / tau;
+        vx -= vx_0 * dt / tau;
+        vy -= vy_0 * dt / tau;
+        vz -= vz_0 * dt / tau;
 */
 
-//			Guillochon+ 2013 relaxation
-//			The first criterion will apply to all cells when t < tRelax, and only to low density cells when t > tRelax
-				if ( t < S.tRelax || dens < 1.e1 * 1.e-10 ){
-					vx *= relaxRate;
-					vy *= relaxRate;
-					vy *= relaxRate;
-				}
+//      Guillochon+ 2013 relaxation
+//      The first criterion will apply to all cells when t < tRelax, and only to low density cells when t > tRelax
+        if ( t < S.tRelax || dens < 1.e1 * 1.e-10 ){
+          vx *= relaxRate;
+          vy *= relaxRate;
+          vy *= relaxRate;
+        }
 
-				v2 = vx*vx + vy*vy + vz*vz;
-//				v = sqrt( v2 );
+        v2 = vx*vx + vy*vy + vz*vz;
+//        v = sqrt( v2 );
 
-//			Compute the energy with the updated kinetic energy
-				E = U + 0.5*dens*v2;
+//      Compute the energy with the updated kinetic energy
+        E = U + 0.5*dens*v2;
         
-//			Save the updated values
+//      Save the updated values
         C.momentum_x[id] = dens*vx;
         C.momentum_y[id] = dens*vy;
         C.momentum_z[id] = dens*vz;
@@ -430,7 +430,7 @@ void Grid3D::damp(){
   #ifdef MPI_CHOLLA
   max_speed_global = ReduceRealMax( max_speed );
   #endif
-	*/
+  */
   
 }
 
@@ -448,43 +448,43 @@ void Grid3D::Polytropic_Star_Relaxation(  struct parameters &P  ){
   WriteData(*this, P, P.nfile);
   P.nfile++;
 
-	while (H.t < S.tRelax ){
-	
-		chprintf(" Relaxation n_step: %d\n", n_step + 0 );
+  while (H.t < S.tRelax ){
+  
+    chprintf(" Relaxation n_step: %d\n", n_step + 0 );
 
-		S.update(H.t, H.dt);
-		updateCOM();
-		// calculate the timestep
-		set_dt(dti);
-		
-		// Advance the grid by one timestep
-		dti = Update_Hydro_Grid();
-		
-		// update the simulation time ( t += dt )
-		Update_Time();
-		
-		// add one to the timestep count
-		n_step++;
-		
-		#ifdef GRAVITY
-		//Compute Gravitational potential for next step
-		Compute_Gravitational_Potential( &P);
-		#endif
-		
-		//Include the damping terms in momentum and energy
-		damp();
+    S.update(H.t, H.dt);
+    updateCOM();
+    // calculate the timestep
+    set_dt(dti);
+    
+    // Advance the grid by one timestep
+    dti = Update_Hydro_Grid();
+    
+    // update the simulation time ( t += dt )
+    Update_Time();
+    
+    // add one to the timestep count
+    n_step++;
+    
+    #ifdef GRAVITY
+    //Compute Gravitational potential for next step
+    Compute_Gravitational_Potential( &P);
+    #endif
+    
+    //Include the damping terms in momentum and energy
+    damp();
 
-//	TODO: Change from number of steps to time so that it's consistent with the rest of the code
-		// Output
-		if (n_step % int(P.outstep) == 0){
-			WriteData(*this, P, P.nfile);
-			P.nfile++;
-		}
+//  TODO: Change from number of steps to time so that it's consistent with the rest of the code
+    // Output
+    if (n_step % int(P.outstep) == 0){
+      WriteData(*this, P, P.nfile);
+      P.nfile++;
+    }
 
-		// set boundary conditions for next time step 
-		Set_Boundary_Conditions_Grid(P);
-		
-		chprintf("n_step: %d  sim time: %10.7f  sim timestep: %7.4e  \n\n", n_step, H.t, H.dt);
+    // set boundary conditions for next time step 
+    Set_Boundary_Conditions_Grid(P);
+    
+    chprintf("n_step: %d  sim time: %10.7f  sim timestep: %7.4e  \n\n", n_step, H.t, H.dt);
 
   }
 
