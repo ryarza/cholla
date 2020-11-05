@@ -152,7 +152,7 @@ Real ReduceRealAvg(Real x);
 Real ReduceRealSum(Real x);
 
 /* MPI reduction wrapper for sum(Complex)*/
-std::complex<Real> ReduceComplexSum(std::complex<Real> x);
+//std::complex<Real> ReduceComplexSum(std::complex<Real> x);
 
 #ifdef PARTICLES
 /* MPI reduction wrapper for sum(part_int)*/

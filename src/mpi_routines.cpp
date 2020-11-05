@@ -765,6 +765,7 @@ Real ReduceRealSum(Real x)
   return y;
 }
 
+/*
 std::complex<Real> ReduceComplexSum(std::complex<Real> x){
   std::complex<Real> in = x;
   std::complex<Real> out;
@@ -776,6 +777,7 @@ std::complex<Real> ReduceComplexSum(std::complex<Real> x){
 
   return y;
 }
+*/
 
 #ifdef PARTICLES
 /* MPI reduction wrapper for sum(part_int)*/
