@@ -224,6 +224,7 @@ struct Header
   // Values for lower limit for density and temperature
   Real density_floor;
   Real temperature_floor;
+  Real pressure_floor;
   
   Real Ekin_avrg;
   
@@ -760,6 +761,7 @@ class Grid3D
 
 	#if defined POISSON_TEST || defined TIDES
 	void setMoments();
+  void setCenter();
 	#endif
 
 };

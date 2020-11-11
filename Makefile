@@ -52,7 +52,8 @@ DFLAGS += -DVL
 
 # Apply a minimum value to conserved values
 DFLAGS += -DDENSITY_FLOOR
-#DFLAGS += -DTEMPERATURE_FLOOR
+DFLAGS += -DTEMPERATURE_FLOOR
+DFLAGS += -DPRESSURE_FLOOR
 
 # Allocate GPU memory only once at the first timestep
 #DFLAGS += -DDYNAMIC_GPU_ALLOC

@@ -181,6 +181,10 @@ Real VL_Algorithm_3D_CUDA(Real *host_conserved0, Real *host_conserved1, int nx, 
     hipLaunchKernelGGL(Update_Conserved_Variables_3D_half, dim1dGrid, dim1dBlock, 0, 0, dev_conserved, dev_conserved_half, F_x, F_y, F_z, nx_s, ny_s, nz_s, n_ghost, dx, dy, dz, 0.5*dt, gama, n_fields, density_floor );
     CudaCheckError();
 
+    #ifdef TEMPERATURE_FLOOR
+    hipLaunchKernelGGL(Apply_Temperature_Floor, dim1dGrid, dim1dBlock, 0, 0, dev_conserved_half, nx_s, ny_s, nz_s, n_ghost, n_fields, U_floor );
+    CudaCheckError();
+    #endif //TEMPERATURE_FLOOR
 
     // Step 4: Construct left and right interface values using updated conserved variables
     #ifdef PCM

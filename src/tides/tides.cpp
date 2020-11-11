@@ -15,7 +15,7 @@ int kronDelta(int i, int j){
 
 }
 
-void Star::initialize(struct parameters &P, Real t, Real dt, int nx, int ny, int nz){
+void Star::initialize(struct parameters P, Real t, Real dt, int nx, int ny, int nz){
 
   Mstar   = P.Mstar;
   Mbh     = P.Mbh;
@@ -69,21 +69,21 @@ void Star::initialize(struct parameters &P, Real t, Real dt, int nx, int ny, int
   bufferxstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
   buffervstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
 
-  chprintf("  Star:\n");
-  chprintf("    Mass  : %.10e g\n", Mstar);
-  chprintf("    Radius: %.10e cm\n", Rstar);
-  chprintf("    n_poly: %.10e\n", polyN);
-  chprintf("    t_dyn : %.10e s\n", tdynStar);
+  chprintf(" Star:\n");
+  chprintf("  Mass  : %.10e g\n", Mstar);
+  chprintf("  Radius: %.10e cm\n", Rstar);
+  chprintf("  n_poly: %.10e\n", polyN);
+  chprintf("  t_dyn : %.10e s\n", tdynStar);
 
-  chprintf("  Orbit:\n");
-  chprintf("    Mass ratio    : %.10e\n", q);
-  chprintf("    t_dyn         : %.10e s\n", tdynOrb);
-  chprintf("    Tidal radius  : %.10e cm\n", rt      );
-  chprintf("    Initial dist  : %.10e cm\n", r0      );
-  chprintf("    Periapsis dist: %.10e cm\n", rp      );
-  chprintf("    Periapsis time: %.10e s\n", -t0     );
+  chprintf(" Orbit:\n");
+  chprintf("  Mass ratio    : %.10e\n", q);
+  chprintf("  t_dyn         : %.10e s\n", tdynOrb);
+  chprintf("  Tidal radius  : %.10e cm\n", rt      );
+  chprintf("  Initial dist  : %.10e cm\n", r0      );
+  chprintf("  Periapsis dist: %.10e cm\n", rp      );
+  chprintf("  Periapsis time: %.10e s\n", -t0     );
 
-  if ( tRelax > 0 ) chprintf("  Relaxation enabled. Initial relax rate: %f. Background relax rate: %.f\n", relaxRate0, relaxRateBkgnd);
+  if ( tRelax > 0 ) chprintf(" Relaxation enabled. Initial relax rate: %f. Background relax rate: %.f\n", relaxRate0, relaxRateBkgnd);
 
 }
 

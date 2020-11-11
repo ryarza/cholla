@@ -227,6 +227,12 @@ void Grid3D::Initialize(struct parameters *P)
   H.density_floor = 0.0;
   #endif
 
+  #ifdef PRESSURE_FLOOR
+  H.pressure_floor = PRES_FLOOR;
+  #else
+  H.pressure_floor = 0.;
+  #endif
+
   #ifdef TEMPERATURE_FLOOR
   H.temperature_floor = TEMP_FLOOR;
   #else
@@ -239,7 +245,6 @@ void Grid3D::Initialize(struct parameters *P)
   #endif
   
   H.Output_Initial = true;
-
 
 }
 
@@ -532,8 +537,11 @@ Real Grid3D::Update_Grid(void)
   Real U_floor, density_floor;
   density_floor = H.density_floor;
   // Minimum of internal energy from minumum of temperature 
-  U_floor = H.temperature_floor / (gama - 1) / MP * KB * 1e-10;;
+  U_floor = H.pressure_floor / ( gama - 1 ) / H.density_floor;
+//TEMPORARY: U floor = 0
+  U_floor = 0;
   #ifdef COSMOLOGY
+  U_floor = H.temperature_floor / (gama - 1) / MP * KB * 1e-10;;
   U_floor /=  Cosmo.v_0_gas * Cosmo.v_0_gas / Cosmo.current_a / Cosmo.current_a;
   #endif
   

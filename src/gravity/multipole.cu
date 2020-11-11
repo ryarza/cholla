@@ -155,16 +155,18 @@ __global__ void QlmKernel(Real *rho, Real *center, Real *bounds, Real *dx, Real 
     pos[2] = bounds[2] + dx[2] * ( tid_z + 0.5) - center[2];
     r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
 
-    phi = atan2(pos[1], pos[0]);
+    if ( r < rmpole ){
+      phi = atan2(pos[1], pos[0]);
 
-    fillLegP(dev_legP, pos[2] / r);
+      fillLegP(dev_legP, pos[2] / r);
 
-    for ( int l = 0; l <= LMAX; l++ ){
-      fac = pow(r, l) * rho[tidFake(tid_x, tid_y, tid_z, n_ghost, n)];
+      for ( int l = 0; l <= LMAX; l++ ){
+        fac = pow(r, l) * rho[tidFake(tid_x, tid_y, tid_z, n_ghost, n)];
 
-      for ( int m = 0; m <= l; m++ ){
-        ReQ[dQidx(cidx, l, m)] += dev_legP[dQidx(0,l,m)] * fac * cos(m * phi);
-        ImQ[dQidx(cidx, l, m)] += dev_legP[dQidx(0,l,m)] * fac * sin(m * phi);
+        for ( int m = 0; m <= l; m++ ){
+          ReQ[dQidx(cidx, l, m)] += dev_legP[dQidx(0,l,m)] * fac * cos(m * phi);
+          ImQ[dQidx(cidx, l, m)] += dev_legP[dQidx(0,l,m)] * fac * sin(m * phi);
+        }
       }
     }
     tid += stride;
@@ -196,37 +198,123 @@ __global__ void QlmKernel(Real *rho, Real *center, Real *bounds, Real *dx, Real 
   }
 }
 
-/*
-__global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_ghost, Real *partialCenter){
 
+__global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_ghost, Real *partialCenter, Real *partialTotrhosq){
 
-  int nreal[3];
+  __shared__ Real bCenter[3 * CENTERTPB];
+  __shared__ Real bTotrhosq[CENTERTPB];
+
+  for ( int i = threadIdx.x * 3; i < ( threadIdx.x + 1 ) * 3; i++ ) bCenter[i] = 0.;
+  bTotrhosq[threadIdx.x] = 0.;
+
+  int nreal[3], tid[3];
   for ( int i = 0; i < 3; i++ ) nreal[i] = n[i] - 2 * n_ghost;
   int nrealcells = nreal[0] * nreal[1] * nreal[2];
-  int tid = threadIdx.x + blockIdx.x * blockDim.x;
-  int tid_z = tid / ( nreal[0] * nreal[1] );
-  int tid_y = ( tid - tid_z * nreal[0] * nreal[1] ) / nreal[0];
-  int tid_x = tid - tid_z * nreal[0] * nreal[1] - tid_y * nreal[0];
-  int cidx = threadIdx.x;
-  int stride = blockDim.x * gridDim.x;
+  int tid1d = threadIdx.x + blockIdx.x * blockDim.x;
+  tid[2] = tid1d / ( nreal[0] * nreal[1] );
+  tid[1] = ( tid1d - tid[2] * nreal[0] * nreal[1] ) / nreal[0];
+  tid[0] = tid1d - tid[2] * nreal[0] * nreal[1] - tid[1] * nreal[0];
 
-  while ( tid < nrealcells ){
+  Real x[3], rhosq;
+  int fid;
 
-    tid_z = tid / ( nreal[0] * nreal[1] );
-    tid_y = ( tid - tid_z * nreal[0] * nreal[1] ) / nreal[0];
-    tid_x = tid - tid_z * nreal[0] * nreal[1] - tid_y * nreal[0];
+  while ( tid1d < nrealcells ){
+    tid[2] = tid1d / ( nreal[0] * nreal[1] );
+    tid[1] = ( tid1d - tid[2] * nreal[0] * nreal[1] ) / nreal[0];
+    tid[0] = tid1d - tid[2] * nreal[0] * nreal[1] - tid[1] * nreal[0];
+    fid = tidFake(tid[0], tid[1], tid[2], n_ghost, n);
 
-    pos[0] = bounds[0] + dx[0] * ( tid_x + 0.5) - center[0];
-    pos[1] = bounds[1] + dx[1] * ( tid_y + 0.5) - center[1];
-    pos[2] = bounds[2] + dx[2] * ( tid_z + 0.5) - center[2];
-    r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
-    rhosq= rho[tidFake(...)] * rho[tidFake(...)];
+    rhosq = rho[fid] * rho[fid];
 
-    
+    bTotrhosq[threadIdx.x] += rhosq;
+    for ( int i = 0; i < 3; i++ ){
+      x[i] = bounds[i] + dx[i] * ( tid[i] + 0.5);
+      bCenter[3 * threadIdx.x + i] += x[i] * rhosq;
+    }
+
+    tid1d += blockDim.x * gridDim.x;
+
+  }
+
+  __syncthreads();
+
+  int i = blockDim.x / 2;
+  while ( i > 0 ){
+    if ( threadIdx.x < i ){
+      for ( int ii = 0; ii < 3; ii++ ) bCenter[3 * threadIdx.x + ii] += bCenter[3 * ( threadIdx.x + i ) + ii];
+      bTotrhosq[threadIdx.x] += bTotrhosq[threadIdx.x + i];
+    }
+    __syncthreads();
+    i /= 2;
+  }
+
+  if ( threadIdx.x == 0 ){
+    for ( int i = 0; i < 3; i++) partialCenter[3 * blockIdx.x + i] = bCenter[i];
+    partialTotrhosq[blockIdx.x] = bTotrhosq[0];
+  }
 
 }
-*/
 
+
+void Grid3D::setCenter(){
+
+  Real dx[3], bounds[3], totrhosq;
+  int n[3];
+  dx[0] = H.dx; dx[1] = H.dy; dx[2] = H.dz;
+  bounds[0] = H.xblocal; bounds[1] = H.yblocal; bounds[2] = H.zblocal;
+  n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
+
+  Real *dev_rho, *dev_bounds, *dev_dx, *dev_partialCenter, *dev_partialTotrhosq;
+  int *dev_n;
+
+//Allocate memory in GPU
+  cudaMalloc( (void**)&dev_rho            , n[0] * n[1] * n[2] * sizeof(Real) );
+  cudaMalloc( (void**)&dev_bounds         , 3 * sizeof(Real));
+  cudaMalloc( (void**)&dev_n              , 3 * sizeof(int));
+  cudaMalloc( (void**)&dev_dx             , 3 * sizeof(Real));
+  cudaMalloc( (void**)&dev_partialCenter  , 3 * Grav.centerBlocks * sizeof(Real) );
+  cudaMalloc( (void**)&dev_partialTotrhosq, 3 * Grav.centerBlocks * sizeof(Real) );
+
+//Copy inputs to GPU
+  cudaMemcpy( dev_rho, C.density, n[0] * n[1] * n[2]*sizeof(Real), cudaMemcpyHostToDevice);
+  cudaMemcpy( dev_bounds, bounds, 3*sizeof(Real), cudaMemcpyHostToDevice);
+  cudaMemcpy( dev_n, n, 3*sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy( dev_dx, dx, 3*sizeof(Real), cudaMemcpyHostToDevice);
+
+//Call Kernel
+  cudaDeviceSynchronize();
+  centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(dev_rho, dev_bounds, dev_dx, dev_n, H.n_ghost, dev_partialCenter, dev_partialTotrhosq);
+
+//Copy result to CPU
+  cudaMemcpy(Grav.bufferCenter  , dev_partialCenter  , 3 * Grav.centerBlocks   * sizeof(Real), cudaMemcpyDeviceToHost);
+  cudaMemcpy(Grav.bufferTotrhosq, dev_partialTotrhosq,     Grav.centerBlocks   * sizeof(Real), cudaMemcpyDeviceToHost);
+
+//Free GPU
+  cudaFree(dev_rho);
+  cudaFree(dev_bounds);
+  cudaFree(dev_dx);
+  cudaFree(dev_n);
+  cudaFree(dev_partialTotrhosq);
+  cudaFree(dev_partialCenter);
+
+//Do final reduction on CPU
+  totrhosq = 0.;
+  for ( int i = 0; i < Grav.centerBlocks; i++ ){
+    totrhosq += Grav.bufferTotrhosq[i];
+  }
+  MPI_Allreduce(MPI_IN_PLACE, &totrhosq, 1, MPI_CHREAL, MPI_SUM, world);
+
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
+  for ( int i = 0; i < Grav.centerBlocks; i++ ){
+     for ( int ii = 0; ii < 3; ii++ ) Grav.center[ii] += Grav.bufferCenter[3 * i + ii];
+  }
+  MPI_Allreduce(MPI_IN_PLACE, Grav.center, 3, MPI_CHREAL, MPI_SUM, world);
+
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
+
+}
+
+//TODO: rmpole should be the distance from the center of the expansion to the nearest boundary cell, not from the center of the domain to the nearest boundary cell
 void Grid3D::setMoments(){
 
   Real dx[3], bounds[3];
@@ -235,20 +323,15 @@ void Grid3D::setMoments(){
   Real dV = dx[0] * dx[1] * dx[2];
   bounds[0] = H.xblocal; bounds[1] = H.yblocal; bounds[2] = H.zblocal;
   n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
-
-  #ifdef POISSON_TEST
-  struct timeval timecheck;
-  long start, end;
-
-  gettimeofday(&timecheck, NULL);
-  start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
-  #endif
-
+/*
   int id;
   Real rhosq, totrhosq;
   Real x[3];
+*/
 
-// Find the center of the multipole expansion according to Couch et al. 2013
+////////// Find the center of the expansion according to Couch et al. 2013
+  setCenter();
+/*
   totrhosq = 0.;
 
   for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
@@ -271,25 +354,12 @@ void Grid3D::setMoments(){
   #ifdef MPI_CHOLLA
   MPI_Allreduce(MPI_IN_PLACE, &totrhosq, 1, MPI_CHREAL, MPI_SUM, world);
   MPI_Allreduce(MPI_IN_PLACE, Grav.center, 3, MPI_CHREAL, MPI_SUM, world);
-  #endif//MPI_CHOLLA
+  #endif
 
   for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
-
-//  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
-
-  chprintf(" Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
-
-  #ifdef POISSON_TEST
-  gettimeofday(&timecheck, NULL);
-  end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
-
-  Real timeused = ( (Real) ( end - start ) );
-  chprintf("Computing the center of the expansion took %.10e milliseconds\n", timeused);
-
-
-  gettimeofday(&timecheck, NULL);
-  start = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000; 
-  #endif
+*/
+  if ( H.n_step > 0) chprintf(" ");
+  chprintf("Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
 
   Real *dev_rho, *dev_center, *dev_bounds, *dev_dx, *dev_partialReQ, *dev_partialImQ;
   int *dev_n;
@@ -354,12 +424,6 @@ void Grid3D::setMoments(){
   #endif
 
   #ifdef POISSON_TEST
-  gettimeofday(&timecheck, NULL);
-  end = (long)timecheck.tv_sec * 1000 + (long)timecheck.tv_usec / 1000;
-
-  timeused = ( (Real) ( end - start ) );
-  chprintf("Computing Qlm took %.10e milliseconds\n", timeused);
-
   int lmidx;
   for ( int l = 0; l <= LMAX; l++ ){
     for ( int m = 0; m <= l; m++ ){

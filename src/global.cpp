@@ -332,10 +332,12 @@ parms->scale_outputs_file[0] = '\0';
   fclose (fp);
 }
 
-void printCompileOptions(){
+void printHydroParams(){
+
+  chprintf("\nHydro solver parameters:\n");
 
 //Time integrator
-  chprintf("Integrator: ");
+  chprintf(" Integrator: ");
   #ifdef CTU
   chprintf("CTU");
   #elif defined VL
@@ -346,8 +348,10 @@ void printCompileOptions(){
   chprintf("not recognized");
   #endif
 
+  chprintf("\n");
+
 //Reconstruction
-  chprintf(". Reconstruction: ");
+  chprintf(" Reconstruction: ");
   #ifdef PCM
   chprintf("PCM");
   #elif defined PLMP
@@ -362,8 +366,10 @@ void printCompileOptions(){
   chprintf("not recognized");
   #endif
 
+  chprintf("\n");
+
 //Riemann solver
-  chprintf(". Riemann solver: ");
+  chprintf(" Riemann solver: ");
   #ifdef EXACT
   chprintf("exact");
   #elif defined ROE
@@ -374,8 +380,10 @@ void printCompileOptions(){
   chprintf("not recognized");
   #endif
 
+  chprintf("\n");
+
 //H correction
-  chprintf(". H correction: ");
+  chprintf(" H correction: ");
   #ifdef H_CORRECTION
   chprintf("enabled");
   #else
@@ -383,5 +391,11 @@ void printCompileOptions(){
   #endif
 
   chprintf("\n");
+
+  chprintf(" CFL: %f\n", C_cfl);
+  chprintf(" Floors:\n");
+  chprintf("  T  : %.10e\n", TEMP_FLOOR);
+  chprintf("  rho: %.10e\n", DENS_FLOOR);
+  chprintf("  P  : %.10e\n", PRES_FLOOR);
 
 }

@@ -67,18 +67,18 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   Gconst = GN;
   if (strcmp(P->init, "Spherical_Overdensity_3D")==0){
     Gconst = 1;
-    chprintf("WARNING: Using Gravitational Constant G=1.\n");
+//    chprintf("WARNING: Using Gravitational Constant G=1.\n");
   }
 
   #ifdef POISSON_TEST
   Gconst = 1;
-  chprintf("WARNING: Using Gravitational Constant G=1.\n");
   #endif
  
   #ifdef TIDES
   Gconst = G_CGS;
-  chprintf("WARNING: Using Gravitational Constant in cgs units.\n");
   #endif
+
+  chprintf(" Using G = %.10e\n", Gconst);
  
   //Flag to transfer the Potential boundaries
   TRANSFER_POTENTIAL_BOUNDARIES = false;
@@ -90,10 +90,11 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
 
   Initialize_values_CPU();
 
-  chprintf( "Gravity Initialized: \n Lbox: %0.2f %0.2f %0.2f \n Local: %d %d %d \n Global: %d %d %d \n",
-      Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local,   nx_total, ny_total, nz_total );
+//  chprintf( "Gravity Initialized: \n Lbox: %0.2f %0.2f %0.2f \n Local: %d %d %d \n Global: %d %d %d \n",
+//      Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local,   nx_total, ny_total, nz_total );
+//  chprintf("Gravity initialized.\n");
 
-  chprintf( " dx:%f  dy:%f  dz:%f\n", dx, dy, dz );
+//  chprintf( " dx:%f  dy:%f  dz:%f\n", dx, dy, dz );
   chprintf( " N ghost potential: %d\n", N_GHOST_POTENTIAL);
   chprintf( " N ghost offset: %d\n", n_ghost_pot_offset);
   
@@ -135,9 +136,12 @@ void Grav3D::AllocateMemory_CPU(void)
 //Real and imaginary parts of the multipole moments of the density distribution
   ReQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
   ImQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
-  Qblocks = ceil( ( nx_local * ny_local * nz_local ) / QTPB );
+  Qblocks        = ceil( ( nx_local * ny_local * nz_local ) / QTPB        );
+  centerBlocks   = ceil( ( nx_local * ny_local * nz_local ) / CENTERTPB   );
   bufferReQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );
   bufferImQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );
+  bufferCenter = (Real *) malloc( sizeof(Real) * centerBlocks * 3 );
+  bufferTotrhosq = (Real *) malloc( sizeof(Real) * centerBlocks );
   #endif
 
 }

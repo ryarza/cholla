@@ -49,16 +49,16 @@ void Potential_SOR_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y
   TRANSFER_POISSON_BOUNDARIES = false;
 
   
-  chprintf( " Using Poisson Solver: SOR\n");
-  chprintf("  Convergence epsilon: %.10e\n", SOREPSILON);
+  chprintf( " Poisson solver: SOR\n");
+  chprintf( "  Convergence epsilon: %.5e\n", SOREPSILON);
 
   #ifdef TIDES
-  chprintf("  Maximum angular order: %i", LMAX);
+  chprintf( "  Maximum angular order: %i\n", LMAX);
   #endif
 
-  chprintf( "  SOR: L[ %f %f %f ] N[ %d %d %d ] dx[ %f %f %f ]\n", Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local, dx, dy, dz );
+//  chprintf( "  SOR: L[ %f %f %f ] N[ %d %d %d ] dx[ %f %f %f ]\n", Lbox_x, Lbox_y, Lbox_z, nx_local, ny_local, nz_local, dx, dy, dz );
 
-  chprintf( "  SOR: Allocating memory...\n");
+  chprintf( "  Allocating memory...\n");
   AllocateMemory_CPU();
   AllocateMemory_GPU();
   

@@ -5,8 +5,9 @@
 #include"../global.h"
 
 #if defined TIDES || defined POISSON_TEST
-#define LMAX (7)
-#define QTPB (64)
+#define LMAX        (12)
+#define QTPB        (32)
+#define CENTERTPB   (1024)
 #endif
 
 #ifdef PFFT
@@ -19,7 +20,7 @@
 
 #ifdef SOR
 #include"potential_SOR_3D.h"
-#define SOREPSILON (1.e-12)
+#define SOREPSILON (1.e-8)
 #endif
 
 #ifdef PARIS
@@ -119,7 +120,9 @@ class Grav3D
   Real *ImQ;
   Real *bufferReQ;
   Real *bufferImQ;
-  int Qblocks;
+  Real *bufferCenter;
+  Real *bufferTotrhosq;
+  int Qblocks, centerBlocks;
   Real center[3];
   int Qidx(int cidx, int l, int m);
   void fillLegP(Real* legP, Real x);

@@ -79,7 +79,7 @@ public:
   Real Cijkl[3][3][3][3];
 
 //Functions that change the state of S
-  void initialize(struct parameters &P, Real t, Real dt, int nx, int ny, int nz);
+  void initialize(struct parameters P, Real t, Real dt, int nx, int ny, int nz);
   void update(Real t, Real dt);
   void updateFrameCoords(Real t, Real dt);
   void updateBhCoords(Real t, Real dt);

@@ -94,8 +94,7 @@ Real Interpolate( int n, int rootIdx, Real xi, Real *xiVals, Real *thetaVals, Re
 
 void Grid3D::Polytropic_Star( struct parameters &P ){
 
-  S.initialize(P, H.t, H.dt, H.nx, H.ny, H.nz);
-  chprintf("  Lane-Emden solver:\n");
+  chprintf(" Lane-Emden solver:\n");
 
   //Solve Lane–Emden equation for the polytrope 
 //  int n_points = 500000000;
@@ -180,7 +179,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
 
 //  Linear interpolation estimate of the root
   Real xi_root = ( xi_vals[root_indx + 1] * theta_vals[root_indx] - xi_vals[root_indx] * theta_vals[root_indx + 1] ) / ( theta_vals[root_indx] - theta_vals[root_indx + 1]  );
-  chprintf( "   Root at xi = %.5e. Theta values before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
+  chprintf( "  Root at xi = %.5e. Theta before and after: %.5e %.5e\n", xi_root, theta_vals[root_indx], theta_vals[root_indx+1] );
   
 //  Linear extrapolation estimate of the derivative evaluated at the root
   Real theta_deriv_root = xi_vals[root_indx + 1] * theta_vals[root_indx] * ( theta_deriv[root_indx - 1] - theta_deriv[root_indx] );
@@ -188,7 +187,7 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   theta_deriv_root += xi_vals[root_indx] * ( theta_vals[root_indx + 1] * theta_deriv[root_indx] - theta_vals[root_indx] * theta_deriv[root_indx - 1] );
   theta_deriv_root /= ( xi_vals[root_indx - 1] - xi_vals[root_indx] ) * ( theta_vals[root_indx] - theta_vals[root_indx  + 1] );
   
-  chprintf( "   d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
+  chprintf( "  d(theta)/d(xi) at the root: %.5e\n", theta_deriv_root );
   
   //Convert to physical values
   Real dens_avrg = ( 3 * P.Mstar ) / ( 4 * M_PI * pow( P.Rstar, 3) );
@@ -198,10 +197,10 @@ void Grid3D::Polytropic_Star( struct parameters &P ){
   Real K = pressure_central * pow( dens_central, -(P.polyN+1)/P.polyN );
   Real alpha = sqrt( (P.polyN + 1) * K / ( 4 * M_PI * G_CGS ) ) * pow( dens_central, (1.-P.polyN)/(2*P.polyN) );
   
-  chprintf( "   rho_c / rho_av: %.5e g/cm^3\n", dens_central / dens_avrg );
-  chprintf( "   p_c           : %.5e erg/cm^3\n", pressure_central );
+  chprintf( "  rho_c / rho_av: %.5e g/cm^3\n", dens_central / dens_avrg );
+  chprintf( "  p_c           : %.5e erg/cm^3\n", pressure_central );
   Real cs_center = sqrt(  pressure_central / dens_central * P.gamma );
-  chprintf( "   t_cross       : %.5e s\n ", P.Rstar / cs_center); 
+  chprintf( "  t_cross       : %.5e s\n", P.Rstar / cs_center); 
   // chprintf( " K: %f \n", K );
   // chprintf( " alpha: %f \n", alpha );
   for ( int i=0; i<n_points; i++){

@@ -57,27 +57,22 @@ int main(int argc, char *argv[])
   // create the grid
   Grid3D G;
 
-// Print compile options to keep track of the exact state of the code
-  printCompileOptions();
 
   // read in the parameters
   parse_params (param_file, &P);
   // and output to screen
-  chprintf ("Parameter values:  nx = %d, ny = %d, nz = %d, tout = %f, init = %s, boundaries = %i %i %i %i %i %i\n", 
-    P.nx, P.ny, P.nz, P.tout, P.init, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd);
-  if (strcmp(P.init, "Read_Grid") == 0  ) chprintf ("Input directory:  %s\n", P.indir);
-  chprintf ("Output directory:  %s\n", P.outdir);
+  chprintf ("Parameter values:\n n: [%d, %d, %d]\n Boundaries: %i %i %i %i %i %i\n Gas gamma: %.5e\n Initial conditions: %s\n Final time: %.5e", P.nx, P.ny, P.nz, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd, P.gamma, P.init, P.tout);
+  if (strcmp(P.init, "Read_Grid") == 0  ) chprintf (" Input directory: %s\n", P.indir);
+  chprintf (" Output directory: %s\n", P.outdir);
   
   //Create a Log file to output run-time messages
   Create_Log_File(P);
 
   // initialize the grid
   G.Initialize(&P);
-  chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
-  chprintf("CFL: %f\n", C_cfl);
 
   // Set initial conditions and calculate first dt
-  chprintf("Setting initial conditions...\n");
+  chprintf("\nSetting initial conditions...\n");
   G.Set_Initial_Conditions(P);
   chprintf("Initial conditions set.\n");
   // set main variables for Read_Grid inital conditions
@@ -86,6 +81,10 @@ int main(int argc, char *argv[])
     outtime += G.H.t;
     nfile = P.nfile*P.nfull;
   }
+
+  printHydroParams();
+//  chprintf("Local number of grid cells: %d %d %d %d\n", G.H.nx_real, G.H.ny_real, G.H.nz_real, G.H.n_cells);
+//  chprintf("Local dx: %.5e, %.5e, %.5e\n", G.H.dx, G.H.dy, G.H.dz);
 
   #ifdef DE
   chprintf("\nUsing Dual Energy Formalism:\n eta_1: %0.3f   eta_2: %0.4f\n", DE_ETA_1, DE_ETA_2 );
@@ -119,12 +118,8 @@ int main(int argc, char *argv[])
   G.Compute_Gravitational_Potential( &P);
   #endif
 
-  #ifdef TIDES
-  G.updateCOM();
-  #endif
-
   // Set boundary conditions (assign appropriate values to ghost cells) for hydro and potential
-  chprintf("Setting boundary conditions...\n");
+  chprintf("\nSetting boundary conditions...\n");
   G.Set_Boundary_Conditions_Grid(P);
   chprintf("Boundary conditions set.\n");  
   
@@ -133,9 +128,8 @@ int main(int argc, char *argv[])
   G.Get_Particles_Acceleration();
   #endif
 
-  chprintf("Dimensions of each cell: dx = %f dy = %f dz = %f\n", G.H.dx, G.H.dy, G.H.dz);
-  chprintf("Ratio of specific heats gamma = %f\n",gama);
-  chprintf("Nstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
+  chprintf("\ndx: [%.5e, %.5e, %.5e%f dy = %f dz = %f\n", G.H.dx, G.H.dy, G.H.dz);
+  chprintf("\nNstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
   #ifdef TIDES
   if ( strcmp(P.init, "Polytropic_Star") == 0 && G.S.tRelax > 0. ){
@@ -150,9 +144,12 @@ int main(int argc, char *argv[])
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {
+    #ifdef TIDES
+    G.updateCOM();
+    #endif
   // write the initial conditions to file
-  chprintf("Writing initial conditions to file...\n");
-  WriteData(G, P, nfile);
+    chprintf("\nWriting initial conditions to file...\n");
+    WriteData(G, P, nfile);
   }
   // add one to the output file count
   nfile++;
@@ -162,7 +159,7 @@ int main(int argc, char *argv[])
   #ifdef POISSON_TEST
   G.poissonErrorNorm();
   exit(0);
-  #endif//POISSON_TEST
+  #endif
 
   // increment the next output time
   outtime += P.outstep;
@@ -174,14 +171,14 @@ int main(int argc, char *argv[])
   init_min = ReduceRealMin(init);
   init_max = ReduceRealMax(init);
   init_avg = ReduceRealAvg(init);
-  chprintf("Init  min: %9.4f  max: %9.4f  avg: %9.4f\n", init_min, init_max, init_avg);
+  chprintf("\nInit  min: %9.4f  max: %9.4f  avg: %9.4f\n", init_min, init_max, init_avg);
   #else
   printf("Init %9.4f\n", init);
   #endif //MPI_CHOLLA
   #endif //CPU_TIME
   
   // Evolve the grid, one timestep at a time
-  chprintf("Starting calculations.\n");
+  chprintf("\nStarting calculations.\n\n");
   while (G.H.t < P.tout)
   {
     chprintf("n_step: %d \n", G.H.n_step + 1 );
@@ -200,6 +197,10 @@ int main(int argc, char *argv[])
     G.Transfer_Particles_Boundaries(P); 
     #endif
 
+    #ifdef TIDES
+    G.S.update(G.H.t, G.H.dt);
+    #endif
+
     // Advance the grid by one timestep
     dti = G.Update_Hydro_Grid();
 
@@ -211,17 +212,11 @@ int main(int argc, char *argv[])
 
     // update the simulation time ( t += dt )
     G.Update_Time();
-    G.set_dt(dti);
-
-    #ifdef TIDES
-    G.S.update(G.H.t, G.H.dt);
-    #endif
         
     #ifdef GRAVITY
     //Compute Gravitational potential for next step
     G.Compute_Gravitational_Potential( &P);
     #endif
-
 
     // add one to the timestep count
     G.H.n_step++;
@@ -298,6 +293,9 @@ int main(int argc, char *argv[])
   #endif
   
   Write_Message_To_Log_File( "Run completed successfully!");
+
+//TEMPORARY ON: Exit with exit(0);
+  exit(0);
 
   // free the grid
   G.Reset();

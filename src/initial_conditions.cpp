@@ -31,6 +31,10 @@ void Grid3D::Set_Initial_Conditions(parameters P) {
   Set_Domain_Properties(P);
   Set_Gammas(P.gamma);
 
+  #ifdef TIDES
+  S.initialize(P, H.t, H.dt, H.nx, H.ny, H.nz);
+  #endif
+
   if (strcmp(P.init, "Constant")==0) {
     Constant(P.rho, P.vx, P.vy, P.vz, P.P);    
   } else if (strcmp(P.init, "Sound_Wave")==0) {
@@ -77,19 +81,16 @@ void Grid3D::Set_Initial_Conditions(parameters P) {
   } else if (strcmp(P.init, "Zeldovich_Pancake")==0) {
     Zeldovich_Pancake(P);
 	}
-
 	#ifdef TIDES
   else if (strcmp(P.init, "Polytropic_Star")==0) {
     Polytropic_Star(P);
 	}
-  #endif//TIDES
-
+  #endif
 	#ifdef POISSON_TEST
   else if (strcmp(P.init, "poissonTest") == 0) {
 			poissonTest(P);
 	}
 	#endif
-	
 	else {
     chprintf ("ABORT: %s: Unknown initial conditions!\n", P.init);
     chexit(-1);
