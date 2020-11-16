@@ -5,8 +5,8 @@
 #include"../global.h"
 
 #if defined TIDES || defined POISSON_TEST
-#define LMAX        (12)
-#define QTPB        (32)
+#define LMAX        (5)
+#define QTPB        (128)
 #define CENTERTPB   (1024)
 #endif
 

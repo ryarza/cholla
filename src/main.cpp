@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   // read in the parameters
   parse_params (param_file, &P);
   // and output to screen
-  chprintf ("Parameter values:\n n: [%d, %d, %d]\n Boundaries: %i %i %i %i %i %i\n Gas gamma: %.5e\n Initial conditions: %s\n Final time: %.5e", P.nx, P.ny, P.nz, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd, P.gamma, P.init, P.tout);
+  chprintf ("Parameter values:\n n: [%d, %d, %d]\n Boundaries: %i %i %i %i %i %i\n Gas gamma: %.5e\n Initial conditions: %s\n Final time: %.5e\n", P.nx, P.ny, P.nz, P.xl_bcnd, P.xu_bcnd, P.yl_bcnd, P.yu_bcnd, P.zl_bcnd, P.zu_bcnd, P.gamma, P.init, P.tout);
   if (strcmp(P.init, "Read_Grid") == 0  ) chprintf (" Input directory: %s\n", P.indir);
   chprintf (" Output directory: %s\n", P.outdir);
   
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   G.Get_Particles_Acceleration();
   #endif
 
-  chprintf("\ndx: [%.5e, %.5e, %.5e%f dy = %f dz = %f\n", G.H.dx, G.H.dy, G.H.dz);
+  chprintf("\ndx: [%.5e, %.5e, %.5e]\n", G.H.dx, G.H.dy, G.H.dz);
   chprintf("\nNstep = %d  Timestep = %f  Simulation time = %f\n", G.H.n_step, G.H.dt, G.H.t);
 
   #ifdef TIDES
@@ -199,6 +199,7 @@ int main(int argc, char *argv[])
 
     #ifdef TIDES
     G.S.update(G.H.t, G.H.dt);
+    if ( G.H.t > 0) G.updateCOM();
     #endif
 
     // Advance the grid by one timestep
@@ -252,10 +253,6 @@ int main(int argc, char *argv[])
   
     if (G.H.t == outtime || G.H.Output_Now )
     {
-//  TEMPORARY: Compute COM only when outputting (it's not used for anything else as of now)
-      #ifdef TIDES
-      G.updateCOM();
-      #endif
       #ifdef OUTPUT
       /*output the grid data*/
       WriteData(G, P, nfile);
@@ -292,7 +289,7 @@ int main(int argc, char *argv[])
   G.Timer.Print_Average_Times( P );
   #endif
   
-  Write_Message_To_Log_File( "Run completed successfully!");
+  Write_Message_To_Log_File(LOG_FILE_NAME, "Run completed successfully!");
 
 //TEMPORARY ON: Exit with exit(0);
   exit(0);

@@ -515,6 +515,7 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
           Get_Position(i+nGHST, j+nGHST, k+nGHST, &x[0], &x[1], &x[2]);
 
 //        TEMPORARY ON: Analytical tidal potential for newtonian potential instead of tidal tensors
+//        TODO: Debug tidal tensors because we'll need them for the GR case anyways
           framePot = - G_CGS * S.Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
           globalPot = - G_CGS * S.Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
 

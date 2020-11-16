@@ -36,7 +36,7 @@ void Create_Log_File( struct parameters P ){
   #endif
     
   string file_name ( LOG_FILE_NAME );
-  chprintf( "\nCreating Log File: %s \n\n", file_name.c_str() );
+  chprintf( "\nCreating Log File: %s\n", file_name.c_str() );
   
   bool file_exists = false;
   if (FILE *file = fopen(file_name.c_str(), "r")){
@@ -55,17 +55,37 @@ void Create_Log_File( struct parameters P ){
   out_file << "\n";
   out_file << "Run date: " << dt;
   out_file.close();
-  
+
+//If we're doing tides, create another file where we put the coordinates of the COM and BH
+  #ifdef TIDES
+  file_name = ( "orbit_evolution.log" );
+  chprintf("Creating Log File: %s\n", file_name.c_str() );
+
+  file_exists = false;
+  if (FILE *file = fopen(file_name.c_str(), "r")){
+    file_exists = true;
+    chprintf( "  File exists, appending values: %s. Remember to clean repeated lines.\n\n", file_name.c_str() );
+    fclose( file );
+  }
+  else{
+    out_file.open(file_name.c_str(), ios::app);
+//  Spaces required so they're centered with %17.10e+space = 18 chars. 5+8+5 for star, 6+6+6 for BH, 4+9+5 for frame
+    out_file << "        t              xstar[0]          xstar[1]          xstar[2]          vstar[0]          vstar[1]          vstar[2]           xBH[0]            xBH[1]            xBH[2]            vBH[0]            vBH[1]            vBH[2]          xFrame[0]         xFrame[1]         xFrame[2]         vFrame[0]         vFrame[1]         vFrame[2]         aFrame[0]         aFrame[1]         aFrame[2]\n";
+    out_file.close();
+  } 
+  #endif
+
+  chprintf("\n");
+
 }
 
-void Write_Message_To_Log_File( const char* message ){
+void Write_Message_To_Log_File(string file_name, const char* message ){
   
     #ifdef MPI_CHOLLA
     if ( procID != 0 ) return;
     #endif
     
-    
-    string file_name ( LOG_FILE_NAME );
+//    string file_name ( LOG_FILE_NAME );
     ofstream out_file;
     out_file.open(file_name.c_str(), ios::app);
     out_file << message << endl;
@@ -452,17 +472,22 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "n_fields", H5T_STD_I32BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_INT, &H.n_fields);
   status = H5Aclose(attribute_id);
- 
+
+//Save some other useful info
+//  attribute_id = H5Acreate(file_id, "cfl", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+//  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &H.C_cfl);
+//  status = H5Aclose(attribute_id);
+
   #ifdef TIDES
   attribute_id = H5Acreate(file_id, "Mstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Mstar);
   status = H5Aclose(attribute_id);
-  
+
   attribute_id = H5Acreate(file_id, "Rstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Rstar);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "polyN", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  attribute_id = H5Acreate(file_id, "npoly", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.polyN);
   status = H5Aclose(attribute_id);
 
@@ -490,7 +515,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.rp);
   status = H5Aclose(attribute_id);
 
-  attribute_id = H5Acreate(file_id, "tdynStar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+  attribute_id = H5Acreate(file_id, "tdynstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.tdynStar);
   status = H5Aclose(attribute_id);
 
@@ -501,7 +526,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "Mbox", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &S.Mbox);
   status = H5Aclose(attribute_id);
-  #endif//TIDES
+  #endif
 
   #ifdef COSMOLOGY
   attribute_id = H5Acreate(file_id, "H0", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
@@ -595,7 +620,6 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   status = H5Aclose(attribute_id);
 
   #ifdef TIDES
-
   attribute_id = H5Acreate(file_id, "xFrame", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.posFrame);
   status = H5Aclose(attribute_id);
@@ -627,11 +651,7 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   attribute_id = H5Acreate(file_id, "vstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
   status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.vstar);
   status = H5Aclose(attribute_id);
-
-//  attribute_id = H5Acreate(file_id, "accSt", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
-//  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, S.accSt);
-//  status = H5Aclose(attribute_id);
-  #endif//TIDES
+  #endif
  
   // Close the dataspace
   status = H5Sclose(dataspace_id);
