@@ -772,7 +772,11 @@ void Grid3D::FreeMemory(void)
   #ifdef GRAVITY
   Grav.FreeMemory_CPU();
   #endif
-  
+ 
+  #ifdef TIDES
+  Grav.FreeMemoryBoundaries_GPU();
+  #endif
+ 
   #ifdef PARTICLES
   Particles.Reset();
   #endif

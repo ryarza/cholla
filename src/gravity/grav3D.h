@@ -126,6 +126,11 @@ class Grav3D
   Real center[3];
   int Qidx(int cidx, int l, int m);
   void fillLegP(Real* legP, Real x);
+
+//GPU static allocation variables
+//TODO: Figure out a better way to pass the density so that we don't have to copy it both for gravity and for the hydro. Right now we're wasting space but it's fine.
+  Real *dev_rho, *dev_center, *dev_bounds, *dev_dx, *dev_partialReQ, *dev_partialImQ, *dev_partialCenter, *dev_partialTotrhosq;
+  int *dev_n;
   #endif
 
   #endif
@@ -175,7 +180,7 @@ class Grav3D
 
   /*! \fn void Initialize(int nx_in, int ny_in, int nz_in)
   *  \brief Initialize the grid. */
-  void Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx_total, int ny_total, int nz_total, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P);
+  void Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx_total, int ny_total, int nz_total, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P);
 
   void AllocateMemory_CPU(void);
   void Initialize_values_CPU();
@@ -189,6 +194,11 @@ class Grav3D
   #ifdef SOR
   void Copy_Isolated_Boundary_To_GPU_buffer( Real *isolated_boundary_h, Real *isolated_boundary_d, int boundary_size );
   void Copy_Isolated_Boundaries_To_GPU( struct parameters *P );
+  #endif
+
+  #ifdef TIDES
+  void AllocateMemoryBoundaries_GPU(int nx, int ny, int nz);
+  void FreeMemoryBoundaries_GPU();
   #endif
 
 };

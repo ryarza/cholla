@@ -260,7 +260,7 @@ static void printDiff(const Real *p, const Real *q, const int nx, const int ny, 
 //Initialize the Grav Object at the beginning of the simulation
 void Grid3D::Initialize_Gravity( struct parameters *P ){
   chprintf( "\nInitializing Gravity... \n");
-  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.dx, H.dy, H.dz, H.n_ghost_potential_offset, P  );
+  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.n_ghost, H.dx, H.dy, H.dz, H.n_ghost_potential_offset, P  );
   chprintf( "Gravity Successfully Initialized. \n\n");
 
 #ifdef PARIS_TEST
@@ -514,14 +514,14 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
         if ( S.relaxed == 1 ){
           Get_Position(i+nGHST, j+nGHST, k+nGHST, &x[0], &x[1], &x[2]);
 
-//        TEMPORARY ON: Analytical tidal potential for newtonian potential instead of tidal tensors
+//        TEMPORARY OFF: Analytical tidal potential for newtonian potential instead of tidal tensors
 //        TODO: Debug tidal tensors because we'll need them for the GR case anyways
-          framePot = - G_CGS * S.Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
-          globalPot = - G_CGS * S.Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
+//          framePot = - G_CGS * S.Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
+//          globalPot = - G_CGS * S.Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
 
-          pot_extrp += globalPot - framePot;
-//          chprintf("Tensor / analytical: %.10e\n", S.getTidalPotential(x[0], x[1], x[2], S.extCij, S.extCijk, S.extCijkl) / ( globalPot + framePot ));
-//          pot_extrp += S.getTidalPotential(posx, posy, posz, S.extCij, S.extCijk, S.extCijkl);
+//          pot_extrp += globalPot - framePot;
+//          chprintf("Tensor = %.10e. Analytical: %.10e. Ratio: %.10e\n", S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl), ( globalPot - framePot ), S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl) / (globalPot - framePot ));
+          pot_extrp += S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl);
         }
 
         #endif

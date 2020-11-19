@@ -41,7 +41,7 @@ void Create_Log_File( struct parameters P ){
   bool file_exists = false;
   if (FILE *file = fopen(file_name.c_str(), "r")){
     file_exists = true;
-    chprintf( "  File exists, appending values: %s \n\n", file_name.c_str() );
+    chprintf( "  File exists, appending values: %s \n", file_name.c_str() );
     fclose( file );
   } 
   
@@ -57,7 +57,7 @@ void Create_Log_File( struct parameters P ){
   out_file.close();
 
 //If we're doing tides, create another file where we put the coordinates of the COM and BH
-  #ifdef TIDES
+  #if defined TIDES && defined OUTPUT_ALWAYS_COM
   file_name = ( "orbit_evolution.log" );
   chprintf("Creating Log File: %s\n", file_name.c_str() );
 

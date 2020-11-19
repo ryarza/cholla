@@ -83,7 +83,7 @@ public:
   void update(Real t, Real dt);
   void updateFrameCoords(Real t, Real dt);
   void updateBhCoords(Real t, Real dt);
-  void updateTidalTensors(Real t, Real dt);
+  void updateTidalTensors();
 
 //Value of eta (proxy for time) and its first two derivatives with respect to time. These are used to track the coordinates of the center of the frame at all times analytically
   Real geteta(Real t);
@@ -91,7 +91,7 @@ public:
   Real getddeta(Real t);
 
 //Returns the tidal potential given a set of tidal tensors
-  Real getTidalPotential(Real x, Real y, Real z, Real Cij[3][3], Real Cijk[3][3][3], Real Cijkl[3][3][3][3]);
+  Real getTidalPotential(Real *x, Real argCij[3][3], Real argCijk[3][3][3], Real argCijkl[3][3][3][3]);
 
 //Used for computing the center of mass position and speed in the GPU
   int comBlocks;

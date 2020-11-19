@@ -15,7 +15,7 @@
 
 Grav3D::Grav3D( void ){}
 
-void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P )
+void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P )
 {
   
   //Set Box Size
@@ -87,6 +87,10 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   BC_FLAGS_SET = false;
   
   AllocateMemory_CPU();
+
+  #ifdef TIDES
+  AllocateMemoryBoundaries_GPU(nx_real + 2 * n_ghost, ny_real + 2 * n_ghost, nz_real + 2 * n_ghost);
+  #endif
 
   Initialize_values_CPU();
 

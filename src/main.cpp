@@ -197,9 +197,11 @@ int main(int argc, char *argv[])
     G.Transfer_Particles_Boundaries(P); 
     #endif
 
-    #ifdef TIDES
+    #if defined TIDES
     G.S.update(G.H.t, G.H.dt);
+    #ifdef OUTPUT_ALWAYS_COM
     if ( G.H.t > 0) G.updateCOM();
+    #endif
     #endif
 
     // Advance the grid by one timestep
@@ -254,6 +256,11 @@ int main(int argc, char *argv[])
     if (G.H.t == outtime || G.H.Output_Now )
     {
       #ifdef OUTPUT
+      #ifdef TIDES
+      #ifndef OUTPUT_ALWAYS_COM
+      G.updateCOM();
+      #endif
+      #endif
       /*output the grid data*/
       WriteData(G, P, nfile);
       // add one to the output file count

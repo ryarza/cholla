@@ -202,11 +202,13 @@ void Grid3D::updateCOM(){
 */
 
 //Write the COM, etc to the logfile
+  #ifdef OUTPUT_ALWAYS_COM
   char *message = (char*)malloc(500 * sizeof(char));
 //                  <--t--> <--------xstar--------> <--------vstar--------> <---------xbh---------> <---------vbh---------> <-------xFrame -------> <-------vFrame -------> <-------aFrame ------->
   sprintf(message, "%17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e", H.t, S.xstar[0], S.xstar[1], S.xstar[2], S.vstar[0], S.vstar[1], S.vstar[2], S.posBh[0], S.posBh[1], S.posBh[2], S.velBh[0], S.velBh[1], S.velBh[2], S.posFrame[0], S.posFrame[1], S.posFrame[2], S.velFrame[0], S.velFrame[1], S.velFrame[2], S.accFrame[0], S.accFrame[1], S.accFrame[2]);
   Write_Message_To_Log_File("orbit_evolution.log", message);
   free(message);
+  #endif
 
 }
 
