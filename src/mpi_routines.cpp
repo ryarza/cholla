@@ -283,6 +283,10 @@ void DomainDecomposition(struct parameters *P, struct Header *H, int nx_gin, int
   else H->nz = nz_local+2*H->n_ghost;
   H->nz_real = nz_local;
 
+  H->n_local_real[0] = nx_local;
+  H->n_local_real[1] = ny_local;
+  H->n_local_real[2] = nz_local;
+
   // set total number of cells
   H->n_cells = H->nx * H->ny * H->nz;
 
@@ -886,6 +890,10 @@ void Set_Parallel_Domain(Real xmin_global, Real ymin_global, Real zmin_global, R
   H->yblocal = ymin_local;
   H->zblocal = zmin_local;
 
+  H->bounds_local[0] = xmin_local;
+  H->bounds_local[1] = ymin_local;
+  H->bounds_local[2] = zmin_local;
+
   //printf("ProcessID: %d xbound: %f  xdglobal: %f  xblocal: %f\n", procID, H->xbound, H->xdglobal, H->xblocal); 
 
   /*perform 1-D first*/
@@ -929,6 +937,11 @@ void Set_Parallel_Domain(Real xmin_global, Real ymin_global, Real zmin_global, R
     H->dy = H->domlen_y / (H->ny - 2*H->n_ghost);
     H->dz = H->domlen_z / (H->nz - 2*H->n_ghost);
   }
+
+  H->dxi[0] = H->dx;
+  H->dxi[1] = H->dy;
+  H->dxi[2] = H->dz;
+  H->dV     = H->dx * H->dy * H->dz;
 
   /* make sure the domain is properly set for this decomposition*/
   if(pd_flag==0)

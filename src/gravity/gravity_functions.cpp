@@ -260,7 +260,7 @@ static void printDiff(const Real *p, const Real *q, const int nx, const int ny, 
 //Initialize the Grav Object at the beginning of the simulation
 void Grid3D::Initialize_Gravity( struct parameters *P ){
   chprintf( "\nInitializing Gravity... \n");
-  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.n_ghost, H.dx, H.dy, H.dz, H.n_ghost_potential_offset, P  );
+  Grav.Initialize( H.xblocal, H.yblocal, H.zblocal, H.xdglobal, H.ydglobal, H.zdglobal, P->nx, P->ny, P->nz, H.nx_real, H.ny_real, H.nz_real, H.n_ghost, H.dx, H.dy, H.dz, H.n_ghost_potential_offset, H, P  );
   chprintf( "Gravity Successfully Initialized. \n\n");
 
 #ifdef PARIS_TEST
@@ -355,11 +355,16 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
     Grav.BC_FLAGS_SET = true;
   }
 
+
+//If doing SOR, copy the density early. The reason is that if doing isolated boundaries with the multipole expansion, we need to know the entire density field to compute the boundaries. Previously the boundaries were computed independently of the rest of the solution. The copy of the density field occurred inside Get_Potential_SOR
+  #ifdef SOR
+  Grav.Poisson_solver.Copy_Input_And_Initialize( Grav.F.density_h, Grav_Constant, dens_avrg, current_a );
+  #endif
+
   #if defined POISSON_TEST || defined TIDES
-//  Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
   setMoments();
   #endif
-  
+
   #ifdef GRAV_ISOLATED_BOUNDARY_X
   if ( Grav.boundary_flags[0] == 3 ) Compute_Potential_Boundaries_Isolated(0);
   if ( Grav.boundary_flags[1] == 3 ) Compute_Potential_Boundaries_Isolated(1);

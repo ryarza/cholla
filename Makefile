@@ -112,7 +112,7 @@ DFLAGS += -DTIDES
 #DFLAGS += -DOUTPUT_ALWAYS_COM
 
 
-# Test Poisson solver
+# Test Poisson solver with quasispherical distributions
 #DFLAGS += -DPOISSON_TEST
 
 # Cosmology simulation

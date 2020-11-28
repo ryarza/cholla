@@ -10,9 +10,8 @@
 #include "../mpi_routines.h"
 #endif
 
-void Grav3D::AllocateMemoryBoundaries_GPU(int nx, int ny, int nz){
+void Grav3D::AllocateMemoryBoundaries_GPU(){
 
-  CudaSafeCall( cudaMalloc( (void**)&dev_rho            , nx * ny * nz                                  * sizeof(Real) ) );
   CudaSafeCall( cudaMalloc( (void**)&dev_center         , 3                                             * sizeof(Real) ) );
   CudaSafeCall( cudaMalloc( (void**)&dev_bounds         , 3                                             * sizeof(Real) ) );
   CudaSafeCall( cudaMalloc( (void**)&dev_dx             , 3                                             * sizeof(Real) ) );
@@ -26,7 +25,6 @@ void Grav3D::AllocateMemoryBoundaries_GPU(int nx, int ny, int nz){
 
 void Grav3D::FreeMemoryBoundaries_GPU(){
 
-  cudaFree(dev_rho            );
   cudaFree(dev_center         );
   cudaFree(dev_bounds         );
   cudaFree(dev_dx             );
@@ -35,6 +33,14 @@ void Grav3D::FreeMemoryBoundaries_GPU(){
   cudaFree(dev_partialCenter  );
   cudaFree(dev_partialTotrhosq);
   cudaFree(dev_n              );
+
+}
+
+void Grav3D::CopyDomainPropertiesToGPU(Real *bounds_local, int *n_local_real, Real *dxi){
+
+  CudaSafeCall( cudaMemcpy( dev_bounds, bounds_local, 3 * sizeof(Real), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_n     , n_local_real, 3 * sizeof(int ), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_dx    , dxi         , 3 * sizeof(Real), cudaMemcpyHostToDevice) );
 
 }
 
@@ -283,14 +289,6 @@ __global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_gh
 //TODO: rmpole should be the distance from the center of the expansion to the nearest boundary cell, not from the center of the domain to the nearest boundary cell
 void Grid3D::setMoments(){
 
-  Real dx[3], bounds[3];
-  int n[3];
-  dx[0] = H.dx; dx[1] = H.dy; dx[2] = H.dz;
-  Real dV = dx[0] * dx[1] * dx[2];
-  bounds[0] = H.xblocal; bounds[1] = H.yblocal; bounds[2] = H.zblocal;
-
-  n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
-
 //Get center of the expansion in the CPU to compare results
   int id;
   Real totrhosqCPU = 0.;
@@ -322,16 +320,12 @@ void Grid3D::setMoments(){
   chprintf("CPU center: %.10e, %.10e, %.10e\n", centerCPU[0], centerCPU[1], centerCPU[2]);
 
   #ifdef DYNAMIC_GPU_ALLOC
-  Grav.AllocateMemoryBoundaries_GPU(n[0], n[1], n[2]);
+  Grav.AllocateMemoryBoundaries_GPU();
+  Grav.CopyDomainPropertiesToGPU();
   #endif
 
 //Find the center of the expansion according to Couch et al. 2013
-  CudaSafeCall( cudaMemcpy( Grav.dev_rho   , C.density, n[0] * n[1] * n[2] * sizeof(Real), cudaMemcpyHostToDevice) );
-  CudaSafeCall( cudaMemcpy( Grav.dev_bounds, bounds   , 3                  * sizeof(Real), cudaMemcpyHostToDevice) );
-  CudaSafeCall( cudaMemcpy( Grav.dev_n     , n        , 3                  * sizeof(int ), cudaMemcpyHostToDevice) );
-  CudaSafeCall( cudaMemcpy( Grav.dev_dx    , dx       , 3                  * sizeof(Real), cudaMemcpyHostToDevice) );
-
-  centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(Grav.dev_rho, Grav.dev_bounds, Grav.dev_dx, Grav.dev_n, H.n_ghost, Grav.dev_partialCenter, Grav.dev_partialTotrhosq);
+  centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(Grav.Poisson_solver.F.input_d, Grav.dev_bounds, Grav.dev_dx, Grav.dev_n, 0, Grav.dev_partialCenter, Grav.dev_partialTotrhosq);
   CudaCheckError();
 
   CudaSafeCall( cudaMemcpy(Grav.bufferCenter  , Grav.dev_partialCenter  , 3 * Grav.centerBlocks   * sizeof(Real), cudaMemcpyDeviceToHost) );
@@ -356,24 +350,18 @@ void Grid3D::setMoments(){
   for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
 
   if ( H.n_step > 0) chprintf(" ");
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
   chprintf("Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
 
-//Qnl
-//  cudaMemcpy( Grav.dev_rho, C.density, n[0] * n[1] * n[2]*sizeof(Real), cudaMemcpyHostToDevice);
+//Find the multipole moments
   CudaSafeCall( cudaMemcpy( Grav.dev_center, Grav.center, 3*sizeof(Real), cudaMemcpyHostToDevice) );
-//  cudaMemcpy( Grav.dev_bounds, bounds, 3*sizeof(Real), cudaMemcpyHostToDevice);
-//  cudaMemcpy( Grav.dev_n, n, 3*sizeof(int), cudaMemcpyHostToDevice);
-//  cudaMemcpy( Grav.dev_dx, dx, 3*sizeof(Real), cudaMemcpyHostToDevice);
 
-  QlmKernel<<<Grav.Qblocks,QTPB>>>(Grav.dev_rho, Grav.dev_center, Grav.dev_bounds, Grav.dev_dx, H.xdglobal / 2., Grav.dev_n, H.n_ghost, Grav.dev_partialReQ, Grav.dev_partialImQ);
+  QlmKernel<<<Grav.Qblocks,QTPB>>>(Grav.Poisson_solver.F.input_d, Grav.dev_center, Grav.dev_bounds, Grav.dev_dx, H.xdglobal / 2., Grav.dev_n, 0, Grav.dev_partialReQ, Grav.dev_partialImQ);
   CudaCheckError();
 
   CudaSafeCall( cudaMemcpy(Grav.bufferReQ, Grav.dev_partialReQ, sizeof(Real) * Grav.Qblocks * (1 + LMAX ) * (2 + LMAX ) / 2, cudaMemcpyDeviceToHost) );
   CudaSafeCall( cudaMemcpy(Grav.bufferImQ, Grav.dev_partialImQ, sizeof(Real) * Grav.Qblocks * (1 + LMAX ) * (2 + LMAX ) / 2, cudaMemcpyDeviceToHost) );
 
-  #ifdef DYNAMIC_GPU_ALLOC
-  Grav.FreeMemoryBoundaries_GPU();
-  #endif
 
   for ( int i = 0; i < ( 1 + LMAX ) * ( 2 + LMAX ) / 2; i++ ){
     Grav.ReQ[i] = 0.;
@@ -389,8 +377,8 @@ void Grid3D::setMoments(){
 
       }
 
-      Grav.ReQ[Grav.Qidx(0,l,m)] *= dV;
-      Grav.ImQ[Grav.Qidx(0,l,m)] *= dV;
+      Grav.ReQ[Grav.Qidx(0,l,m)] *= H.dV;
+      Grav.ImQ[Grav.Qidx(0,l,m)] *= H.dV;
 
     }
   }
@@ -411,6 +399,10 @@ void Grid3D::setMoments(){
 
     }
   }
+  #endif
+
+  #ifdef DYNAMIC_GPU_ALLOC
+  Grav.FreeMemoryBoundaries_GPU();
   #endif
 
 }

@@ -179,7 +179,7 @@ class Grav3D
 
   /*! \fn void Initialize(int nx_in, int ny_in, int nz_in)
   *  \brief Initialize the grid. */
-  void Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx_total, int ny_total, int nz_total, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P);
+  void Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx_total, int ny_total, int nz_total, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct Header H, struct parameters *P);
 
   void AllocateMemory_CPU(void);
   void Initialize_values_CPU();
@@ -195,8 +195,9 @@ class Grav3D
   void Copy_Isolated_Boundaries_To_GPU( struct parameters *P );
   #endif
 
-  #ifdef TIDES
-  void AllocateMemoryBoundaries_GPU(int nx, int ny, int nz);
+  #if defined POISSON_TEST || defined TIDES
+  void AllocateMemoryBoundaries_GPU();
+  void CopyDomainPropertiesToGPU(Real *bounds_local, int *n_local_real, Real *dxi);
   void FreeMemoryBoundaries_GPU();
   #endif
 

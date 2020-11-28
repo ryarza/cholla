@@ -130,7 +130,13 @@ void Potential_SOR_3D::Poisson_Partial_Iteration( int n_step, Real omega, Real e
 
 void Grid3D::Get_Potential_SOR( Real Grav_Constant, Real dens_avrg, Real current_a, struct parameters *P ){
   
+/*
   Grav.Poisson_solver.Copy_Input_And_Initialize( Grav.F.density_h, Grav_Constant, dens_avrg, current_a );
+
+  #if defined POISSON_TEST || defined TIDES
+  setMoments();
+  #endif
+*/
 
   //Set Isolated Boundary Conditions
   Grav.Copy_Isolated_Boundaries_To_GPU( P );

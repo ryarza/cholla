@@ -185,6 +185,10 @@ int main(int argc, char *argv[])
   cudaProfilerStart();
   #endif
 
+  #ifdef POISSON_TEST
+  G.poissonErrorNorm();
+  #endif
+
   while (G.H.t < P.tout)
   {
     chprintf("n_step: %d \n", G.H.n_step + 1 );
@@ -267,8 +271,10 @@ int main(int argc, char *argv[])
       G.updatePotBH();
       #endif
 
+      #ifdef TIDES
       #ifndef OUTPUT_ALWAYS_COM
       G.updateCOM();
+      #endif
       #endif
       /*output the grid data*/
       WriteData(G, P, nfile);

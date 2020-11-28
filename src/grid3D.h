@@ -137,6 +137,8 @@ struct Header
   *  \brief Number of real cells in the z-dimension */
   int nz_real;
 
+  int n_local_real[3];
+
   /*! \var xbound */
   /*  \brief Global domain x-direction minimum */
   Real xbound;
@@ -185,6 +187,10 @@ struct Header
   /*  \brief Global domain length in z-direction */
   Real zdglobal;
 
+  /* ! \var blocal */
+  /*   \brief Local domain minimum values for all coordinates */
+  Real bounds_local[3];
+
   /*! \var dx
   *  \brief x-width of cells */
   Real dx;
@@ -196,7 +202,11 @@ struct Header
   /*! \var dz
   *  \brief z-width of cells */
   Real dz;
-      
+
+  Real dxi[3];
+
+  Real dV;
+
   /*! \var t
   *  \brief Simulation time */
   Real t;

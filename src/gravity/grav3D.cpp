@@ -15,7 +15,7 @@
 
 Grav3D::Grav3D( void ){}
 
-void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct parameters *P )
+void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, Real Lz, int nx, int ny, int nz, int nx_real, int ny_real, int nz_real, int n_ghost, Real dx_real, Real dy_real, Real dz_real, int n_ghost_pot_offset, struct Header H, struct parameters *P )
 {
   
   //Set Box Size
@@ -89,7 +89,8 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   AllocateMemory_CPU();
 
   #if ( defined POISSON_TEST || defined TIDES ) && !(defined DYNAMIC_GPU_ALLOC )
-  AllocateMemoryBoundaries_GPU(nx_real + 2 * n_ghost, ny_real + 2 * n_ghost, nz_real + 2 * n_ghost);
+  AllocateMemoryBoundaries_GPU();
+  CopyDomainPropertiesToGPU(H.bounds_local, H.n_local_real, H.dxi);
   #endif
 
   Initialize_values_CPU();
@@ -140,7 +141,7 @@ void Grav3D::AllocateMemory_CPU(void)
 //Real and imaginary parts of the multipole moments of the density distribution
   ReQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
   ImQ = (Real *) malloc( sizeof(Real) * (LMAX + 1) * ( LMAX + 2 ) / 2);
-  Qblocks        = ceil( ( nx_local * ny_local * nz_local ) / QTPB        );
+  Qblocks = ceil( n_cells / QTPB );
   centerBlocks   = ceil( ( nx_local * ny_local * nz_local ) / CENTERTPB   );
   bufferReQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );
   bufferImQ = (Real *) malloc( sizeof(Real) * Qblocks * (LMAX + 1) * ( LMAX + 2 ) / 2 );

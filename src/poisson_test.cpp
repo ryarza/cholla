@@ -1,10 +1,7 @@
 #ifdef POISSON_TEST
 #include "grid3D.h"
 #include "io.h"
-
-#ifndef MPI_CHOLLA
-#include "cmath"
-#endif
+#include "math.h"
 
 void Grid3D::poissonErrorNorm(){
 
