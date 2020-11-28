@@ -88,7 +88,7 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   
   AllocateMemory_CPU();
 
-  #ifdef TIDES
+  #if ( defined POISSON_TEST || defined TIDES ) && !(defined DYNAMIC_GPU_ALLOC )
   AllocateMemoryBoundaries_GPU(nx_real + 2 * n_ghost, ny_real + 2 * n_ghost, nz_real + 2 * n_ghost);
   #endif
 

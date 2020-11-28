@@ -130,7 +130,7 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
 
   int i, j, k, id;
   Real pos[3], r, pot_val;
-  #if defined TIDES || defined POISSON_TEST
+  #if defined POISSON_TEST || defined TIDES
   Real phi, theta, Ylmfac, lfac;
   #endif
   
@@ -183,12 +183,6 @@ void Grid3D::Compute_Potential_Isolated_Boundary( int direction, int side,  int 
         }
 
         pot_val *= Grav.Gconst;
-
-//      TEMPORARY OFF: Sphere potential
-//        r = sqrt( pos[0] * pos[0] + pos[1] * pos[1] + pos[2] * pos[2] );
-//        pot_val = - G_CGS * 1.989e33 / r;
-//      TEMPORARY OFF: Compare to sphere potential
-//        printf("pot_val/pot_sphere: %.10e\n", pot_val / ( - G_CGS * 1.989e33 / r ));
         #endif
 
         pot_boundary[id] = pot_val;

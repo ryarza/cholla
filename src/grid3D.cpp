@@ -280,7 +280,11 @@ void Grid3D::AllocateMemory(void)
 	#ifdef POISSON_TEST
 	C.analyticalPotential = (Real *) malloc(H.n_cells * sizeof(Real));
 	#endif
-  
+ 
+  #ifdef TIDES_OUTPUT_POTENTIAL_BH
+  C.Grav_potential_BH = ( Real *) malloc(H.n_cells * sizeof(Real));
+  #endif
+ 
 	#else
   C.Grav_potential = NULL;
   #endif
@@ -775,6 +779,10 @@ void Grid3D::FreeMemory(void)
  
   #ifdef TIDES
   Grav.FreeMemoryBoundaries_GPU();
+  #endif
+
+  #ifdef TIDES_OUTPUT_POTENTIAL_BH
+  free(C.Grav_potential_BH);
   #endif
  
   #ifdef PARTICLES

@@ -69,7 +69,7 @@ public:
   Real astar[3];
 
 //Tidal tensors at the current time and at t + dt / 2
-
+  #ifdef TIDES_RELATIVISTIC
   Real extCij[3][3];
   Real extCijk[3][3][3];
   Real extCijkl[3][3][3][3];
@@ -77,13 +77,16 @@ public:
   Real Cij[3][3];
   Real Cijk[3][3][3];
   Real Cijkl[3][3][3][3];
+  #endif
 
 //Functions that change the state of S
   void initialize(struct parameters P, Real t, Real dt, int nx, int ny, int nz);
   void update(Real t, Real dt);
   void updateFrameCoords(Real t, Real dt);
   void updateBhCoords(Real t, Real dt);
+  #ifdef TIDES_RELATIVISTIC
   void updateTidalTensors();
+  #endif
 
 //Value of eta (proxy for time) and its first two derivatives with respect to time. These are used to track the coordinates of the center of the frame at all times analytically
   Real geteta(Real t);
@@ -91,7 +94,11 @@ public:
   Real getddeta(Real t);
 
 //Returns the tidal potential given a set of tidal tensors
+  #ifdef TIDES_RELATIVISTIC
   Real getTidalPotential(Real *x, Real argCij[3][3], Real argCijk[3][3][3], Real argCijkl[3][3][3][3]);
+  #else
+  Real getTidalPotential(Real *x);
+  #endif
 
 //Used for computing the center of mass position and speed in the GPU
   int comBlocks;

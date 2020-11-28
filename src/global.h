@@ -245,7 +245,7 @@ struct parameters
   Real r0rt;
   Real relaxRate0;
   Real relaxRateBkgnd;
-#endif//TIDES
+#endif
 
 #ifdef POISSON_TEST
   Real c[6];

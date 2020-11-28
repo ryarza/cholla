@@ -9,10 +9,6 @@
 #include "MPI_Comm_node.h"
 #include <iostream>
 
-#if defined TIDES || defined POISSON_TEST
-#include "complex"
-#endif
-
 /*Global MPI Variables*/
 int procID; /*process rank*/
 int nproc;  /*number of processes in global comm*/

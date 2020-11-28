@@ -355,7 +355,7 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
     Grav.BC_FLAGS_SET = true;
   }
 
-  #if defined TIDES || defined POISSON_TEST
+  #if defined POISSON_TEST || defined TIDES
 //  Computes the moments required for the multipole expansion at the boundaries and assigns them to Grav.Q
   setMoments();
   #endif
@@ -488,8 +488,7 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
   int k, j, i, id_pot, id_grid;
 
   #ifdef TIDES
-  Real x[3], dxaux[3], globalPot, framePot;
-  for ( int i = 0; i < 3; i++ ) dxaux[i] = S.posBhExt[i] - S.posFrameExt[i];
+  Real x[3];
   #endif
 
   for ( k=g_start; k<g_end; k++ ){
@@ -510,20 +509,15 @@ void Grid3D::Extrapolate_Grav_Potential_Function( int g_start, int g_end ){
 //      TEMPORARY OFF: NO TIDAL POTENTIAL
         #ifdef TIDES
 //      Add the extrapolated tidal potential, but only if the relaxation has ended!
-
-        if ( S.relaxed == 1 ){
+        if ( S.relaxed ){
           Get_Position(i+nGHST, j+nGHST, k+nGHST, &x[0], &x[1], &x[2]);
 
-//        TEMPORARY OFF: Analytical tidal potential for newtonian potential instead of tidal tensors
-//        TODO: Debug tidal tensors because we'll need them for the GR case anyways
-//          framePot = - G_CGS * S.Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
-//          globalPot = - G_CGS * S.Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
-
-//          pot_extrp += globalPot - framePot;
-//          chprintf("Tensor = %.10e. Analytical: %.10e. Ratio: %.10e\n", S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl), ( globalPot - framePot ), S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl) / (globalPot - framePot ));
+          #ifdef TIDES_RELATIVISTIC
           pot_extrp += S.getTidalPotential(x, S.extCij, S.extCijk, S.extCijkl);
+          #else
+          pot_extrp += S.getTidalPotential(x);
+          #endif
         }
-
         #endif
 
         #ifdef COSMOLOGY

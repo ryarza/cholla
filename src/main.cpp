@@ -14,6 +14,10 @@
 #include "io.h"
 #include "error_handling.h"
 
+#ifdef PROFILING
+#include <cuda_profiler_api.h>
+#endif
+
 #define OUTPUT
 //#define CPU_TIME
 
@@ -144,6 +148,9 @@ int main(int argc, char *argv[])
 
   #ifdef OUTPUT
   if (strcmp(P.init, "Read_Grid") != 0 || G.H.Output_Now ) {
+    #ifdef TIDES_OUTPUT_POTENTIAL_BH
+    G.updatePotBH();
+    #endif
     #ifdef TIDES
     G.updateCOM();
     #endif
@@ -154,12 +161,6 @@ int main(int argc, char *argv[])
   // add one to the output file count
   nfile++;
   #endif //OUTPUT
-
-//If doing Poisson test, exit after first computation
-  #ifdef POISSON_TEST
-  G.poissonErrorNorm();
-  exit(0);
-  #endif
 
   // increment the next output time
   outtime += P.outstep;
@@ -179,6 +180,11 @@ int main(int argc, char *argv[])
   
   // Evolve the grid, one timestep at a time
   chprintf("\nStarting calculations.\n\n");
+
+  #ifdef PROFILING
+  cudaProfilerStart();
+  #endif
+
   while (G.H.t < P.tout)
   {
     chprintf("n_step: %d \n", G.H.n_step + 1 );
@@ -256,10 +262,13 @@ int main(int argc, char *argv[])
     if (G.H.t == outtime || G.H.Output_Now )
     {
       #ifdef OUTPUT
-      #ifdef TIDES
+
+      #ifdef TIDES_OUTPUT_POTENTIAL_BH
+      G.updatePotBH();
+      #endif
+
       #ifndef OUTPUT_ALWAYS_COM
       G.updateCOM();
-      #endif
       #endif
       /*output the grid data*/
       WriteData(G, P, nfile);
@@ -289,6 +298,9 @@ int main(int argc, char *argv[])
 
   } /*end loop over timesteps*/
   
+  #ifdef PROFILING
+  cudaProfilerStop();
+  #endif
   
   #ifdef CPU_TIME
   // Print timing statistics

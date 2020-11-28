@@ -301,6 +301,7 @@ class Grid3D
     #ifdef TIDES
     Star S;
     #endif 
+
     #ifdef COOLING_GRACKLE
     // Object that contains data for Grackle cooling
     Cool_GK Cool;
@@ -369,6 +370,9 @@ class Grid3D
 			Real *analyticalPotential;
 			#endif
 
+      #ifdef TIDES_OUTPUT_POTENTIAL_BH
+      Real *Grav_potential_BH;
+      #endif
       
     } C;
 
@@ -763,6 +767,10 @@ class Grid3D
 	void setMoments();
   void setCenter();
 	#endif
+
+  #ifdef TIDES_OUTPUT_POTENTIAL_BH
+  void updatePotBH();
+  #endif
 
 };
 

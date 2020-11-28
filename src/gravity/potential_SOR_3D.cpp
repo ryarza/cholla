@@ -52,7 +52,7 @@ void Potential_SOR_3D::Initialize( Real Lx, Real Ly, Real Lz, Real x_min, Real y
   chprintf( " Poisson solver: SOR\n");
   chprintf( "  Convergence epsilon: %.5e\n", SOREPSILON);
 
-  #ifdef TIDES
+  #if defined POISSON_TEST || defined TIDES
   chprintf( "  Maximum angular order: %i\n", LMAX);
   #endif
 

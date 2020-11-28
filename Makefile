@@ -13,10 +13,14 @@ OBJS := $(subst .c,.o,$(CFILES)) $(subst .cpp,.o,$(CPPFILES)) $(subst .cu,.o,$(G
 
 #To use GPUs, CUDA must be turned on here
 #Optional error checking can also be enabled
-DFLAGS += -DCUDA# -DCUDA_ERROR_CHECK
+DFLAGS += -DCUDA
+#DFLAGS += -DCUDA_ERROR_CHECK
+
+#Profiling flag to profile only the main loop
+#DFLAGS += -DPROFILING
 
 #To use MPI, DFLAGS must include -DMPI_CHOLLA
-#DFLAGS += -DMPI_CHOLLA -DBLOCK
+DFLAGS += -DMPI_CHOLLA -DBLOCK
 
 #DFLAGS += -DPRECISION=1
 DFLAGS += -DPRECISION=2
@@ -98,10 +102,15 @@ OMP_NUM_THREADS ?= 16
 DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
-#Stellar simulation
+# Flags related to the tidal simulation
 DFLAGS += -DTIDES
+# Uses relativistic corrections to the orbit and potential. Otherwise exact Newtonian potential is used
+#DFLAGS += -DTIDES_RELATIVISTIC
+# Outputs the black hole potential, which can be used to compute whether any given fluid cell is bound or unbound
+#DFLAGS += -DTIDES_OUTPUT_POTENTIAL_BH
 #Prints the center of mass motion at every step
 #DFLAGS += -DOUTPUT_ALWAYS_COM
+
 
 # Test Poisson solver
 #DFLAGS += -DPOISSON_TEST

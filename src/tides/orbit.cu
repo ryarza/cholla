@@ -1,6 +1,7 @@
 #ifdef TIDES
 
 #include "../global.h"
+#include "../global_cuda.h"
 #include "../grid3D.h"
 #include "tides.h"
 #include "../io.h"
@@ -79,47 +80,79 @@ __global__ void comKernel(Real *rho, Real *momentum_x, Real *momentum_y, Real *m
 
 }
 
+__global__ void potBHKernel(Real *bounds, Real *dx, Real *xFrame, Real *xBH, Real Mbh, int *n, int n_ghost, Real *potBH){
+
+  int nreal[3], tid[3], fid;
+  for ( int i = 0; i < 3; i++ ) nreal[i] = n[i] - 2 * n_ghost;
+  int nrealcells = nreal[0] * nreal[1] * nreal[2];
+
+  int tid1d = threadIdx.x + blockIdx.x * blockDim.x;
+  tid[2] = tid1d / ( nreal[0] * nreal[1] );
+  tid[1] = ( tid1d - tid[2] * nreal[0] * nreal[1] ) / nreal[0];
+  tid[0] = tid1d - tid[2] * nreal[0] * nreal[1] - tid[1] * nreal[0];
+
+  Real x[3];
+
+  while ( tid1d < nrealcells ){
+
+    tid[2] = tid1d / ( nreal[0] * nreal[1] );
+    tid[1] = ( tid1d - tid[2] * nreal[0] * nreal[1] ) / nreal[0];
+    tid[0] = tid1d - tid[2] * nreal[0] * nreal[1] - tid[1] * nreal[0];
+    fid = ( tid[2] + n_ghost ) * n[0] * n[1] + ( tid[1] + n_ghost ) * n[0] + ( tid[0] + n_ghost );
+
+    for ( int i = 0; i < 3; i++ ) x[i] = bounds[i] + dx[i] * ( tid[i] + 0.5) + xFrame[i] - xBH[i];
+    potBH[fid] = - G_CGS * Mbh / sqrt( x[0] * x[0] + x[1] * x[1] + x[2] * x[2] );
+
+    tid1d += blockDim.x * gridDim.x;
+  }
+
+}
+
+#ifdef TIDES_OUTPUT_POTENTIAL_BH
+void Grid3D::updatePotBH(){
+  
+  Real dx[3], bounds[3];
+  int n[3];
+  dx[0] = H.dx; dx[1] = H.dy; dx[2] = H.dz;
+  bounds[0] = H.xblocal; bounds[1] = H.yblocal; bounds[2] = H.zblocal;
+  n[0] = H.nx; n[1] = H.ny; n[2] = H.nz;
+
+  Real *dev_potBH, *dev_bounds, *dev_dx, *dev_xFrame, *dev_xBH;
+  int *dev_n;
+
+  CudaSafeCall( cudaMalloc( (void**)&dev_bounds, 3                  * sizeof(Real) ) );
+  CudaSafeCall( cudaMalloc( (void**)&dev_n     , 3                  * sizeof(int ) ) );
+  CudaSafeCall( cudaMalloc( (void**)&dev_dx    , 3                  * sizeof(Real) ) );
+  CudaSafeCall( cudaMalloc( (void**)&dev_xFrame, 3                  * sizeof(Real) ) );
+  CudaSafeCall( cudaMalloc( (void**)&dev_xBH   , 3                  * sizeof(Real) ) );
+  CudaSafeCall( cudaMalloc( (void**)&dev_potBH , n[0] * n[1] * n[2] * sizeof(Real) ) );
+
+  CudaSafeCall( cudaMemcpy( dev_bounds, bounds    , 3*sizeof(Real), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_n     , n         , 3*sizeof(int ), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_dx    , dx        , 3*sizeof(Real), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_xFrame, S.posFrame, 3*sizeof(Real), cudaMemcpyHostToDevice) );
+  CudaSafeCall( cudaMemcpy( dev_xBH   , S.posBh   , 3*sizeof(Real), cudaMemcpyHostToDevice) );
+  
+  potBHKernel<<<ceil(n[0]*n[1]*n[2]/1024),1024>>>(dev_bounds, dev_dx, dev_xFrame, dev_xBH, S.Mbh, dev_n, H.n_ghost, dev_potBH);
+  CudaCheckError();
+
+  CudaSafeCall( cudaMemcpy(C.Grav_potential_BH, dev_potBH, n[0] * n[1] * n[2] * sizeof(Real), cudaMemcpyDeviceToHost) );
+  
+  cudaFree(dev_n);
+  cudaFree(dev_bounds);
+  cudaFree(dev_dx);
+  cudaFree(dev_xFrame);
+  cudaFree(dev_xBH);
+  cudaFree(dev_potBH);
+
+}
+#endif
+
 void Grid3D::updateCOM(){
+
   S.Mbox = Grav.ReQ[0] * sqrt( 4 * M_PI );
   Real totrho = S.Mbox / H.dx / H.dy / H.dz;
-/*
-  for ( int i = 0; i < 3; i++ ) S.xstar[i] = 0.;
-  for ( int i = 0; i < 3; i++ ) S.vstar[i] = 0.;
 
-  Real rho, x[3];
-  int id;
-
-  for (int k = H.n_ghost; k<H.nz-H.n_ghost; k++) {
-    for (int j = H.n_ghost; j<H.ny-H.n_ghost; j++) {
-      for (int i = H.n_ghost; i<H.nx-H.n_ghost; i++) {
-        id = i + j*H.nx + k*H.nx*H.ny;
-
-//      Get the centered cell positions at (i,j,k)
-        Get_Position(i, j, k, &x[0], &x[1], &x[2]);
-        rho = C.density[id];
-//      Position of the center of mass
-        for ( int ii = 0; ii < 3; ii++ ) S.xstar[ii] += x[ii] * rho;
-
-//      Velocity of the center of mass
-        S.vstar[0] += C.momentum_x[id];
-        S.vstar[1] += C.momentum_y[id];
-        S.vstar[2] += C.momentum_z[id];
-
-      }
-    }
-  }
-
-  #ifdef MPI_CHOLLA
-  MPI_Allreduce(MPI_IN_PLACE, S.xstar, 3, MPI_CHREAL, MPI_SUM, world);
-  MPI_Allreduce(MPI_IN_PLACE, S.vstar, 3, MPI_CHREAL, MPI_SUM, world);
-  #endif
-
-  Real vstarslow[3], xstarslow[3];
-  for ( int i = 0; i < 3; i++ ){
-    vstarslow[i] = S.vstar[i] / totrho;
-    xstarslow[i] = S.xstar[i] / totrho;
-  }
-*/
   Real dx[3], bounds[3];
   int n[3];
   dx[0] = H.dx; dx[1] = H.dy; dx[2] = H.dz;
@@ -149,7 +182,6 @@ void Grid3D::updateCOM(){
   cudaMemcpy( dev_dx        , dx          , 3*sizeof(Real), cudaMemcpyHostToDevice);
 
 //Call Kernel
-  cudaDeviceSynchronize();
   comKernel<<<S.comBlocks,COMTPB>>>(dev_rho, dev_momentum_x, dev_momentum_y, dev_momentum_z, dev_bounds, dev_dx, dev_n, H.n_ghost, dev_partialxstar, dev_partialvstar);
 
 //Copy result to CPU
@@ -185,26 +217,11 @@ void Grid3D::updateCOM(){
   MPI_Allreduce(MPI_IN_PLACE, S.xstar, 3, MPI_CHREAL, MPI_SUM, world);
   MPI_Allreduce(MPI_IN_PLACE, S.vstar, 3, MPI_CHREAL, MPI_SUM, world);
   #endif
-/*
-  Real xeps[3];
-  Real veps[3];
-  for ( int i = 0; i < 3; i++ ){
-    xeps[i] = S.xstar[i] / xstarslow[i] - 1.;
-    veps[i] = S.vstar[i] / vstarslow[i] - 1.;
-  }
 
-  chprintf("xstar new: %.10e, %.10e, %.10e\n", S.xstar[0], S.xstar[1], S.xstar[2]);
-  chprintf("xstar old: %.10e, %.10e, %.10e\n", xstarslow[0], xstarslow[1], xstarslow[2]);
-  chprintf("vstar new: %.10e, %.10e, %.10e\n", S.vstar[0], S.vstar[1], S.vstar[2]);
-  chprintf("vstar old: %.10e, %.10e, %.10e\n", vstarslow[0], vstarslow[1], vstarslow[2]);
-  chprintf("xstar relative error: %.16e, %.16e, %.16e\n", xeps[0], xeps[1], xeps[2]);
-  chprintf("vstar relative error: %.16e, %.16e, %.16e\n", veps[0], veps[1], veps[2]);
-*/
-
-//Write the COM, etc to the logfile
   #ifdef OUTPUT_ALWAYS_COM
+//Write the COM, etc to the logfile
   char *message = (char*)malloc(500 * sizeof(char));
-//                  <--t--> <--------xstar--------> <--------vstar--------> <---------xbh---------> <---------vbh---------> <-------xFrame -------> <-------vFrame -------> <-------aFrame ------->
+// Column headers:  <--t--> <--------xstar--------> <--------vstar--------> <---------xbh---------> <---------vbh---------> <-------xFrame -------> <-------vFrame -------> <-------aFrame ------->
   sprintf(message, "%17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e %17.10e", H.t, S.xstar[0], S.xstar[1], S.xstar[2], S.vstar[0], S.vstar[1], S.vstar[2], S.posBh[0], S.posBh[1], S.posBh[2], S.velBh[0], S.velBh[1], S.velBh[2], S.posFrame[0], S.posFrame[1], S.posFrame[2], S.velFrame[0], S.velFrame[1], S.velFrame[2], S.accFrame[0], S.accFrame[1], S.accFrame[2]);
   Write_Message_To_Log_File("orbit_evolution.log", message);
   free(message);
@@ -289,55 +306,6 @@ void Star::updateFrameCoords(Real t, Real dt){
   accFrameExt[2] = 0.;
 
 }
-
-/*
-// Given the density in the cells and the position of the black hole, this function returns the three components of the acceleration of the black hole
-void Grid3D::updateBhAcc(){
-
-//These variables hold the positions of the cell centers and the distance between the cell center and the bh
-  Real posx, posy, posz, r;
-//Will hold density
-  Real rho;
-
-//We need the volume of the cell because we compute the acceleration between two point masses: the BH and a mass rho * dV at the center of the cell
-  Real dV = H.dx * H.dy * H.dz;
-
-// To compute the acceleration the BH experiences, we sum over the acceleration caused by every cell in the star.
-  int id;
-  Real accBhTemp[3];
-  for (int k=H.n_ghost; k<H.nz-H.n_ghost; k++) {
-    for (int j=H.n_ghost; j<H.ny-H.n_ghost; j++) {
-      for (int i=H.n_ghost; i<H.nx-H.n_ghost; i++) {
-        id = i + j*H.nx + k*H.nx*H.ny;
-        Get_Position(i, j, k, &posx, &posy, &posz);
-
-        r = sqrt( ( posx - S.posBh[0] ) * ( posx - S.posBh[0] ) + ( posy - S.posBh[1] ) * ( posy - S.posBh[1] ) + ( posz - S.posBh[2] ) * ( posz - S.posBh[2] ) );
-        rho = C.density[id];
-
-        accBhTemp[0] += rho * ( posx - posBh[0] ) / pow(r, 3.);
-        accBhTemp[1] += rho * ( posy - posBh[1] ) / pow(r, 3.);
-        accBhTemp[2] += rho * ( posz - posBh[2] ) / pow(r, 3.);
-      }
-    }
-  }
-
-  accBhTemp[0] *= dV * G_CGS;
-  accBhTemp[1] *= dV * G_CGS;
-  accBhTemp[2] *= dV * G_CGS;
-
-  #ifdef MPI_CHOLLA
-  S.accBh[0] = ReduceRealSum(accBhTemp[0]);
-  S.accBh[1] = ReduceRealSum(accBhTemp[1];
-  S.accBh[2] = ReduceRealSum(accBhTemp[2]);
-  #else
-  S.accBh[0] = accBhTemp[0];
-  S.accBh[1] = accBhTemp[1];
-  S.accBh[2] = accBhTemp[2];
-  #endif
-
-}
-
-*/
 
 void Star::updateBhCoords(Real t, Real dt){
 

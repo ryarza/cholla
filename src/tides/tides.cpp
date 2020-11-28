@@ -66,10 +66,33 @@ void Star::initialize(struct parameters P, Real t, Real dt, int nx, int ny, int 
   bufferxstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
   buffervstar = (Real *) malloc( sizeof(Real) * comBlocks * 3);
 
+  chprintf(" Tidal setup flags:\n");
+  chprintf("  Framework         : ");
+  #ifdef TIDES_RELATIVISTIC
+  chprintf("Relativistic");
+  #else
+  chprintf("Newtonian");
+  #endif
+  chprintf("\n");
+  chprintf("  Output COM coords : ");
+  #ifdef TIDES_OUTPUT_ALWAYS_COM
+  chprintf("At every step");
+  #else
+  chprintf("On HDF5 only");
+  #endif
+  chprintf("\n");
+  chprintf("  Output BH potential: ");
+  #ifdef TIDES_OUTPUT_POTENTIAL_BH
+  chprintf("True");
+  #else
+  chprintf("False");
+  #endif
+  chprintf("\n");
+
   chprintf(" Star:\n");
+  chprintf("  n_poly: %.10e\n", polyN);
   chprintf("  Mass  : %.10e g\n", Mstar);
   chprintf("  Radius: %.10e cm\n", Rstar);
-  chprintf("  n_poly: %.10e\n", polyN);
   chprintf("  t_dyn : %.10e s\n", tdynStar);
 
   chprintf(" Orbit:\n");
@@ -100,16 +123,17 @@ void Star::update(Real t, Real dt){
   eta = geteta(tOrb);
   updateFrameCoords (tOrb, dt);
   updateBhCoords    (tOrb, dt);
+  #ifdef TIDES_RELATIVISTIC
   updateTidalTensors();
+  #endif
 
 }
 
 
-
-// Given a position and a set of tidal tensors, return the tidal potential
+#ifdef TIDES_RELATIVISTIC
+//Given a position and a set of tidal tensors, return the tidal potential
 Real Star::getTidalPotential(Real *x, Real argCij[3][3], Real argCijk[3][3][3], Real argCijkl[3][3][3][3]){
 
-// Using tidal tensors
   Real tidalPot = 0.;
   for ( int i = 0; i < 3; i++ ){
     for ( int j = 0; j < 3; j++){
@@ -126,7 +150,21 @@ Real Star::getTidalPotential(Real *x, Real argCij[3][3], Real argCijk[3][3][3], 
   return tidalPot;
 
 }
+#else
+Real Star::getTidalPotential(Real *x){
 
+  Real dxaux[3], framePot, globalPot;
+  for ( int i = 0; i < 3; i++ ) dxaux[i] = posBhExt[i] - posFrameExt[i];
+
+  framePot = - G_CGS * Mbh * ( x[0] * dxaux[0] + x[1] * dxaux[1] + x[2] * dxaux[2] ) / pow(dxaux[0] * dxaux[0] + dxaux[1] * dxaux[1] + dxaux[2] * dxaux[2], 1.5);
+  globalPot = - G_CGS * Mbh / sqrt( pow((x[0] - dxaux[0]), 2.) + pow(x[1] - dxaux[1], 2.) + pow(x[2] - dxaux[2], 2.) );
+
+  return globalPot - framePot;
+
+}
+#endif
+
+#ifdef TIDES_RELATIVISTIC
 // Updates the tidal tensors, which only depend on the position of the center of the frame.
 // Updates tensors for t and t + dt / 2, since the latter will be used in the extrapolated potential.
 void Star::updateTidalTensors(){
@@ -206,43 +244,6 @@ void Star::updateTidalTensors(){
       }
     }
   }
-
-/*
-  Real extcCij[3][3], extcCijk[3][3][3], extcCijkl[3][3][3][3];
-  extcCij[0][0] = G_CGS * Mbh * ( rExt * rExt - 3. * bigxExt[0] * bigxExt[0] ) / r5Ext;
-  extcCij[1][1] = G_CGS * Mbh * ( rExt * rExt - 3. * bigxExt[1] * bigxExt[1] ) / r5Ext;
-  extcCij[2][2] = G_CGS * Mbh * ( rExt * rExt - 3. * bigxExt[2] * bigxExt[2] ) / r5Ext;
-
-  extcCij[0][1] = - 3 * G_CGS * Mbh * bigxExt[0] * bigxExt[1] / r5Ext;
-  chprintf("extcCij[0][1] = %.10e\n", extcCij[0][1] );
-  extcCij[1][0] = extcCij[0][1];
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-  extcCij[0][2] = - 3 * G_CGS * Mbh * bigxExt[0] * bigxExt[2] / r5Ext;
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-  extcCij[2][0] = extcCij[0][2];
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-
-  extcCij[1][2] = - 3 * G_CGS * Mbh * bigxExt[1] * bigxExt[2] / r5Ext;
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-  extcCij[2][1] = extcCij[1][2];
-  chprintf("extcCij[1][0] = %.10e\n", extcCij[1][0] );
-
-  Real ratio;
-  for ( int i = 0; i < 3; i++ ){
-    for ( int j = 0; j < 3; j++ ){
-      ratio = extCij[i][j] / extcCij[i][j];
-      chprintf("C[%i][%i] / exact = %.10e/%.10e = %.10e\n", i, j, extCij[i][j], extcCij[i][j], ratio);
-    }
-  }
-*/
-/*
-  extcCijk[0][0][0] = G_CGS * Mbh * ( - 9. * rExt * rExt * posFrameExt[0] + 15 * pow(posFrameExt[0], 3.) ) / pow(rExt, 7.);
-  chprintf("C[1, 1, 1] / correct = %.10e\n", extCijk[0][0][0] / extcCijk[0][0][0]);
-*/
-//  chprintf("C[1, 1, 1, 1] / correct = %.10e\n", Cijk[0][0][0][0] / cCijkl[0][0][0][0]);
-
 }
-
+#endif
 #endif

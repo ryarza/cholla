@@ -127,7 +127,6 @@ class Grav3D
   int Qidx(int cidx, int l, int m);
   void fillLegP(Real* legP, Real x);
 
-//GPU static allocation variables
 //TODO: Figure out a better way to pass the density so that we don't have to copy it both for gravity and for the hydro. Right now we're wasting space but it's fine.
   Real *dev_rho, *dev_center, *dev_bounds, *dev_dx, *dev_partialReQ, *dev_partialImQ, *dev_partialCenter, *dev_partialTotrhosq;
   int *dev_n;
