@@ -319,10 +319,10 @@ void Grid3D::setMoments(){
   for ( int i = 0; i < 3; i++ ) centerCPU[i] /= totrhosqCPU;
   chprintf("CPU center: %.10e, %.10e, %.10e\n", centerCPU[0], centerCPU[1], centerCPU[2]);
 
-  #ifdef DYNAMIC_GPU_ALLOC
+//  #ifdef DYNAMIC_GPU_ALLOC
   Grav.AllocateMemoryBoundaries_GPU();
-  Grav.CopyDomainPropertiesToGPU();
-  #endif
+  Grav.CopyDomainPropertiesToGPU(H.bounds_local, H.n_local_real, H.dxi);
+//  #endif
 
 //Find the center of the expansion according to Couch et al. 2013
   centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(Grav.Poisson_solver.F.input_d, Grav.dev_bounds, Grav.dev_dx, Grav.dev_n, 0, Grav.dev_partialCenter, Grav.dev_partialTotrhosq);
@@ -350,7 +350,7 @@ void Grid3D::setMoments(){
   for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
 
   if ( H.n_step > 0) chprintf(" ");
-  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
+//  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
   chprintf("Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
 
 //Find the multipole moments
@@ -401,9 +401,9 @@ void Grid3D::setMoments(){
   }
   #endif
 
-  #ifdef DYNAMIC_GPU_ALLOC
+//  #ifdef DYNAMIC_GPU_ALLOC
   Grav.FreeMemoryBoundaries_GPU();
-  #endif
+//  #endif
 
 }
 

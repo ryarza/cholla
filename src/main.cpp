@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     G.updatePotBH();
     #endif
     #ifdef TIDES
-    G.updateCOM();
+//    G.updateCOM();
     #endif
   // write the initial conditions to file
     chprintf("\nWriting initial conditions to file...\n");
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     #if defined TIDES
     G.S.update(G.H.t, G.H.dt);
     #ifdef OUTPUT_ALWAYS_COM
-    if ( G.H.t > 0) G.updateCOM();
+//    if ( G.H.t > 0) G.updateCOM();
     #endif
     #endif
 
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 
       #ifdef TIDES
       #ifndef OUTPUT_ALWAYS_COM
-      G.updateCOM();
+//      G.updateCOM();
       #endif
       #endif
       /*output the grid data*/

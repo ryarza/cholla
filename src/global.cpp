@@ -11,6 +11,10 @@
 #include "global.h"
 #include "io.h"
 
+#ifdef CUDA
+#include"global_cuda.h"
+#endif
+
 /* Global variables */
 Real gama; // Ratio of specific heats
 Real C_cfl; // CFL number
@@ -342,8 +346,8 @@ void printHydroParams(){
   chprintf("CTU");
   #elif defined VL
   chprintf("VL");
-  #elif defined CTU
-  chprintf("CTU");
+  #elif defined SIMPLE
+  chprintf("Simple");
   #else
   chprintf("not recognized");
   #endif
@@ -397,5 +401,26 @@ void printHydroParams(){
   chprintf("  T  : %.10e\n", TEMP_FLOOR);
   chprintf("  rho: %.10e\n", DENS_FLOOR);
   chprintf("  P  : %.10e\n", PRES_FLOOR);
+
+}
+
+void printMemoryUsageGPU(){
+
+  size_t free_bytes, total_bytes;
+  cudaError_t cuda_status;
+
+  cuda_status = cudaMemGetInfo( &free_bytes, &total_bytes );
+  if ( cudaSuccess != cuda_status ) printf("Error: cudaMemGetInfo failed, %s \n", cudaGetErrorString(cuda_status) );
+
+  double free_db = (double)free_bytes ;
+  double total_db = (double)total_bytes ;
+  double used_db = total_db - free_db ;
+/*
+  #ifdef MPI_CHOLLA
+  MPI_Allreduce(MPI_IN_PLACE, &used_db, 1, MPI_CHREAL, MPI_MAX, world);
+  #endif
+*/
+  printf("GPU max memory usage: %f/%f MB\n", used_db/1024.0/1024.0, total_db/1024.0/1024.0);
+  MPI_Barrier(world);
 
 }

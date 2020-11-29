@@ -278,6 +278,7 @@ struct parameters
 extern void parse_params (char *param_file, struct parameters * parms);
 
 extern void printHydroParams();
+extern void printMemoryUsageGPU();
 
 
 #endif //GLOBAL_H
