@@ -421,6 +421,6 @@ void printMemoryUsageGPU(){
   #endif
 */
   printf("GPU max memory usage: %f/%f MB\n", used_db/1024.0/1024.0, total_db/1024.0/1024.0);
-  MPI_Barrier(world);
+  MPI_Barrier(MPI_COMM_WORLD);
 
 }

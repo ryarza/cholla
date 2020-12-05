@@ -135,7 +135,7 @@ void InitializeChollaMPI(int *pargc, char **pargv[])
 
   /*set process ids in comm world*/
   MPI_Comm_rank(MPI_COMM_WORLD, &procID);
-  
+
   /*find number of processes in comm world*/
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
 

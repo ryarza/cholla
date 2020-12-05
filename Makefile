@@ -107,7 +107,7 @@ DFLAGS += -DTIDES
 # Uses relativistic corrections to the orbit and potential. Otherwise exact Newtonian potential is used
 #DFLAGS += -DTIDES_RELATIVISTIC
 # Outputs the black hole potential, which can be used to compute whether any given fluid cell is bound or unbound
-#DFLAGS += -DTIDES_OUTPUT_POTENTIAL_BH
+DFLAGS += -DTIDES_OUTPUT_POTENTIAL_BH
 #Prints the center of mass motion at every step
 #DFLAGS += -DOUTPUT_ALWAYS_COM
 

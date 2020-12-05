@@ -28,6 +28,7 @@ void Potential_SOR_3D::Free_Array_GPU_bool( bool *array_dev ){
   CudaCheckError();
 }
 
+/*
 __global__ void Copy_Input_Kernel( int n_cells, Real *input_d, Real *density_d, Real Grav_Constant, Real dens_avrg, Real current_a ){
   
   int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -36,15 +37,14 @@ __global__ void Copy_Input_Kernel( int n_cells, Real *input_d, Real *density_d, 
   #ifdef COSMOLOGY
   density_d[tid] = 4 * M_PI * Grav_Constant * ( input_d[tid] - dens_avrg ) / current_a;
   #else
-  density_d[tid] = 4 * M_PI * Grav_Constant * input_d[tid];
+  density_d[tid] = 4 * M_PI * Grav_Constant * density_d[tid];
   #endif
   // if (tid == 0) printf("dens: %f\n", density_d[tid]);
 }
 
-
 void Potential_SOR_3D::Copy_Input( int n_cells, Real *input_d, Real *input_density_h, Real Grav_Constant, Real dens_avrg, Real current_a ){
-  cudaMemcpy( input_d, input_density_h, n_cells*sizeof(Real), cudaMemcpyHostToDevice );
-  
+//  cudaMemcpy( input_d, input_density_h, n_cells*sizeof(Real), cudaMemcpyHostToDevice );
+  cudaMemcpy( F.density_d, input_density_h, n_cells*sizeof(Real), cudaMemcpyHostToDevice );
   // set values for GPU kernels
   int ngrid =  (n_cells_local + TPB_SOR - 1) / TPB_SOR;
   // number of blocks per 1D grid  
@@ -53,6 +53,36 @@ void Potential_SOR_3D::Copy_Input( int n_cells, Real *input_d, Real *input_densi
   dim3 dim1dBlock(TPB_SOR, 1, 1);
   
   Copy_Input_Kernel<<<dim1dGrid,dim1dBlock>>>( n_cells_local, F.input_d, F.density_d,  Grav_Constant, dens_avrg, current_a  );
+}
+*/
+
+void Potential_SOR_3D::Copy_Density_To_GPU(int n_cells, Real *density_h){
+  CudaSafeCall( cudaMemcpy( F.density_d, density_h, n_cells * sizeof(Real), cudaMemcpyHostToDevice) );
+}
+
+__global__ void Convert_Density_To_RHS_Kernel( int n_cells, Real *density_d, Real Grav_Constant, Real dens_avrg, Real current_a ){
+
+  int tid = threadIdx.x + blockIdx.x * blockDim.x;
+  if ( tid >= n_cells ) return;
+
+  #ifdef COSMOLOGY
+  density_d[tid] = 4 * M_PI * Grav_Constant * ( density_d[tid] - dens_avrg ) / current_a;
+  #else
+  density_d[tid] = 4 * M_PI * Grav_Constant * density_d[tid];
+  #endif
+  // if (tid == 0) printf("dens: %f\n", density_d[tid]);
+}
+
+
+void Potential_SOR_3D::Convert_Density_To_RHS(Real Grav_Constant){
+  // set values for GPU kernels
+  int ngrid =  (n_cells_local + TPB_SOR - 1) / TPB_SOR;
+  // number of blocks per 1D grid  
+  dim3 dim1dGrid(ngrid, 1, 1);
+  //  number of threads per 1D block   
+  dim3 dim1dBlock(TPB_SOR, 1, 1);
+
+  Convert_Density_To_RHS_Kernel<<<dim1dGrid,dim1dBlock>>>( n_cells_local, F.density_d, Grav_Constant, 0, 1 );
 }
 
 void Grav3D::Copy_Isolated_Boundary_To_GPU_buffer( Real *isolated_boundary_h, Real *isolated_boundary_d, int boundary_size ){

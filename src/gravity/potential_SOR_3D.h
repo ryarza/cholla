@@ -53,7 +53,7 @@ class Potential_SOR_3D{
 
   Real *output_h;
   
-  Real *input_d;
+//  Real *input_d;
   // Real *output_d;
   Real *density_d;
   Real *potential_d;
@@ -96,7 +96,7 @@ class Potential_SOR_3D{
   void AllocateMemory_GPU( void );
   void FreeMemory_GPU( void );
   void Reset( void );
-  void Copy_Input( int n_cells, Real *input_d, Real *input_density_h, Real Grav_Constant, Real dens_avrg, Real current_a );
+//  void Copy_Input( int n_cells, Real *input_d, Real *input_density_h, Real Grav_Constant, Real dens_avrg, Real current_a );
   
   void Copy_Output( Real *output_potential );
   void Copy_Potential_From_Host( Real *output_potential );
@@ -114,7 +114,7 @@ class Potential_SOR_3D{
 
   
   void Initialize_Potential( int nx, int ny, int nz, int n_ghost_potential, Real *potential_d, Real *density_d );
-  void Copy_Input_And_Initialize( Real *input_density, Real Grav_Constant, Real dens_avrg, Real current_a );
+//  void Copy_Input_And_Initialize( Real *input_density, Real Grav_Constant, Real dens_avrg, Real current_a );
 
   void Poisson_iteration( int n_cells, int nx, int ny, int nz, int n_ghost_potential, Real dx, Real dy, Real dz, Real omega, Real epsilon, Real *density_d, Real *potential_d, bool *converged_h, bool *converged_d );
   void Poisson_iteration_Patial_1( int n_cells, int nx, int ny, int nz, int n_ghost_potential, Real dx, Real dy, Real dz, Real omega, Real epsilon, Real *density_d, Real *potential_d, bool *converged_h, bool *converged_d );
@@ -154,6 +154,10 @@ class Potential_SOR_3D{
   #ifdef MPI_CHOLLA
   bool Get_Global_Converged( bool converged_local );
   #endif
+
+  void Copy_Density_To_GPU(int n_cells, Real *density_h);
+  void Convert_Density_To_RHS(Real Grav_Constant);
+
 };
 
 

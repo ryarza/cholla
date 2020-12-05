@@ -358,11 +358,16 @@ void Grid3D::Compute_Gravitational_Potential( struct parameters *P ){
 
 //If doing SOR, copy the density early. The reason is that if doing isolated boundaries with the multipole expansion, we need to know the entire density field to compute the boundaries. Previously the boundaries were computed independently of the rest of the solution. The copy of the density field occurred inside Get_Potential_SOR
   #ifdef SOR
-  Grav.Poisson_solver.Copy_Input_And_Initialize( Grav.F.density_h, Grav_Constant, dens_avrg, current_a );
-  #endif
-
-  #if defined POISSON_TEST || defined TIDES
+  Grav.Poisson_solver.Copy_Density_To_GPU(Grav.Poisson_solver.n_cells_local, Grav.F.density_h);
   setMoments();
+  Grav.Poisson_solver.Convert_Density_To_RHS(Grav_Constant);
+  if ( !Grav.Poisson_solver.potential_initialized ){
+    chprintf( "SOR: Initializing  Potential \n");
+    Grav.Poisson_solver.Initialize_Potential( Grav.Poisson_solver.nx_local, Grav.Poisson_solver.ny_local, Grav.Poisson_solver.nz_local, Grav.Poisson_solver.n_ghost, Grav.Poisson_solver.F.potential_d, Grav.Poisson_solver.F.density_d );
+    Grav.Poisson_solver.potential_initialized = true;
+  }
+
+//  Grav.Poisson_solver.Copy_Input_And_Initialize( Grav.F.density_h, Grav_Constant, dens_avrg, current_a );
   #endif
 
   #ifdef GRAV_ISOLATED_BOUNDARY_X

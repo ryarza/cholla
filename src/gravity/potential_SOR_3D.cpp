@@ -76,7 +76,7 @@ void Potential_SOR_3D::AllocateMemory_CPU( void ){
 
 void Potential_SOR_3D::AllocateMemory_GPU( void ){
   
-  Allocate_Array_GPU_Real( &F.input_d, n_cells_local );
+//  Allocate_Array_GPU_Real( &F.input_d, n_cells_local );
   Allocate_Array_GPU_Real( &F.density_d, n_cells_local );
   Allocate_Array_GPU_Real( &F.potential_d, n_cells_potential );
   Allocate_Array_GPU_bool( &F.converged_d, 1 );
@@ -110,7 +110,7 @@ void Potential_SOR_3D::AllocateMemory_GPU( void ){
   #endif
   
 }
-
+/*
 void Potential_SOR_3D::Copy_Input_And_Initialize( Real *input_density, Real Grav_Constant, Real dens_avrg, Real current_a ){
   Copy_Input( n_cells_local, F.input_d, input_density, Grav_Constant, dens_avrg, current_a );
 
@@ -120,7 +120,7 @@ void Potential_SOR_3D::Copy_Input_And_Initialize( Real *input_density, Real Grav
     potential_initialized = true;
   }  
 }
-
+*/
 
 void Potential_SOR_3D::Poisson_Partial_Iteration( int n_step, Real omega, Real epsilon ){
   if (n_step == 0 ) Poisson_iteration_Patial_1( n_cells_local, nx_local, ny_local, nz_local, n_ghost, dx, dy, dz, omega, epsilon, F.density_d, F.potential_d, F.converged_h, F.converged_d );
@@ -265,7 +265,7 @@ void Potential_SOR_3D::Copy_Poisson_Boundary_Periodic( int direction, int side )
 
 void Potential_SOR_3D::FreeMemory_GPU( void ){
   
-  Free_Array_GPU_Real( F.input_d );
+//  Free_Array_GPU_Real( F.input_d );
   Free_Array_GPU_Real( F.density_d );
   Free_Array_GPU_Real( F.potential_d );
   Free_Array_GPU_Real( F.boundaries_buffer_x0_d );

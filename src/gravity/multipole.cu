@@ -290,6 +290,7 @@ __global__ void centerKernel(Real *rho, Real *bounds, Real *dx, int *n, int n_gh
 void Grid3D::setMoments(){
 
 //Get center of the expansion in the CPU to compare results
+/*
   int id;
   Real totrhosqCPU = 0.;
   Real centerCPU[3], x[3];
@@ -318,14 +319,13 @@ void Grid3D::setMoments(){
 
   for ( int i = 0; i < 3; i++ ) centerCPU[i] /= totrhosqCPU;
   chprintf("CPU center: %.10e, %.10e, %.10e\n", centerCPU[0], centerCPU[1], centerCPU[2]);
+*/
 
-//  #ifdef DYNAMIC_GPU_ALLOC
   Grav.AllocateMemoryBoundaries_GPU();
   Grav.CopyDomainPropertiesToGPU(H.bounds_local, H.n_local_real, H.dxi);
-//  #endif
 
 //Find the center of the expansion according to Couch et al. 2013
-  centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(Grav.Poisson_solver.F.input_d, Grav.dev_bounds, Grav.dev_dx, Grav.dev_n, 0, Grav.dev_partialCenter, Grav.dev_partialTotrhosq);
+  centerKernel<<<Grav.centerBlocks,CENTERTPB>>>(Grav.Poisson_solver.F.density_d, Grav.dev_bounds, Grav.dev_dx, Grav.dev_n, 0, Grav.dev_partialCenter, Grav.dev_partialTotrhosq);
   CudaCheckError();
 
   CudaSafeCall( cudaMemcpy(Grav.bufferCenter  , Grav.dev_partialCenter  , 3 * Grav.centerBlocks   * sizeof(Real), cudaMemcpyDeviceToHost) );
@@ -350,13 +350,12 @@ void Grid3D::setMoments(){
   for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
 
   if ( H.n_step > 0) chprintf(" ");
-//  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
   chprintf("Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
 
 //Find the multipole moments
   CudaSafeCall( cudaMemcpy( Grav.dev_center, Grav.center, 3*sizeof(Real), cudaMemcpyHostToDevice) );
 
-  QlmKernel<<<Grav.Qblocks,QTPB>>>(Grav.Poisson_solver.F.input_d, Grav.dev_center, Grav.dev_bounds, Grav.dev_dx, H.xdglobal / 2., Grav.dev_n, 0, Grav.dev_partialReQ, Grav.dev_partialImQ);
+  QlmKernel<<<Grav.Qblocks,QTPB>>>(Grav.Poisson_solver.F.density_d, Grav.dev_center, Grav.dev_bounds, Grav.dev_dx, H.xdglobal / 2., Grav.dev_n, 0, Grav.dev_partialReQ, Grav.dev_partialImQ);
   CudaCheckError();
 
   CudaSafeCall( cudaMemcpy(Grav.bufferReQ, Grav.dev_partialReQ, sizeof(Real) * Grav.Qblocks * (1 + LMAX ) * (2 + LMAX ) / 2, cudaMemcpyDeviceToHost) );
@@ -401,9 +400,7 @@ void Grid3D::setMoments(){
   }
   #endif
 
-//  #ifdef DYNAMIC_GPU_ALLOC
   Grav.FreeMemoryBoundaries_GPU();
-//  #endif
 
 }
 

@@ -88,13 +88,6 @@ void Grav3D::Initialize( Real x_min, Real y_min, Real z_min, Real Lx, Real Ly, R
   
   AllocateMemory_CPU();
 
-/*
-  #if ( defined POISSON_TEST || defined TIDES ) && !(defined DYNAMIC_GPU_ALLOC )
-  AllocateMemoryBoundaries_GPU();
-  CopyDomainPropertiesToGPU(H.bounds_local, H.n_local_real, H.dxi);
-  #endif
-*/
-
   Initialize_values_CPU();
 
 //  chprintf( "Gravity Initialized: \n Lbox: %0.2f %0.2f %0.2f \n Local: %d %d %d \n Global: %d %d %d \n",

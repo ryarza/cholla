@@ -474,9 +474,9 @@ void Grid3D::Write_Header_HDF5(hid_t file_id)
   status = H5Aclose(attribute_id);
 
 //Save some other useful info
-//  attribute_id = H5Acreate(file_id, "cfl", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
-//  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &H.C_cfl);
-//  status = H5Aclose(attribute_id);
+  attribute_id = H5Acreate(file_id, "CFL", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT); 
+  status = H5Awrite(attribute_id, H5T_NATIVE_DOUBLE, &C_cfl);
+  status = H5Aclose(attribute_id);
 
   #ifdef TIDES
   attribute_id = H5Acreate(file_id, "Mstar", H5T_IEEE_F64BE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
