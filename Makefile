@@ -70,7 +70,7 @@ DFLAGS += -DPRESSURE_FLOOR
 #DFLAGS += -DTILED_INITIAL_CONDITIONS
 
 #Average Slow cell when the cell delta_t is very small
-# DFLAGS += -DAVERAGE_SLOW_CELLS
+#DFLAGS += -DAVERAGE_SLOW_CELLS
 
 #Print Initial Statistics
 DFLAGS += -DPRINT_INITIAL_STATS

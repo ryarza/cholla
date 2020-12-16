@@ -51,8 +51,8 @@ typedef double Real;
 
 //Conserved Floor Values
 #define TEMP_FLOOR 0.
-#define DENS_FLOOR (1.e-25)
-#define PRES_FLOOR (1.e-10)
+#define DENS_FLOOR (1.e-20)
+#define PRES_FLOOR (1.e-5)
 
 //Parameter for Enzo dual Energy Condition
 #define DE_ETA_1 0.001 //Ratio of U to E for wich  Inetrnal Energy is used to compute the Pressure
