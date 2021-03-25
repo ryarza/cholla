@@ -565,9 +565,18 @@ __global__ void Calc_dt_3D(Real *dev_conserved, int nx, int ny, int nz, int n_gh
       max_dti[tid] = fmax((fabs(vx)+cs)/dx, (fabs(vy)+cs)/dy);
       max_dti[tid] = fmax(max_dti[tid], (fabs(vz)+cs)/dz);
       max_dti[tid] = fmax(max_dti[tid], 0.0);
+
     }
-    
     #endif
+
+    #ifdef TIDES
+//  If density is very low (background), basically ignore the Courant condition for the cell
+//  TODO: Change so that there's not a fixed threshold value
+    if ( d < 1.e-10 ){
+      max_dti[tid] /= 10;
+    }
+    #endif
+
   }
   __syncthreads();
   

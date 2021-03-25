@@ -41,6 +41,8 @@ int main(int argc, char *argv[])
   InitializeChollaMPI(&argc, &argv);
   #endif /*MPI_CHOLLA*/
 
+  printMemoryUsageGPU();
+
   Real dti = 0; // inverse time step, 1.0 / dt
 
   // input parameter variables

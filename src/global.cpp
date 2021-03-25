@@ -420,7 +420,14 @@ void printMemoryUsageGPU(){
   MPI_Allreduce(MPI_IN_PLACE, &used_db, 1, MPI_CHREAL, MPI_MAX, world);
   #endif
 */
-  printf("GPU max memory usage: %f/%f MB\n", used_db/1024.0/1024.0, total_db/1024.0/1024.0);
+
+  char name[MPI_MAX_PROCESSOR_NAME];
+  int len, i_device, n_device;
+  MPI_Get_processor_name( name, &len );
+  cudaGetDeviceCount(&n_device);
+  cudaGetDevice(&i_device);
+
+  printf("Node %s, GPU %i/%d memory usage: %f/%f MB\n", name, i_device, n_device, used_db/1024.0/1024.0, total_db/1024.0/1024.0);
   MPI_Barrier(MPI_COMM_WORLD);
 
 }
