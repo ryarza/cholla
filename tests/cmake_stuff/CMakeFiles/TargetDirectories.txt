@@ -1,4 +1,0 @@
-/home/rcastroy/src/cholla/tests/cmake_stuff/CMakeFiles/rebuild_cache.dir
-/home/rcastroy/src/cholla/tests/cmake_stuff/CMakeFiles/edit_cache.dir
-/home/rcastroy/src/cholla/tests/cmake_stuff/CMakeFiles/test.dir
-/home/rcastroy/src/cholla/tests/cmake_stuff/CMakeFiles/cholla.dir

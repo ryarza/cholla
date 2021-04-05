@@ -16,3 +16,10 @@ out.*
 .DS_Store
 
 .remote-sync.json
+
+#ctest files
+*.cmake
+CMakeFiles/
+CMakeCache.txt
+Testing/
+tests/poisson_test/Makefile
