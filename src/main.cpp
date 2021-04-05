@@ -124,6 +124,12 @@ int main(int argc, char *argv[])
   G.Compute_Gravitational_Potential( &P);
   #endif
 
+  #ifdef POISSON_TEST
+  int passed = G.poissonErrorNorm();
+  if (passed) exit(0);
+  else exit(1);
+  #endif
+
   // Set boundary conditions (assign appropriate values to ghost cells) for hydro and potential
   chprintf("\nSetting boundary conditions...\n");
   G.Set_Boundary_Conditions_Grid(P);
@@ -187,9 +193,6 @@ int main(int argc, char *argv[])
   cudaProfilerStart();
   #endif
 
-  #ifdef POISSON_TEST
-  G.poissonErrorNorm();
-  #endif
 
   while (G.H.t < P.tout)
   {

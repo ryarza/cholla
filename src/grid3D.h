@@ -770,7 +770,7 @@ class Grid3D
 
 	#ifdef POISSON_TEST
 	void poissonTest( struct parameters P );
-	void poissonErrorNorm();
+	int poissonErrorNorm();
 	#endif
 
 	#if defined POISSON_TEST || defined TIDES

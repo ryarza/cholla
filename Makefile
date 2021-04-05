@@ -20,7 +20,7 @@ DFLAGS += -DCUDA
 #DFLAGS += -DPROFILING
 
 #To use MPI, DFLAGS must include -DMPI_CHOLLA
-DFLAGS += -DMPI_CHOLLA -DBLOCK
+#DFLAGS += -DMPI_CHOLLA -DBLOCK
 
 #DFLAGS += -DPRECISION=1
 DFLAGS += -DPRECISION=2
@@ -103,17 +103,17 @@ DFLAGS += -DN_OMP_THREADS=$(OMP_NUM_THREADS)
 #DFLAGS += -DPRINT_OMP_DOMAIN
 
 # Flags related to the tidal simulation
-DFLAGS += -DTIDES
+#DFLAGS += -DTIDES
 # Uses relativistic corrections to the orbit and potential. Otherwise exact Newtonian potential is used
 #DFLAGS += -DTIDES_RELATIVISTIC
 # Outputs the black hole potential, which can be used to compute whether any given fluid cell is bound or unbound
-DFLAGS += -DTIDES_OUTPUT_POTENTIAL_BH
+#DFLAGS += -DTIDES_OUTPUT_POTENTIAL_BH
 #Prints the center of mass motion at every step
 #DFLAGS += -DOUTPUT_ALWAYS_COM
 
 
 # Test Poisson solver with quasispherical distributions
-#DFLAGS += -DPOISSON_TEST
+DFLAGS += -DPOISSON_TEST
 
 # Cosmology simulation
 # DFLAGS += -DCOSMOLOGY

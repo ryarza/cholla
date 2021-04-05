@@ -421,6 +421,7 @@ void printMemoryUsageGPU(){
   #endif
 */
 
+  #ifdef MPI_CHOLLA
   char name[MPI_MAX_PROCESSOR_NAME];
   int len, i_device, n_device;
   MPI_Get_processor_name( name, &len );
@@ -429,5 +430,8 @@ void printMemoryUsageGPU(){
 
   printf("Node %s, GPU %i/%d memory usage: %f/%f MB\n", name, i_device, n_device, used_db/1024.0/1024.0, total_db/1024.0/1024.0);
   MPI_Barrier(MPI_COMM_WORLD);
+  #else
+  printf("Memory usage: %f/%f MB\n", used_db/1024./1024., total_db/1024./1024.);
+  #endif
 
 }

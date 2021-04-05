@@ -3,7 +3,7 @@
 #include "io.h"
 #include "math.h"
 
-void Grid3D::poissonErrorNorm(){
+int Grid3D::poissonErrorNorm(){
 
 	Real l2norm;
 	Real deltasq = 0.;
@@ -36,6 +36,32 @@ void Grid3D::poissonErrorNorm(){
 
 	l2norm = sqrt( deltasq / nx_global / ny_global / nz_global );
 	chprintf("L2 norm = %.20e\n", l2norm);
+
+  Real correctl2norm;
+  if (nx_global == 64 ){
+    correctl2norm = 0.00012863286755550373;
+  }
+  else if ( nx_global == 128 ){
+    correctl2norm = 3.209325613406217e-5;
+  }
+  else if ( nx_global == 256 ){
+    correctl2norm = 8.004489514884087e-6;
+  }
+  else if (nx_global == 512 ){
+    correctl2norm = 1.9801531450853054e-6;
+  }
+  else{
+    chprintf("Unsupported resolution!");
+    exit(-1);
+  }
+
+  if ( fabs(l2norm / correctl2norm - 1.) < 1.e-10 ){
+    return 1;
+  }
+  else{
+    return 0;
+  }
+
 
 }
 

@@ -148,6 +148,19 @@ void Grid3D::Set_Domain_Properties(struct parameters P)
   H.ydglobal = H.domlen_y;
   H.zdglobal = H.domlen_z;
 
+  H.dV = H.dx * H.dy * H.dz;
+  H.bounds_local[0] = H.xbound;
+  H.bounds_local[1] = H.ybound;
+  H.bounds_local[2] = H.zbound;
+
+  H.dxi[0] = H.dx;
+  H.dxi[1] = H.dy;
+  H.dxi[2] = H.dz;
+
+  H.n_local_real[0] = H.nx - 2 * H.n_ghost;
+  H.n_local_real[1] = H.ny - 2 * H.n_ghost;
+  H.n_local_real[2] = H.nz - 2 * H.n_ghost;
+
 #else  /*MPI_CHOLLA*/
 
   /* set the local domains on each process */

@@ -349,6 +349,10 @@ void Grid3D::setMoments(){
 
   for ( int i = 0; i < 3; i++ ) Grav.center[i] /= totrhosq;
 
+  #ifdef POISSON_TEST
+  for ( int i = 0; i < 3; i++ ) Grav.center[i] = 0.;
+  #endif
+
   if ( H.n_step > 0) chprintf(" ");
   chprintf("Multipole center: %.10e, %.10e, %.10e\n", Grav.center[0], Grav.center[1], Grav.center[2]);
 
