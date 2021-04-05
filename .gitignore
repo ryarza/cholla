@@ -11,6 +11,7 @@ parameter_file.txt
 *.h5
 *.bin
 out.*
+*.log
 
 ## dropbox file
 .DS_Store

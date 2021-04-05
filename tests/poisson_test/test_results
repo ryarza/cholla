@@ -1,0 +1,15 @@
+[HANDLER_OUTPUT] 
+Test project /home/rcastroy/src/cholla/tests/poisson_test
+
+    Start 1: poisson64
+1/4 Test #1: poisson64 ........................   Passed    0.40 sec
+    Start 2: poisson128
+2/4 Test #2: poisson128 .......................   Passed    1.48 sec
+    Start 3: poisson256
+3/4 Test #3: poisson256 .......................   Passed    9.86 sec
+    Start 4: poisson512
+4/4 Test #4: poisson512 .......................   Passed   81.90 sec
+
+[0;32m100% tests passed[0;0m, 0 tests failed[0;0m out of 4
+
+Total Test time (real) =  93.65 sec
