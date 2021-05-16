@@ -51,6 +51,7 @@ Real VL_Algorithm_3D_CUDA(Real *host_conserved0, Real *host_conserved1, int nx, 
     //printf("Subgrid dimensions set: %d %d %d %d %d %d %d %d %d\n", nx_s, ny_s, nz_s, block1_tot, block2_tot, block3_tot, remainder1, remainder2, remainder3);
     //fflush(stdout);
     block_tot = block1_tot*block2_tot*block3_tot;
+    chprintf("Number of blocks: %i\n", block_tot);
     // number of cells in one subgrid block
     BLOCK_VOL = nx_s*ny_s*nz_s;
     // dimensions for the 1D GPU grid
